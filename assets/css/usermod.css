@@ -1,0 +1,200 @@
+/* User Profile Modal Styles */
+.user-info-section {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+}
+
+.section-subtitle {
+    color: #8B4513;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 11px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.permissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.permission-icon {
+    width: 20px;
+    color: #8B4513;
+}
+
+.session-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.session-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e2e8f0;
+}
+
+.session-item i {
+    width: 20px;
+    color: #64748b;
+}
+
+.stat-box {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.stat-box .stat-label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 5px;
+}
+
+.stat-box .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #8B4513;
+}
+
+.permission-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Animation for modal */
+.modal.fade .modal-dialog {
+    transform: scale(0.8);
+    transition: transform 0.2s ease-in-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1);
+}
+
+/* Hover effects for table rows */
+#usersTable tbody tr {
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+#usersTable tbody tr:hover {
+    background-color: rgba(139, 69, 19, 0.05);
+}
+
+/* Role badge animation */
+.role-badge {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: background-color, color, transform, border-color;
+}
+
+.role-badge:hover {
+    transform: scale(1.05);
+}
+
+/* User avatar animation */
+.user-avatar-large i {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: background-color, color, transform, border-color;
+}
+
+.user-avatar-large i:hover {
+    transform: scale(1.1);
+    color: #2c5530;
+}
+
+/* Active nav/tab items */
+.nav-link.active {
+    color: #2c5530 !important;
+    border-bottom-color: #2c5530 !important;
+}
+
+/* Search and filter inputs */
+#userSearch, #roleFilter {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: background-color, color, transform, border-color;
+}
+
+#userSearch:focus, #roleFilter:focus {
+    border-color: #4a6fa5;
+    box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.1);
+    outline: none;
+}
+
+/* Add user button animation */
+.btn-success {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: background-color, color, transform, border-color;
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Loading spinner for refresh */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.btn-primary .fa-sync-alt {
+    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: background-color, color, transform, border-color;
+}
+
+.btn-primary:hover .fa-sync-alt {
+    animation: spin 1s linear infinite;
+}

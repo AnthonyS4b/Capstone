@@ -1,0 +1,266 @@
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* --- Tablet: 768px – 1024px --- */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+        min-width: 220px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* --- Mobile hamburger button (hidden on desktop) --- */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1100;
+    background: #2c5530;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+}
+
+.mobile-menu-btn:hover {
+    background: #1e3f21;
+}
+
+/* --- Sidebar overlay backdrop (mobile) --- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1050;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+
+/* --- Mobile: ≤ 768px --- */
+@media (max-width: 768px) {
+    body {
+        overflow: hidden auto !important;
+        flex-direction: column !important;
+    }
+
+    /* Hamburger button visible */
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    /* Hide internal collapse button on mobile */
+    #collapseBtn {
+        display: none !important;
+    }
+
+    /* Sidebar slides off-screen by default */
+    .sidebar {
+        position: fixed;
+        left: -280px;
+        top: 0;
+        z-index: 1060;
+        width: 260px;
+        min-width: 260px;
+        height: 100%;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    }
+
+    .sidebar.mobile-open {
+        left: 0;
+    }
+
+    /* Main content fills full width */
+    .main-content {
+        width: 100% !important;
+        padding: 12px !important;
+        padding-top: 62px !important; /* space for hamburger */
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+    }
+
+    /* Welcome banner */
+    .welcome-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 16px;
+        min-height: unset;
+    }
+
+    .welcome-banner > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .welcome-banner .welcome-text h1 {
+        font-size: 17px !important;
+    }
+
+    .welcome-banner .welcome-text p {
+        font-size: 11px !important;
+    }
+
+    .welcome-banner .date-display {
+        font-size: 12px !important;
+        padding: 5px 10px;
+    }
+
+    /* Quick actions */
+    .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .quick-action-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .quick-action-icon {
+        width: 42px;
+        height: 42px;
+        font-size: 18px;
+    }
+
+    .quick-action-label {
+        font-size: 13px;
+    }
+
+    /* Stats */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat-card {
+        padding: 14px;
+    }
+
+    .stat-icon {
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+    }
+
+    .stat-value {
+        font-size: 22px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
+    /* Charts: single column */
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .chart-container {
+        min-height: 320px;
+    }
+
+    .chart-title {
+        font-size: 15px;
+    }
+
+    .scrollable-content {
+        max-height: 260px;
+    }
+
+    /* Ensure POS specific responsiveness */
+    .pos-main {
+        width: 100% !important;
+        padding-top: 62px !important; /* space for hamburger */
+    }
+
+    .pos-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+    }
+
+    .header-actions {
+        width: 100% !important;
+        flex-wrap: wrap !important;
+        justify-content: flex-start !important;
+    }
+
+    .pos-layout {
+        flex-direction: column !important;
+    }
+
+    .pos-items-area, .pos-cart-area {
+        width: 100% !important;
+        min-width: 100% !important;
+        height: auto !important;
+    }
+    
+    .pos-cart-area {
+        margin-top: 15px;
+    }
+}
+
+/* --- Small mobile: ≤ 480px --- */
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .stat-info {
+        margin-left: 0;
+    }
+
+    .stat-value {
+        font-size: 20px;
+    }
+
+    .quick-actions-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .chart-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .time-range {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+}

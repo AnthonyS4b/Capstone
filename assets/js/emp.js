@@ -1,0 +1,300 @@
+document.addEventListener('DOMContentLoaded', function () {
+        if (phpToastMessage) showToast(phpToastMessage.type, phpToastMessage.title, phpToastMessage.message);
+
+        // Sidebar collapse
+        const sidebar     = document.getElementById('sidebar');
+        const collapseBtn = document.getElementById('collapseBtn');
+        const collapseIcon= document.getElementById('collapseIcon');
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                collapseIcon.classList.toggle('fa-chevron-left');
+                collapseIcon.classList.toggle('fa-chevron-right');
+            });
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                showToast('info', 'Logging Out', 'See you next time!');
+                setTimeout(() => window.location.replace('logout.php'), 500);
+            });
+        }
+
+        // Switch account modal reset on close
+        const switchModal = document.getElementById('switchAccountModal');
+        if (switchModal) {
+            switchModal.addEventListener('hidden.bs.modal', cancelAccountSelection);
+        }
+
+        // Switch account form PIN validation
+        const switchForm = document.getElementById('switchAccountForm');
+        if (switchForm) {
+            switchForm.addEventListener('submit', function (e) {
+                const pin = document.getElementById('accountPin').value;
+                if (!pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
+                    e.preventDefault();
+                    showToast('warning', 'Invalid PIN', 'Please enter a valid 4-digit PIN');
+                }
+            });
+        }
+
+        // Reset receipt modal on close
+        const receiptModal = document.getElementById('receiptModal');
+        if (receiptModal) {
+            receiptModal.addEventListener('hidden.bs.modal', resetReceiptModal);
+        }
+    });
+
+    // Toast 
+    function showToast(type, title, message) {
+        const container = document.getElementById('toastContainer');
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle', info: 'fa-info-circle' };
+        const id   = 'toast-' + Date.now();
+        const icon = icons[type] || 'fa-bell';
+        const bg   = type === 'error' ? 'bg-danger' : 'bg-' + type;
+        container.insertAdjacentHTML('beforeend', `
+            <div id="${id}" class="toast align-items-center text-white ${bg} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body"><i class="fas ${icon} me-2"></i><strong>${title}</strong> ${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+                <div class="toast-timer"></div>
+            </div>`);
+        const el = document.getElementById(id);
+        new bootstrap.Toast(el, { autohide: true, delay: 3000 }).show();
+        el.addEventListener('hidden.bs.toast', () => el.remove());
+    }
+
+    // Switch account helpers 
+    function selectAccount(userId, userName, userRole, currentName, currentRole) {
+        const confirmBox = document.getElementById('switchConfirmStep');
+        const confirmMsg = document.getElementById('switchConfirmMsg');
+
+        confirmMsg.innerHTML =
+            'Would you like to switch from <strong>' + escHtml(currentName + ' (' + currentRole + ')') + '</strong>'
+            + ' to <strong>' + escHtml(userName + ' (' + userRole + ')') + '</strong>?';
+
+        // Store target info for when user confirms
+        confirmBox.dataset.targetId   = userId;
+        confirmBox.dataset.targetName = userName;
+        confirmBox.dataset.targetRole = userRole;
+
+        document.getElementById('accountList').style.display  = 'none';
+        confirmBox.style.display = 'block';
+    }
+
+    function confirmAccountSwitch() {
+        const confirmBox = document.getElementById('switchConfirmStep');
+        const userId   = confirmBox.dataset.targetId;
+        const userName = confirmBox.dataset.targetName;
+        const userRole = confirmBox.dataset.targetRole;
+
+        confirmBox.style.display = 'none';
+
+        document.getElementById('selectedUserId').value            = userId;
+        document.getElementById('selectedAccountName').textContent = userName + ' (' + userRole + ')';
+        document.getElementById('quickLoginForm').style.display    = 'block';
+    }
+
+    function cancelConfirmSwitch() {
+        document.getElementById('switchConfirmStep').style.display = 'none';
+        document.getElementById('accountList').style.display       = 'block';
+    }
+
+    function cancelAccountSelection() {
+        const userId      = document.getElementById('selectedUserId');
+        const pin         = document.getElementById('accountPin');
+        const list        = document.getElementById('accountList');
+        const form        = document.getElementById('quickLoginForm');
+        const confirmBox  = document.getElementById('switchConfirmStep');
+        if (userId)     userId.value = '';
+        if (pin)        pin.value    = '';
+        if (list)       list.style.display       = 'block';
+        if (form)       form.style.display       = 'none';
+        if (confirmBox) confirmBox.style.display = 'none';
+    }
+
+    // ── Change own PIN ─────────────────────────────────────────────────────────
+    function changeOwnPin() {
+        const current = document.getElementById('currentPin')?.value?.trim();
+        const newPin  = document.getElementById('newPinSelf')?.value?.trim();
+        const confirm = document.getElementById('confirmPinSelf')?.value?.trim();
+
+        if (!current || !newPin || !confirm) {
+            showToast('warning', 'Missing Fields', 'Please fill in all three PIN fields.'); return;
+        }
+        if (!/^\d{4}$/.test(current)) {
+            showToast('warning', 'Invalid PIN', 'Current PIN must be exactly 4 digits.'); return;
+        }
+        if (!/^\d{4}$/.test(newPin)) {
+            showToast('warning', 'Invalid PIN', 'New PIN must be exactly 4 digits.'); return;
+        }
+        if (newPin !== confirm) {
+            showToast('warning', 'PIN Mismatch', 'New PIN and confirmation do not match.'); return;
+        }
+        if (current === newPin) {
+            showToast('warning', 'No Change', 'New PIN must be different from your current PIN.'); return;
+        }
+
+        fetch('ajax/user_ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'change_own_pin', current_pin: current, new_pin: newPin })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', 'PIN Changed', 'Your PIN has been updated successfully.');
+                document.getElementById('currentPin').value     = '';
+                document.getElementById('newPinSelf').value     = '';
+                document.getElementById('confirmPinSelf').value = '';
+                const el = document.getElementById('changePinCollapse');
+                if (el) bootstrap.Collapse.getInstance(el)?.hide();
+            } else {
+                showToast('error', 'Error', data.message);
+            }
+        })
+        .catch(() => showToast('error', 'Error', 'Failed to connect to server.'));
+    }
+
+    // ── Receipt modal ──────────────────────────────────────────────────────────
+    function viewReceipt(rawId, trxId) {
+        // Show modal in loading state
+        resetReceiptModal();
+        document.getElementById('receiptTrxId').textContent = trxId;
+        const modal = new bootstrap.Modal(document.getElementById('receiptModal'));
+        modal.show();
+
+        fetch('ajax/transaction_ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ action: 'get_transaction', id: rawId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.data) {
+                renderReceipt(data.data, trxId);
+            } else {
+                showReceiptError(data.message || 'Failed to load receipt.');
+            }
+        })
+        .catch(() => showReceiptError('Network error — could not load receipt.'));
+    }
+
+    function renderReceipt(tx, trxId) {
+        // ── Meta info ──
+        const dateStr = new Date(tx.created_at).toLocaleString('en-PH', {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+
+        const paymentIcon = tx.payment_method === 'gcash' ? 'fa-mobile-alt' : 'fa-money-bill-wave';
+        const paymentLabel = tx.payment_method === 'gcash' ? 'GCash' : 'Cash';
+
+        let metaHTML = `
+            <div class="receipt-meta-row"><span class="receipt-meta-label">Date &amp; Time</span><span class="receipt-meta-value">${dateStr}</span></div>
+            <div class="receipt-meta-row"><span class="receipt-meta-label">Cashier</span><span class="receipt-meta-value">${escHtml(tx.cashier_name || '—')}</span></div>
+            <div class="receipt-meta-row"><span class="receipt-meta-label">Payment</span><span class="receipt-meta-value"><i class="fas ${paymentIcon} me-1"></i>${paymentLabel}</span></div>
+            <div class="receipt-meta-row"><span class="receipt-meta-label">Status</span><span class="receipt-meta-value">${statusBadge(tx.status)}</span></div>`;
+
+        if (tx.payment_method === 'gcash' && tx.gcash_reference) {
+            metaHTML += `<div class="receipt-meta-row"><span class="receipt-meta-label">GCash Ref #</span><span class="receipt-meta-value" style="font-family:monospace;">${escHtml(tx.gcash_reference)}</span></div>`;
+        }
+
+        document.getElementById('receiptMeta').innerHTML = metaHTML;
+
+        // ── Items ──
+        let itemsHTML = '';
+        const items = Array.isArray(tx.items) ? tx.items : [];
+        if (items.length === 0) {
+            itemsHTML = '<div style="color:#94a3b8;font-size:13px;padding:8px 0;">No item details available.</div>';
+        } else {
+            items.forEach(item => {
+                const name     = escHtml(item.product_name || item.name || 'Unknown Product');
+                const qty      = parseInt(item.quantity) || 0;
+                const price    = parseFloat(item.price) || 0;
+                const subtotal = qty * price;
+                itemsHTML += `
+                    <div class="receipt-item-row">
+                        <span class="receipt-item-name">${name}</span>
+                        <span class="receipt-item-qty">×${qty}</span>
+                        <span class="receipt-item-price">₱${fmtMoney(subtotal)}</span>
+                    </div>`;
+            });
+        }
+        document.getElementById('receiptItems').innerHTML = itemsHTML;
+
+        // ── Totals ──
+        const total   = parseFloat(tx.total_amount)  || 0;
+        const paid    = parseFloat(tx.amount_paid)   || 0;
+        const change  = parseFloat(tx.change_amount) || 0;
+
+        let totalsHTML = `
+            <div class="receipt-total-row"><span>Subtotal</span><span>₱${fmtMoney(total)}</span></div>
+            <div class="receipt-total-row grand"><span>Total</span><span class="receipt-grand-value">₱${fmtMoney(total)}</span></div>`;
+
+        if (paid > 0) {
+            totalsHTML += `
+                <div class="receipt-total-row" style="margin-top:8px;padding-top:6px;border-top:1px dashed #e2e8f0;">
+                    <span>Amount Paid</span><span>₱${fmtMoney(paid)}</span>
+                </div>
+                <div class="receipt-total-row"><span>Change</span><span>₱${fmtMoney(change)}</span></div>`;
+        }
+
+        document.getElementById('receiptTotals').innerHTML = totalsHTML;
+
+        // ── Notes ──
+        if (tx.notes && tx.notes.trim()) {
+            document.getElementById('receiptNotesText').textContent = tx.notes;
+            document.getElementById('receiptNotes').style.display = 'block';
+        }
+
+        // Show content, hide loader, show footer
+        document.getElementById('receiptLoading').style.display  = 'none';
+        document.getElementById('receiptContent').style.display  = 'block';
+        document.getElementById('receiptFooter').style.display   = 'flex';
+    }
+
+    function showReceiptError(msg) {
+        document.getElementById('receiptLoading').style.display = 'none';
+        document.getElementById('receiptErrorMsg').textContent  = msg;
+        document.getElementById('receiptError').style.display   = 'block';
+    }
+
+    function resetReceiptModal() {
+        document.getElementById('receiptTrxId').textContent    = '—';
+        document.getElementById('receiptLoading').style.display = 'flex';
+        document.getElementById('receiptContent').style.display = 'none';
+        document.getElementById('receiptError').style.display   = 'none';
+        document.getElementById('receiptFooter').style.display  = 'none';
+        document.getElementById('receiptMeta').innerHTML        = '';
+        document.getElementById('receiptItems').innerHTML       = '';
+        document.getElementById('receiptTotals').innerHTML      = '';
+        document.getElementById('receiptNotes').style.display   = 'none';
+        document.getElementById('receiptNotesText').textContent = '';
+    }
+
+    function printReceipt() {
+        window.print();
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function fmtMoney(n) {
+        return parseFloat(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function statusBadge(status) {
+        const map = {
+            completed : '<span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>Completed</span>',
+            voided    : '<span style="color:#dc2626;font-weight:600;"><i class="fas fa-ban me-1"></i>Voided</span>',
+            pending   : '<span style="color:#d97706;font-weight:600;"><i class="fas fa-clock me-1"></i>Pending</span>',
+        };
+        return map[status] || `<span>${escHtml(status)}</span>`;
+    }

@@ -1,0 +1,969 @@
+// ═══════════════════════════════════════════════════════════════════
+//  Reco.js – Recommendation Engine Frontend
+//  Risk-level-driven strategies, proper profit analysis, date tracking
+// ═══════════════════════════════════════════════════════════════════
+
+const API_URL = 'ajax/ml_recommendation_ajax.php';
+let allRecommendations = [];
+let currentFilter = 'all';
+let forecastChart = null;
+
+// ═══════════ INIT ═══════════
+
+$(document).ready(function () {
+    loadRecommendations();
+    checkApiHealth();
+    wireEvents();
+});
+
+function wireEvents() {
+    // Filter buttons
+    $(document).on('click', '.filter-btn', function () {
+        $('.filter-btn').removeClass('active');
+        $(this).addClass('active');
+        currentFilter = $(this).data('filter');
+        renderCards(filterRecommendations(allRecommendations, currentFilter));
+    });
+
+    // Search
+    $('#searchBox').on('input', function () {
+        const q = $(this).val().toLowerCase();
+        const filtered = filterRecommendations(allRecommendations, currentFilter)
+            .filter(r => r.product_name.toLowerCase().includes(q));
+        renderCards(filtered);
+    });
+
+    // Sidebar recommendation button
+    $('#recommendationBtn').on('click', () => window.location.href = 'reco.php');
+
+    // Logout
+    $('#logoutBtn').on('click', function (e) {
+        e.preventDefault();
+        if (confirm('Are you sure you want to log out?')) window.location.replace('logout.php');
+    });
+
+    // Sidebar collapse
+    $('#collapseBtn').on('click', function () {
+        document.getElementById('sidebar')?.classList.toggle('collapsed');
+        document.getElementById('collapseIcon')?.classList.toggle('fa-chevron-right');
+    });
+
+    // Train model
+    $('#trainModelBtn').on('click', trainModel);
+
+    // Clean up chart on modal close
+    $('#forecastModal').on('hidden.bs.modal', function () {
+        if (forecastChart) { forecastChart.destroy(); forecastChart = null; }
+    });
+
+    // Forecast modal "Apply Strategy" footer button
+    $(document).on('click', '.btn-modal-apply', function () {
+        if (_currentApplyRec) {
+            // Close forecast modal first, then open apply modal
+            bootstrap.Modal.getInstance(document.getElementById('forecastModal'))?.hide();
+            setTimeout(() => openApplyModal(_currentApplyRec), 300);
+        }
+    });
+}
+
+// ═══════════ DATA LOADING ═══════════
+
+function loadRecommendations() {
+    $.ajax({
+        url: API_URL,
+        data: { action: 'get_all_recommendations', limit: 50 },
+        dataType: 'json',
+        success(res) {
+            if (res.success && res.recommendations) {
+                allRecommendations = res.recommendations;
+                updateStats(allRecommendations);
+                renderCards(allRecommendations);
+            } else {
+                showEmptyState('No recommendations available', 'All products are performing well.');
+            }
+        },
+        error() {
+            showEmptyState(
+                'Recommendation Engine Offline',
+                'Start the server with: python ml/api_server.py'
+            );
+        },
+    });
+}
+
+function checkApiHealth() {
+    $.ajax({
+        url: API_URL,
+        data: { action: 'health_check' },
+        dataType: 'json',
+        success(res) {
+            const dot = document.querySelector('.status-dot');
+            const label = document.querySelector('.api-status');
+            if (dot) dot.classList.toggle('connected', res.success);
+            if (label) label.textContent = res.success ? 'Connected' : 'Disconnected';
+        },
+        error() {
+            const dot = document.querySelector('.status-dot');
+            const label = document.querySelector('.api-status');
+            if (dot) dot.classList.remove('connected');
+            if (label) label.textContent = 'Disconnected';
+        },
+    });
+}
+
+function trainModel() {
+    const btn = $('#trainModelBtn');
+    const originalHtml = btn.html();
+    btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin me-2"></i>Updating...');
+    
+    $.ajax({
+        url: API_URL,
+        method: 'POST',
+        data: { action: 'train_model' },
+        dataType: 'json',
+        success(res) {
+            showToast(res.success ? 'success' : 'error', res.success ? 'Done' : 'Error', res.message || '');
+            if (res.success) loadRecommendations();
+        },
+        error() { showToast('error', 'Error', 'Failed to update analysis'); },
+        complete() { 
+            btn.prop('disabled', false).html('<i class="fas fa-sync-alt me-2"></i>Update Analysis'); 
+        },
+    });
+}
+
+// ═══════════ STATS ═══════════
+
+function updateStats(recs) {
+    const slow = recs.filter(r => r.is_slow_moving).length;
+    const revenue = recs.reduce((s, r) => s + (r.potential_revenue || 0), 0);
+    const avgDays = recs.length
+        ? Math.round(recs.reduce((s, r) => s + (r.days_in_stock || r.days_until_expiry || 0), 0) / recs.length)
+        : 0;
+    const avgConf = recs.length
+        ? Math.round(recs.reduce((s, r) => s + (r.confidence || 0.65) * 100, 0) / recs.length)
+        : 80;
+
+    $('#slowMovingCount').text(slow);
+    $('#potentialRevenue').text('₱' + revenue.toLocaleString('en-PH', { minimumFractionDigits: 0 }));
+    $('#avgShelfLife').text(avgDays + ' days');
+    $('#confidenceScore').text(avgConf + '%');
+}
+
+// ═══════════ FILTER ═══════════
+
+function filterRecommendations(recs, filter) {
+    if (filter === 'all') return recs;
+    if (filter === 'critical') return recs.filter(r => r.risk_level === 'CRITICAL');
+    if (filter === 'slow') return recs.filter(r => r.is_slow_moving);
+    if (filter === 'monitor') return recs.filter(r => r.risk_level === 'MONITOR');
+    if (filter === 'warning') return recs.filter(r => r.risk_level === 'WARNING');
+    return recs;
+}
+
+// ═══════════ RENDER CARDS ═══════════
+
+function renderCards(recs) {
+    const c = document.getElementById('recommendationsContainer');
+    if (!c) return;
+
+    if (!recs.length) {
+        showEmptyState('No items match this filter', 'Try a different filter or search term.');
+        return;
+    }
+
+    c.innerHTML = recs.map(r => buildCard(r)).join('');
+}
+
+function buildCard(r) {
+    const strategy = r.strategies?.[0] || {};
+    const riskClass = (r.risk_level || 'LOW').toLowerCase();
+    const daysInStock = r.days_in_stock || 0;
+    const monthly = Math.round(r.monthly_sales || 0);
+    const stock = r.current_stock || 0;
+    const price = r.current_price || 0;
+    const costPrice = r.cost_price || 0;
+    const category = r.category || 'General';
+    const isMonitor = r.risk_level === 'MONITOR';
+
+    // Days metrics coloring (90+ Critical, 50+ Warning)
+    const daysClass = daysInStock >= 90 ? 'critical' : daysInStock >= 50 ? 'warning' : '';
+    const stockClass = stock <= 5 ? 'critical' : stock <= 15 ? 'warning' : '';
+
+    // Expiry Warning Alert (New)
+    let expiryAlertHTML = '';
+    if (r.is_critical_expiry && r.expiration_date) {
+        const dateObj = new Date(r.expiration_date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        expiryAlertHTML = `
+            <div class="expiry-alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>EXPIRY ALERT</strong>: This product is set to expire on <strong>${formattedDate}</strong>. 
+                     Nearly Expired Items have higher priority than Days in Stocks.
+                </div>
+            </div>
+        `;
+    }
+
+    // Strategy section: show monitor message for MONITOR items
+    let strategyHTML = '';
+    if (isMonitor && r.monitor_message) {
+        strategyHTML = `
+            <div class="strategy-section monitor-strategy">
+            <div class="strategy-header">
+                <span class="strategy-name">Weekly Monitoring</span>
+            </div>
+            <div class="strategy-description">${esc(r.monitor_message)}</div>
+        </div>`;
+    } else if (strategy.strategy_name) {
+        const isBogo = strategy.strategy_id === 'buy_one_take_one' || strategy.strategy_name.toLowerCase().includes('buy 1 take 1');
+        const badgeHTML = isBogo 
+            ? `<span class="discount-pill bogo-pill" style="background:var(--accent);color:white;">Buy 1 Take 1</span>` 
+            : (strategy.recommended_discount > 0 ? `<span class="discount-pill">${Math.round(strategy.recommended_discount)}% off</span>` : '');
+            
+        strategyHTML = `
+        <div class="strategy-section">
+            <div class="strategy-header">
+                <span class="strategy-name">${esc(strategy.strategy_name)}</span>
+                ${badgeHTML}
+            </div>
+            <div class="strategy-description">
+                ${strategy.expected_impact_min && strategy.expected_impact_max
+                    ? `Expected ${strategy.expected_impact_min}–${strategy.expected_impact_max}% sales uplift over ${strategy.duration_days} days`
+                    : 'Strategy recommended for this product'}
+            </div>
+        </div>`;
+    }
+
+    return `
+    <div class="product-card" data-risk="${riskClass}" data-slow="${r.is_slow_moving}">
+        <div class="card-top-bar">
+            <span class="badge-priority badge-${riskClass}">${r.risk_level}</span>
+            <span class="badge-risk badge-risk-${riskClass}">${Math.round(r.risk_score * 100)}% Risk</span>
+        </div>
+
+        <div class="product-header">
+            <div class="product-info">
+                <h4>${esc(r.product_name)}</h4>
+                <span class="product-category">${esc(category)}</span>
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metric-item">
+                <div class="metric-label">Days in Stock</div>
+                <div class="metric-value ${daysClass}">${daysInStock}</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-label">Monthly Sales</div>
+                <div class="metric-value">${monthly}</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-label">Total Sold</div>
+                <div class="metric-value">${r.total_sold_90d || 0}</div>
+            </div>
+        </div>
+
+        <div class="smart-insights">
+            <div class="insight-row">
+                <span class="insight-label">Selling Price</span>
+                <span class="insight-value">₱${price.toFixed(2)}</span>
+            </div>
+            <div class="insight-row">
+                <span class="insight-label">Current Stock</span>
+                <span class="insight-value ${stockClass}">${stock} units</span>
+            </div>
+        </div>
+
+        ${expiryAlertHTML}
+        ${strategyHTML}
+
+        <div class="action-buttons">
+            <button class="btn-action btn-forecast" onclick='openForecastModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'> 
+                View Details
+            </button>
+            <button class="btn-action btn-apply" onclick='openApplyModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'> 
+                Apply Strategy
+            </button>
+        </div>
+    </div>`;
+}
+
+function showEmptyState(title, msg) {
+    const c = document.getElementById('recommendationsContainer');
+    if (c) {
+        c.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+                <h3>${esc(title)}</h3>
+                <p>${esc(msg)}</p>
+            </div>`;
+    }
+}
+
+// ═══════════ FORECAST MODAL (4 tabs) ═══════════
+
+function openForecastModal(rec) {
+    _currentApplyRec = rec; // Store for the Apply Strategy footer button
+    const modal = new bootstrap.Modal(document.getElementById('forecastModal'));
+    const content = document.getElementById('forecastContent');
+    if (!content) return;
+
+    const strategy = rec.strategies?.[0] || {};
+    const price = rec.current_price || 0;
+    const costPrice = rec.cost_price || price * 0.7;
+    const stock = rec.current_stock || 0;
+    const monthly = rec.monthly_sales || 0;
+    const daysInStock = rec.days_in_stock || 0;
+    const discount = strategy.recommended_discount || 0;
+    const discountedPrice = price * (1 - discount / 100);
+    const riskClass = (rec.risk_level || 'LOW').toLowerCase();
+    const confidence = rec.confidence || 0.65;
+
+    // Forecast calculations — use predicted_monthly_sales if available
+    const baseSales = rec.predicted_monthly_sales || monthly || Math.max(0.5, stock * 0.1);
+    const uplift = strategy.expected_impact_min ? (strategy.expected_impact_min + strategy.expected_impact_max) / 200 : 0.2;
+    const m1 = Math.max(1, Math.round(baseSales * (1 + uplift)));
+    const m2 = Math.max(1, Math.round(baseSales * (1 + uplift * 0.7)));
+    const m3 = Math.max(1, Math.round(baseSales * (1 + uplift * 0.4)));
+    const m1_no = Math.max(0, Math.round(monthly));
+    const m2_no = Math.max(0, Math.round(monthly * 0.95));
+    const m3_no = Math.max(0, Math.round(monthly * 0.9));
+
+    // Month labels
+    const now = new Date();
+    const months = [];
+    for (let i = 1; i <= 3; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        months.push(d.toLocaleString('en', { month: 'short', year: 'numeric' }));
+    }
+
+    content.innerHTML = `
+        <div class="forecast-header-info">
+            <h4>${esc(rec.product_name)} <span class="badge-priority badge-${riskClass}">${rec.risk_level}</span></h4>
+            <p class="forecast-subtitle">${esc(rec.category || 'General')} · ₱${price.toFixed(2)} · ${stock} units in stock</p>
+        </div>
+
+        <ul class="forecast-tabs" id="forecastTabs">
+            <li class="forecast-tab active" data-tab="forecast">Forecast</li>
+            <li class="forecast-tab" data-tab="strategy">Marketing Strategy</li>
+            <li class="forecast-tab" data-tab="profit">Profit Analysis</li>
+            <li class="forecast-tab" data-tab="details">Prediction Details</li>
+        </ul>
+
+        <!-- TAB 1: Forecast -->
+        <div class="forecast-tab-content active" id="tab-forecast">
+            <div class="chart-title">3-Month Sales Projection: With Strategy vs No Action</div>
+            <div class="chart-container">
+                <canvas id="forecastChart"></canvas>
+            </div>
+            <div class="forecast-legend">
+                <div class="legend-item"><span class="legend-line solid"></span> With Strategy</div>
+                <div class="legend-item"><span class="legend-line dashed"></span> No Action</div>
+            </div>
+            <div class="month-boxes">
+                ${[0,1,2].map(i => {
+                    const withS = [m1, m2, m3][i];
+                    const noS = [m1_no, m2_no, m3_no][i];
+                    const change = noS > 0 ? Math.round(((withS - noS) / noS) * 100) : (withS > 0 ? 100 : 0);
+                    return `
+                    <div class="month-box">
+                        <div class="month-label">${months[i]}</div>
+                        <div class="month-value">${withS} units</div>
+                        <div class="month-change positive">+${change}% vs no action</div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>
+
+        <!-- TAB 2: Marketing Strategy -->
+        <div class="forecast-tab-content" id="tab-strategy">
+            ${buildStrategyTab(rec)}
+        </div>
+
+        <!-- TAB 3: Profit Analysis -->
+        <div class="forecast-tab-content" id="tab-profit">
+            ${buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months)}
+        </div>
+
+        <!-- TAB 4: Prediction Details -->
+        <div class="forecast-tab-content" id="tab-details">
+            ${buildDetailsTab(rec)}
+        </div>
+    `;
+
+    // Wire tab clicks
+    content.querySelectorAll('.forecast-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            content.querySelectorAll('.forecast-tab').forEach(t => t.classList.remove('active'));
+            content.querySelectorAll('.forecast-tab-content').forEach(tc => tc.classList.remove('active'));
+            this.classList.add('active');
+            const target = document.getElementById('tab-' + this.dataset.tab);
+            if (target) target.classList.add('active');
+        });
+    });
+
+    modal.show();
+
+    // Render chart after modal is visible
+    setTimeout(() => renderForecastChart(months, [m1, m2, m3], [m1_no, m2_no, m3_no]), 300);
+}
+
+// ═══════════ TAB 2: MARKETING STRATEGY ═══════════
+
+function buildStrategyTab(rec) {
+    const strategies = rec.strategies || [];
+    const isMonitor = rec.risk_level === 'MONITOR';
+    const daysInStock = rec.days_in_stock || 0;
+    const monthly = Math.round(rec.monthly_sales || 0);
+    const price = rec.current_price || 0;
+    const confidence = Math.round((rec.confidence || 0.65) * 100);
+
+    // Show only 2 strategies max
+    const displayStrategies = strategies.slice(0, 2);
+
+    if (!displayStrategies.length && !isMonitor) {
+        return '<div class="detail-card"><p>No strategies available for this product.</p></div>';
+    }
+
+    let html = `
+        <div class="strategy-plan-header">
+            <h5 class="actions-title">Strategy Plan</h5>
+            <div class="strategy-context">
+                <span class="ctx-pill">${daysInStock} days in stock</span>
+                <span class="ctx-pill">${monthly} units/mo sales</span>
+                <span class="ctx-pill">₱${price.toFixed(2)} price</span>
+                <span class="ctx-pill">${confidence}% confidence</span>
+            </div>
+        </div>
+    `;
+
+    // For MONITOR products, show the monitoring message prominently
+    if (isMonitor && rec.monitor_message) {
+        html += `
+        <div class="monitor-advisory-box">
+            <div class="monitor-advisory-header">
+                <span class="monitor-icon">📊</span>
+                <strong>Status: Normal Performance</strong>
+            </div>
+            <p class="monitor-advisory-text">${esc(rec.monitor_message)}</p>
+        </div>`;
+    }
+
+    displayStrategies.forEach((s, idx) => {
+        const priorityLabel = idx === 0 ? 'HIGH PRIORITY' : 'MEDIUM';
+        const priorityClass = idx === 0 ? 'high' : 'medium';
+
+        // For MONITOR items, adjust labels
+        let displayPriorityLabel = priorityLabel;
+        let displayPriorityClass = priorityClass;
+        if (isMonitor) {
+            displayPriorityLabel = idx === 0 ? 'LOW PRIORITY' : 'OPTIONAL';
+            displayPriorityClass = 'low';
+        }
+
+        const steps = s.implementation_steps || [];
+        const impactRange = `${s.expected_impact_min || 0}–${s.expected_impact_max || 0}%`;
+        const isBogo = s.strategy_id === 'buy_one_take_one' || s.strategy_name.toLowerCase().includes('buy 1 take 1');
+        const discountTagHTML = isBogo 
+            ? `<div class="strategy-discount-tag" style="background:rgba(139,92,246,0.1);color:var(--accent);font-weight:600;">Buy 1 Take 1 · ${s.duration_days} days</div>`
+            : (s.recommended_discount > 0 ? `<div class="strategy-discount-tag">${Math.round(s.recommended_discount)}% discount · ${s.duration_days} days</div>` : `<div class="strategy-discount-tag">${s.duration_days} day campaign</div>`);
+
+        html += `
+        <div class="strategy-plan-card ${idx === 0 ? 'primary' : ''}">
+            <div class="strategy-plan-top">
+                <div class="strategy-plan-rank">${idx + 1}</div>
+                <div class="strategy-plan-info">
+                    <div class="strategy-plan-name">
+                        ${esc(s.strategy_name)}
+                        <span class="priority-badge priority-${displayPriorityClass}">${displayPriorityLabel}</span>
+                    </div>
+                    ${discountTagHTML}
+                </div>
+            </div>
+
+            ${s.why_it_works ? `
+            <div class="strategy-why">
+                <strong>Why this works:</strong> ${esc(s.why_it_works)}
+            </div>` : ''}
+
+            ${steps.length ? `
+            <div class="strategy-steps">
+                <div class="steps-title">Action Plan:</div>
+                <ol class="steps-list">
+                    ${steps.map(step => `<li>${esc(step)}</li>`).join('')}
+                </ol>
+            </div>` : ''}
+
+            <div class="strategy-impact">
+                <span class="impact-label">Expected Impact:</span>
+                <span class="impact-value">${impactRange} sales uplift</span>
+            </div>
+        </div>`;
+    });
+
+    return html;
+}
+
+// ═══════════ TAB 3: PROFIT ANALYSIS ═══════════
+
+function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
+    const price = rec.current_price || 0;
+    const costPrice = rec.cost_price || (price * 0.6); // estimate 60% if not on record
+    const costIsEstimated = !rec.cost_price || rec.cost_price === 0;
+    const stock = rec.current_stock || 0;
+    const strategy = rec.strategies?.[0] || {};
+    const discount = Math.round(strategy.recommended_discount || 0);
+    const isBogo = strategy.strategy_id === 'buy_one_take_one' || (strategy.strategy_name || '').toLowerCase().includes('buy 1 take 1');
+    const effectiveDiscount = isBogo ? 50 : discount;
+    const discountedPrice = price * (1 - effectiveDiscount / 100);
+
+    // Margins
+    const currentMargin = price - costPrice;
+    const currentMarginPct = price > 0 ? ((currentMargin / price) * 100).toFixed(1) : 0;
+    const discountMargin = discountedPrice - costPrice;
+    const discountMarginPct = discountedPrice > 0 ? ((discountMargin / discountedPrice) * 100).toFixed(1) : 0;
+    const profitPerUnitAtDiscount = discountedPrice - costPrice;
+
+    // Profitability verdict
+    let verdictClass, verdictIcon, verdictTitle, verdictText;
+    if (profitPerUnitAtDiscount <= 0) {
+        verdictClass = 'not-profitable';
+        verdictIcon = '🚫';
+        verdictTitle = 'NOT PROFITABLE — Reconsider Discount';
+        verdictText = `At ₱${discountedPrice.toFixed(2)}, each unit sold loses ₱${Math.abs(profitPerUnitAtDiscount).toFixed(2)}. Consider reducing the discount or bundling instead.`;
+    } else if (discountMarginPct < 15) {
+        verdictClass = 'marginally-profitable';
+        verdictIcon = '📊';
+        verdictTitle = 'MARGINALLY PROFITABLE — Proceed with Care';
+        verdictText = `The discount reduces unit profit from ₱${currentMargin.toFixed(2)} to ₱${profitPerUnitAtDiscount.toFixed(2)}, but increased volume could compensate. Monitor closely and adjust if needed.`;
+    } else {
+        verdictClass = 'profitable';
+        verdictIcon = '✅';
+        verdictTitle = 'PROFITABLE — Good to Apply';
+        verdictText = isBogo 
+            ? `Even with a Buy 1 Take 1 deal, each unit earns ₱${profitPerUnitAtDiscount.toFixed(2)} profit. The deal should drive healthy volume.`
+            : `Even at ${discount}% off, each unit earns ₱${profitPerUnitAtDiscount.toFixed(2)} profit (${discountMarginPct}% margin). The discount should drive healthy volume.`;
+    }
+
+    // Month-by-month scenarios
+    const scenarioLabel = isBogo ? 'Buy 1 Take 1' : `${discount}% Discount`;
+    const scenarios = [
+        { label: 'No Action (Current)', units: Math.max(1, Math.round(rec.monthly_sales || 1)), unitPrice: price, cost: costPrice, isBaseline: true },
+        { label: `${scenarioLabel} — Month 1`, units: m1, unitPrice: discountedPrice, cost: costPrice },
+        { label: `${scenarioLabel} — Month 2`, units: m2, unitPrice: discountedPrice, cost: costPrice },
+        { label: `${scenarioLabel} — Month 3`, units: m3, unitPrice: discountedPrice, cost: costPrice },
+    ];
+
+    // Stock value impact
+    const currentValue = stock * price;
+    const discountedValue = stock * discountedPrice;
+    const valueConceded = currentValue - discountedValue;
+    const holdingCostMonthly = currentValue * 0.02; // ~2% of inventory value
+    const breakEvenUnits = profitPerUnitAtDiscount > 0 ? Math.ceil(costPrice / profitPerUnitAtDiscount) : 0;
+
+    return `
+        <div class="price-boxes">
+            <div class="price-box">
+                <div class="price-box-label">CURRENT PRICE</div>
+                <div class="price-box-value">₱${price.toFixed(2)}</div>
+                <div class="price-box-sub">Margin: ${currentMarginPct}%</div>
+            </div>
+            <div class="price-box highlight">
+                <div class="price-box-label">${isBogo ? 'BUY 1 TAKE 1 EFFECTIVE PRICE' : `DISCOUNTED PRICE (${discount}% OFF)`}</div>
+                <div class="price-box-value">₱${discountedPrice.toFixed(2)}</div>
+                <div class="price-box-sub">Margin: ${discountMarginPct}%</div>
+            </div>
+            <div class="price-box cost-box">
+                <div class="price-box-label">ESTIMATED UNIT COST</div>
+                <div class="price-box-value">₱${costPrice.toFixed(2)}</div>
+                <div class="price-box-sub">Profit/unit at discount: ₱${profitPerUnitAtDiscount.toFixed(2)}</div>
+            </div>
+        </div>
+
+        <div class="profitability-banner ${verdictClass}">
+            <div class="verdict-icon">${verdictIcon}</div>
+            <div class="verdict-body">
+                <strong>${verdictTitle}</strong>
+                <div class="verdict-text">${verdictText}</div>
+            </div>
+        </div>
+
+        <h6 class="section-subtitle">📅 Month-by-Month Profit Projection</h6>
+        <div class="table-responsive">
+            <table class="profit-table">
+                <thead>
+                    <tr>
+                        <th>SCENARIO</th>
+                        <th>UNITS SOLD</th>
+                        <th>REVENUE</th>
+                        <th>TOTAL COST</th>
+                        <th>NET PROFIT</th>
+                        <th>VERDICT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${scenarios.map(s => {
+                        const rev = s.units * s.unitPrice;
+                        const tc = s.units * s.cost;
+                        const net = rev - tc;
+                        const isProfit = net > 0;
+                        const verdictLabel = isProfit ? 'OK' : 'Loss';
+                        const verdictBadge = isProfit
+                            ? `<span class="verdict-good">✅ ${s.isBaseline ? 'Profitable' : verdictLabel}</span>`
+                            : `<span class="verdict-bad">❌ ${verdictLabel}</span>`;
+                        return `<tr${s.isBaseline ? ' class="baseline-row"' : ''}>
+                            <td>${s.label}</td>
+                            <td>${s.units}</td>
+                            <td>₱${rev.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                            <td>₱${tc.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                            <td class="${isProfit ? 'text-profit' : 'text-loss'}">₱${net.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                            <td>${verdictBadge}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
+
+        <h6 class="section-subtitle">📦 Stock Value Impact</h6>
+        <div class="table-responsive">
+            <table class="profit-table stock-impact-table">
+                <thead>
+                    <tr>
+                        <th>METRIC</th>
+                        <th>VALUE</th>
+                        <th>NOTES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Current Stock Value (at full price)</td>
+                        <td class="text-profit">₱${currentValue.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>${stock} units × ₱${price.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                    <tr>
+                        <td>Stock Value at Discounted Price</td>
+                        <td class="text-profit">₱${discountedValue.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>${stock} units × ₱${discountedPrice.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                    <tr>
+                        <td>Value Conceded by Discount</td>
+                        <td class="text-loss">-₱${valueConceded.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>This is the "cost" of the discount to clear stock</td>
+                    </tr>
+                    <tr>
+                        <td>Cost of Holding Stock (monthly, est.)</td>
+                        <td class="text-loss">-₱${holdingCostMonthly.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>~2% of inventory value (storage + opportunity cost)</td>
+                    </tr>
+                    ${breakEvenUnits > 0 ? `<tr>
+                        <td>Break-even Units at Discounted Price</td>
+                        <td style="color:#3b82f6;font-weight:700;">${breakEvenUnits} units</td>
+                        <td>Minimum units to sell to recover unit cost</td>
+                    </tr>` : ''}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="profit-note">
+            <strong>ℹ Note:</strong> Cost is estimated at 60% of selling price if not on record. For exact calculations, update the <u>cost</u> field in your products table.
+            Holding cost is estimated at 2%/month of inventory value (covers storage, capital lock-up, and spoilage risk).
+        </div>
+    `;
+}
+
+// ═══════════ TAB 4: PREDICTION DETAILS ═══════════
+
+function buildDetailsTab(rec) {
+    const confidence = Math.round((rec.confidence || 0.65) * 100);
+    const strategy = rec.strategies?.[0] || {};
+    const discount = strategy.recommended_discount || 0;
+    const riskScore = Math.round((rec.risk_score || 0) * 100);
+    const daysInStock = rec.days_in_stock || 0;
+    const monthly = rec.monthly_sales || 0;
+    const stock = rec.current_stock || 0;
+    const historyCount = rec.history_count || 0;
+
+    // Format date_added
+    let dateAddedDisplay = 'N/A';
+    if (rec.date_added) {
+        try {
+            const d = new Date(rec.date_added);
+            dateAddedDisplay = d.toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch (e) {
+            dateAddedDisplay = rec.date_added;
+        }
+    }
+
+    // Determine age status
+    let ageStatus = 'Fresh';
+    let ageColor = '#10b981';
+    if (daysInStock > 90) { ageStatus = 'Aging'; ageColor = '#ef4444'; }
+    else if (daysInStock > 60) { ageStatus = 'Moderate'; ageColor = '#f59e0b'; }
+    else if (daysInStock > 30) { ageStatus = 'Normal'; ageColor = '#3b82f6'; }
+
+    // Feature importance (based on actual product data)
+    const features = [
+        { name: 'Days in stock', value: Math.min(100, (daysInStock / 120) * 100), color: '#ef4444' },
+        { name: 'Monthly sales velocity', value: Math.min(100, Math.max(5, 100 - monthly * 5)), color: '#f59e0b' },
+        { name: 'Current stock level', value: Math.min(100, (stock / 50) * 100), color: '#3b82f6' },
+        { name: 'Seasonal demand factor', value: 35, color: '#8b5cf6' },
+        { name: 'Price point sensitivity', value: 25, color: '#10b981' },
+    ];
+
+    // Key insight based on risk level
+    let keyInsight = '';
+    if (rec.risk_level === 'CRITICAL') {
+        if (rec.is_critical_expiry) {
+            keyInsight = `This product has critical expiry urgency. The model heavily weights the ${rec.days_until_expiry} days until expiration, recommending immediate action to avoid spoilage losses.`;
+        } else {
+            keyInsight = `This product has critical risk indicators. Very low sales velocity (${monthly.toFixed(1)} units/month) combined with ${daysInStock} days in stock signals an urgent need for clearance strategies.`;
+        }
+    } else if (rec.risk_level === 'WARNING') {
+        keyInsight = `Sales velocity of ${monthly.toFixed(1)} units/month is below the threshold. The model identifies days in stock (${daysInStock} days) as the primary risk driver, suggesting promotional intervention.`;
+    } else if (rec.risk_level === 'MONITOR') {
+        keyInsight = `This product shows moderate risk indicators but is performing within acceptable bounds. Regular monitoring is recommended to catch early signs of decline.`;
+    } else {
+        keyInsight = `This product shows moderate risk indicators. The model balances stock age, sales velocity, and inventory levels to generate this recommendation.`;
+    }
+
+    return `
+        <h6 class="section-subtitle">Model Metrics</h6>
+        <div class="detail-card">
+            <div class="detail-row"><span>Model Type</span> <strong>Random Forest Regressor + Data History</strong></div>
+            <div class="detail-row"><span>Confidence Score</span> <strong>${confidence}%</strong></div>
+            <div class="detail-row"><span>Risk Priority Score</span> <strong>${riskScore}%</strong></div>
+            <div class="detail-row"><span>Days in Stock</span> <strong>${daysInStock} days</strong></div>
+            <div class="detail-row"><span>Date Added</span> <strong>${dateAddedDisplay}</strong></div>
+            <div class="detail-row"><span>Historical Strategies Applied</span> <strong>${historyCount}</strong></div>
+        </div>
+
+        <h6 class="section-subtitle">What Influences This Prediction?</h6>
+        <div class="detail-card">
+            ${features.map(f => `
+                <div class="feature-row">
+                    <div class="feature-name">${f.name}</div>
+                    <div class="feature-bar-wrap">
+                        <div class="feature-bar" style="width:${f.value.toFixed(0)}%; background:${f.color}"></div>
+                    </div>
+                    <div class="feature-pct">${f.value.toFixed(0)}%</div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// ═══════════ CHART ═══════════
+
+function renderForecastChart(labels, withStrategy, noAction) {
+    const canvas = document.getElementById('forecastChart');
+    if (!canvas) return;
+
+    if (forecastChart) { forecastChart.destroy(); forecastChart = null; }
+
+    const ctx = canvas.getContext('2d');
+    forecastChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Current', ...labels],
+            datasets: [
+                {
+                    label: 'With Strategy',
+                    data: [withStrategy[0] * 0.85, ...withStrategy],
+                    borderColor: '#2c5530',
+                    backgroundColor: 'rgba(44,85,48,0.08)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#2c5530',
+                },
+                {
+                    label: 'No Action',
+                    data: [noAction[0], ...noAction],
+                    borderColor: '#94a3b8',
+                    borderDash: [6, 4],
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#94a3b8',
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} units`,
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Projected Units Sold', font: { size: 12 } },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                },
+                x: {
+                    grid: { display: false },
+                },
+            },
+        },
+    });
+}
+
+// ═══════════ APPLY STRATEGY MODAL ═══════════
+
+let _currentApplyRec = null; // Store current rec for forecast modal button
+
+function openApplyModal(rec) {
+    _currentApplyRec = rec;
+    const modal = new bootstrap.Modal(document.getElementById('applyModal'));
+    const content = document.getElementById('applyContent');
+    if (!content) return;
+
+    const strategies = rec.strategies || [];
+
+    if (!strategies.length) {
+        content.innerHTML = `<div class="text-center text-muted py-4">
+            <i class="fas fa-info-circle fa-2x mb-2"></i>
+            <p>No applicable strategies for this product.</p>
+        </div>`;
+        const confirmBtn = document.getElementById('confirmApplyBtn');
+        if (confirmBtn) confirmBtn.style.display = 'none';
+        modal.show();
+        return;
+    }
+
+    content.innerHTML = `
+        <h6>Select a strategy to apply for <strong>${esc(rec.product_name)}</strong>:</h6>
+        <p class="text-muted small mb-3">Current price: ₱${(rec.current_price || 0).toFixed(2)}</p>
+        <div class="strategies-list">
+            ${strategies.map((s, i) => {
+                const isBogo = s.strategy_id === 'buy_one_take_one' || (s.strategy_name || '').toLowerCase().includes('buy 1 take 1');
+                const badgeHTML = isBogo 
+                    ? `<span class="discount-pill bogo-pill" style="background:var(--accent);color:white;">Buy 1 Take 1</span>` 
+                    : (s.recommended_discount > 0 ? `<span class="discount-pill">${Math.round(s.recommended_discount)}% off</span>` : '');
+                const effectiveDiscount = isBogo ? 50 : s.recommended_discount;
+                const optionPrice = isBogo ? ((rec.current_price || 0) * 0.5) : ((rec.current_price || 0) * (1 - s.recommended_discount / 100));
+
+                return `
+                <div class="strategy-option ${i === 0 ? 'selected' : ''}" data-strategy="${s.strategy_id}" data-discount="${effectiveDiscount}" data-name="${esc(s.strategy_name)}" onclick="selectStrategy(this)">
+                    <div class="strategy-option-header">
+                        <strong>${esc(s.strategy_name)}</strong>
+                        ${badgeHTML}
+                    </div>
+                    <div class="strategy-option-details">
+                        <span>Duration: ${s.duration_days} days</span>
+                        <span>Impact: ${s.expected_impact_min}–${s.expected_impact_max}%</span>
+                    </div>
+                    ${s.recommended_discount > 0 || isBogo ? `<div class="strategy-option-price text-muted small mt-1">${isBogo ? 'Effective price/unit' : 'New price'}: ₱${optionPrice.toFixed(2)}</div>` : ''}
+                </div>
+                `;
+            }).join('')}
+        </div>
+        <div class="mt-3">
+            <label class="form-label">Notes (optional)</label>
+            <textarea class="form-control" id="strategyNotes" rows="2" placeholder="Add notes about this strategy application..."></textarea>
+        </div>
+    `;
+
+    // Wire confirm button
+    const confirmBtn = document.getElementById('confirmApplyBtn');
+    if (confirmBtn) {
+        confirmBtn.style.display = '';
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = 'Apply Strategy';
+        confirmBtn.onclick = () => {
+            const selected = content.querySelector('.strategy-option.selected');
+            if (!selected) { showToast('warning', 'Warning', 'Please select a strategy'); return; }
+            applyStrategy(
+                rec.product_id,
+                selected.dataset.strategy,
+                selected.dataset.discount,
+                document.getElementById('strategyNotes')?.value || '',
+                confirmBtn
+            );
+        };
+    }
+
+    modal.show();
+}
+
+function selectStrategy(el) {
+    document.querySelectorAll('.strategy-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+function applyStrategy(productId, strategyId, discount, notes, btn) {
+    // Show loading state
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin me-2"></i>Applying...';
+    }
+
+    $.ajax({
+        url: API_URL,
+        method: 'POST',
+        data: {
+            action: 'save_recommendation',
+            product_id: productId,
+            strategy_id: strategyId,
+            discount_percentage: discount,
+            notes: notes,
+        },
+        dataType: 'json',
+        success(res) {
+            if (res.success) {
+                showToast('success', 'Strategy Applied!', res.message || 'Strategy has been applied successfully.');
+                // Close both modals
+                bootstrap.Modal.getInstance(document.getElementById('applyModal'))?.hide();
+                bootstrap.Modal.getInstance(document.getElementById('forecastModal'))?.hide();
+                // Refresh recommendation cards after a short delay
+                setTimeout(() => loadRecommendations(), 500);
+            } else {
+                showToast('error', 'Error', res.error || res.message || 'Failed to apply strategy');
+            }
+        },
+        error() { showToast('error', 'Error', 'Failed to apply strategy. Check API connection.'); },
+        complete() {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = 'Apply Strategy';
+            }
+        },
+    });
+}
+
+// ═══════════ UTILITIES ═══════════
+
+function esc(str) {
+    if (!str) return '';
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+}
+
+function showToast(type, title, message) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const bgClass = { success: 'bg-success', error: 'bg-danger', warning: 'bg-warning', info: 'bg-info' }[type] || 'bg-info';
+    const id = 'toast-' + Date.now();
+    container.insertAdjacentHTML('beforeend', `
+        <div id="${id}" class="toast align-items-center text-white ${bgClass} border-0 mb-2" role="alert">
+            <div class="d-flex">
+                <div class="toast-body"><strong>${esc(title)}</strong> ${esc(message)}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `);
+    const el = document.getElementById(id);
+    if (el) {
+        new bootstrap.Toast(el, { autohide: true, delay: 3000 }).show();
+        setTimeout(() => el?.remove(), 3500);
+    }
+}

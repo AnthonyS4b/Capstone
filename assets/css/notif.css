@@ -1,0 +1,335 @@
+/* ═══════════════════════════════════════════════
+   NOTIFICATION BELL — Espenida's Dashboard
+   Designed to sit inside the welcome-banner,
+   right next to the date-display pill.
+═══════════════════════════════════════════════ */
+
+/* ── Bell button wrapper ── */
+.notif-bell-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    z-index: 9980;
+    /* Establish its own stacking context so the panel always
+       renders on top, regardless of any parent overflow */
+    isolation: isolate;
+}
+
+.notif-bell-btn {
+    position: relative;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    outline: none;
+    flex-shrink: 0;
+}
+
+.notif-bell-btn:hover {
+    background: rgba(255, 255, 255, 0.30);
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.notif-bell-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.5);
+}
+
+/* ── Shake animation for new notifications ── */
+.notif-bell-btn.has-notif .fa-bell {
+    animation: bellShake 0.6s ease 0.2s;
+}
+
+@keyframes bellShake {
+    0%   { transform: rotate(0deg); }
+    15%  { transform: rotate(12deg); }
+    30%  { transform: rotate(-10deg); }
+    45%  { transform: rotate(8deg); }
+    60%  { transform: rotate(-6deg); }
+    75%  { transform: rotate(4deg); }
+    90%  { transform: rotate(-2deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* ── Badge ── */
+.notif-badge {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    background: #e53e3e;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid rgba(44,85,48,0.6);
+    line-height: 1;
+    pointer-events: none;
+    animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+}
+
+/* ── Dropdown panel ── */
+.notif-panel {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 340px;
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+    z-index: 99999; /* high enough to clear any banner stacking context */
+    overflow: hidden;
+
+    /* Hidden by default */
+    opacity: 0;
+    transform: translateY(-8px) scale(0.97);
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    transform-origin: top right;
+}
+
+.notif-panel.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+/* ── Panel header ── */
+.notif-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 10px;
+    background: linear-gradient(135deg, #2c5530 0%, #8B4513 100%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.notif-mark-all {
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.35);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.notif-mark-all:hover {
+    background: rgba(255,255,255,0.30);
+}
+
+/* ── Notification list ── */
+.notif-list {
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.notif-list::-webkit-scrollbar { width: 4px; }
+.notif-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+/* ── Individual notification item ── */
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+}
+
+.notif-item:last-child { border-bottom: none; }
+
+.notif-item:hover { background: #f8fafc; }
+
+.notif-item.unread { background: #f0fdf4; }
+.notif-item.unread::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: #2c5530;
+}
+
+/* ── Item icon ── */
+.notif-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.notif-icon.type-critical { background: #fee2e2; color: #dc2626; }
+.notif-icon.type-warning  { background: #fff3cd; color: #d97706; }
+.notif-icon.type-info     { background: #dbeafe; color: #1d4ed8; }
+.notif-icon.type-success  { background: #d1fae5; color: #15803d; }
+
+/* ── Item text ── */
+.notif-text { flex: 1; min-width: 0; }
+
+.notif-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notif-body {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 2px;
+    line-height: 1.4;
+}
+
+.notif-time {
+    font-size: 10px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ── Empty state ── */
+.notif-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    color: #94a3b8;
+    gap: 8px;
+}
+
+.notif-empty i { font-size: 28px; color: #10b981; }
+.notif-empty p { margin: 0; font-size: 13px; }
+
+/* ── Panel footer ── */
+.notif-panel-footer {
+    padding: 10px 16px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+}
+
+/* ── Override parent color-forcing (e.g. .welcome-banner * { color: white }) ── */
+.notif-panel,
+.notif-panel * {
+    color: inherit;
+}
+.notif-panel-header { color: #fff !important; }
+.notif-panel-header * { color: #fff !important; }
+.notif-mark-all { color: #fff !important; }
+.notif-title { color: #1e293b !important; }
+.notif-body { color: #64748b !important; }
+.notif-time { color: #94a3b8 !important; }
+.notif-empty { color: #94a3b8 !important; }
+.notif-empty i { color: #10b981 !important; }
+.notif-empty p { color: #94a3b8 !important; }
+.notif-panel-footer { color: #64748b !important; }
+.notif-panel-footer * { color: #64748b !important; }
+
+/* ── Responsive: on mobile use fixed positioning to escape any
+   overflow:hidden parent (POS header, inventory header, etc.) ── */
+@media (max-width: 768px) {
+    .notif-bell-wrap {
+        /* Create a new stacking context but allow fixed children to escape */
+        isolation: auto;
+        z-index: auto;
+    }
+
+    .notif-panel {
+        /* Break out of any clipping parent */
+        position: fixed;
+        top: 70px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: 380px;
+        /* Reset transform-origin for fixed positioning */
+        transform: translateY(-8px) scale(0.97);
+        transform-origin: top right;
+        z-index: 99999;
+    }
+
+    .notif-panel.open {
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════
+   BELL OVERRIDES — Light / white header contexts
+   (POS header, Inventory Management header)
+   These pages use a white toolbar instead of the
+   dark gradient welcome-banner, so the bell needs
+   a visible dark-on-light style.
+═══════════════════════════════════════════════ */
+.pos-header .notif-bell-btn,
+.inventory-header .notif-bell-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.pos-header .notif-bell-btn:hover,
+.inventory-header .notif-bell-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+    transform: scale(1.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.pos-header .notif-bell-btn:focus-visible,
+.inventory-header .notif-bell-btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.35);
+}
+
+/* Badge border colour to match the white background */
+.pos-header .notif-badge,
+.inventory-header .notif-badge {
+    border-color: #ffffff;
+}
+
+/* Bell shake still works in light headers */
+.pos-header .notif-bell-btn.has-notif .fa-bell,
+.inventory-header .notif-bell-btn.has-notif .fa-bell {
+    animation: bellShake 0.6s ease 0.2s;
+}

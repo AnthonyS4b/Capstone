@@ -1,0 +1,608 @@
+<?php
+// ajax/transaction_ajax.php
+
+ini_set('display_errors', 0);
+error_reporting(E_ALL);
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/../error.log');
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => false,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
+
+header('Content-Type: application/json');
+
+try {
+    require_once dirname(__DIR__) . '/config/database.php';
+
+    if (!function_exists('getDBConnection')) {
+        throw new Exception('Database connection function not found');
+    }
+
+    $pdo = getDBConnection();
+
+    $action = $_POST['action'] ?? $_GET['action'] ?? '';
+
+    if (empty($action)) {
+        throw new Exception('No action specified');
+    }
+
+    switch ($action) {
+        case 'save_transaction':
+            // Get user_id from multiple sources
+            $user_id = null;
+            
+            // Source 1: Check session
+            if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+                $user_id = (int)$_SESSION['user_id'];
+                error_log("Found user_id in session: $user_id");
+            } else {
+                // No valid session — reject the request
+                // SECURITY: Never accept user_id from POST or auto-assign from DB
+                error_log("CRITICAL: No user_id in session. Rejecting transaction.");
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Session expired. Please log in again.'
+                ]);
+                exit;
+            }
+            
+            // Final validation
+            if ($user_id <= 0) {
+                error_log("CRITICAL: Invalid user_id after all attempts: $user_id");
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Invalid user ID. Please log in again.'
+                ]);
+                exit;
+            }
+            
+            // Verify user exists and is active
+            $verifyStmt = $pdo->prepare("
+                SELECT id, first_name, last_name, role, is_active 
+                FROM users 
+                WHERE id = ? AND is_active = 1
+            ");
+            $verifyStmt->execute([$user_id]);
+            $user = $verifyStmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$user) {
+                error_log("User ID $user_id not found or inactive in database!");
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'User not found or inactive. Please log in again.'
+                ]);
+                exit;
+            }
+            
+            error_log("Validated user: " . $user['first_name'] . " " . $user['last_name'] . " (ID: $user_id, Role: " . $user['role'] . ")");
+            
+            // Get items
+            $items = isset($_POST['items']) ? json_decode($_POST['items'], true) : [];
+            if (empty($items)) {
+                echo json_encode(['success' => false, 'message' => 'No items in transaction']);
+                exit;
+            }
+            
+            // Get transaction data
+            $total = isset($_POST['total']) ? (float)$_POST['total'] : 0;
+            $payment = isset($_POST['payment']) ? (float)$_POST['payment'] : 0;
+            $change = isset($_POST['change']) ? (float)$_POST['change'] : 0;
+            $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'cash';
+            $cashier = isset($_POST['cashier']) ? $_POST['cashier'] : $user['first_name'] . ' ' . $user['last_name'];
+            $cashier_role = isset($_POST['cashier_role']) ? $_POST['cashier_role'] : $user['role'];
+            $notes = isset($_POST['notes']) ? $_POST['notes'] : '';
+            $gcash_reference = isset($_POST['gcash_reference']) ? trim($_POST['gcash_reference']) : null;
+            
+            error_log("Transaction data: User_ID=$user_id, Total=$total, Payment=$payment, Method=$payment_method");
+
+            // SERVER-SIDE: Check GCash reference uniqueness BEFORE starting transaction
+            if ($payment_method === 'gcash' && !empty($gcash_reference)) {
+                // Validate format: exactly 6 digits only
+                if (!preg_match('/^\d{6}$/', $gcash_reference)) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Invalid GCash reference. Must be exactly 6 digits.'
+                    ]);
+                    exit;
+                }
+                // Check if already used in DB
+                $refCheck = $pdo->prepare("SELECT id FROM sales WHERE gcash_reference = ? AND status = 'completed' LIMIT 1");
+                $refCheck->execute([$gcash_reference]);
+                if ($refCheck->fetch()) {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'GCash reference number has already been used. Please use a unique reference number.'
+                    ]);
+                    exit;
+                }
+            }
+            
+            // Start database transaction
+            $pdo->beginTransaction();
+            
+            try {
+                // 1. Insert into transactions table with EXPLICIT user_id
+                $stmt = $pdo->prepare("
+                    INSERT INTO transactions (
+                        user_id, 
+                        items, 
+                        total_amount, 
+                        payment_method, 
+                        created_at
+                    ) VALUES (
+                        :user_id, 
+                        :items, 
+                        :total, 
+                        :payment_method, 
+                        NOW()
+                    )
+                ");
+                
+                $result = $stmt->execute([
+                    ':user_id' => $user_id,
+                    ':items' => json_encode($items),
+                    ':total' => $total,
+                    ':payment_method' => $payment_method
+                ]);
+                
+                if (!$result) {
+                    throw new Exception("Failed to insert transaction: " . implode(", ", $stmt->errorInfo()));
+                }
+                
+                $transaction_id = $pdo->lastInsertId();
+                error_log("Transaction inserted with ID: $transaction_id");
+                
+                // 2. Insert into transaction_items table
+                $itemStmt = $pdo->prepare("
+                    INSERT INTO transaction_items (
+                        transaction_id, 
+                        product_id, 
+                        quantity, 
+                        price
+                    ) VALUES (
+                        :transaction_id, 
+                        :product_id, 
+                        :quantity, 
+                        :price
+                    )
+                ");
+                
+                foreach ($items as $item) {
+                    $itemStmt->execute([
+                        ':transaction_id' => $transaction_id,
+                        ':product_id' => $item['id'],
+                        ':quantity' => $item['quantity'],
+                        ':price' => $item['price']
+                    ]);
+                }
+                
+                // 3. Update product stock
+                $stockStmt = $pdo->prepare("
+                    UPDATE products 
+                    SET stock = stock - :quantity,
+                        updated_by = :user_id,
+                        updated_at = NOW()
+                    WHERE id = :product_id AND stock >= :quantity
+                ");
+                
+                foreach ($items as $item) {
+                    $stockStmt->execute([
+                        ':quantity' => $item['quantity'],
+                        ':product_id' => $item['id'],
+                        ':user_id' => $user_id
+                    ]);
+                    
+                    if ($stockStmt->rowCount() == 0) {
+                        throw new Exception("Insufficient stock for product: " . $item['name']);
+                    }
+                    
+                    // ── FIFO Batch Deduction ───────────────────────────────
+                    $qtyToDeduct = (int)$item['quantity'];
+                    
+                    $batchSelStmt = $pdo->prepare("
+                        SELECT id, stock FROM product_batches 
+                        WHERE product_id = :pid AND stock > 0 AND status = 'active' 
+                        ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC
+                    ");
+                    $batchSelStmt->execute([':pid' => $item['id']]);
+                    $batches = $batchSelStmt->fetchAll(PDO::FETCH_ASSOC);
+                    
+                    foreach ($batches as $batch) {
+                        if ($qtyToDeduct <= 0) break;
+                        
+                        $deduct = min((int)$batch['stock'], $qtyToDeduct);
+                        
+                        $batchUpdStmt = $pdo->prepare("UPDATE product_batches SET stock = stock - :deduct WHERE id = :bid");
+                        $batchUpdStmt->execute([':deduct' => $deduct, ':bid' => $batch['id']]);
+                        
+                        $qtyToDeduct -= $deduct;
+                    }
+                    
+                    // Mark zero-stock batches as depleted
+                    $deplStmt = $pdo->prepare("UPDATE product_batches SET status = 'depleted' WHERE product_id = :pid AND stock = 0 AND status = 'active'");
+                    $deplStmt->execute([':pid' => $item['id']]);
+                    
+                    // Sync product info to the oldest remaining active batch
+                    $syncStmt = $pdo->prepare("
+                        SELECT date_added, expiration_date FROM product_batches 
+                        WHERE product_id = :pid AND stock > 0 AND status = 'active' 
+                        ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC LIMIT 1
+                    ");
+                    $syncStmt->execute([':pid' => $item['id']]);
+                    $nextBatch = $syncStmt->fetch(PDO::FETCH_ASSOC);
+                    if ($nextBatch) {
+                        $syncProd = $pdo->prepare("UPDATE products SET expiration_date = :exp, date_added = :da WHERE id = :pid");
+                        $syncProd->execute([
+                            ':exp' => $nextBatch['expiration_date'],
+                            ':da'  => $nextBatch['date_added'],
+                            ':pid' => $item['id']
+                        ]);
+                    }
+                    // ── End FIFO ───────────────────────────────────────────
+                }
+                
+                // 4. Insert into sales table
+                $salesStmt = $pdo->prepare("
+                    INSERT INTO sales (
+                        transaction_id,
+                        user_id,
+                        total,
+                        amount_paid,
+                        change_amount,
+                        payment_method,
+                        notes,
+                        gcash_reference,
+                        cashier_name,
+                        cashier_role,
+                        status,
+                        created_at
+                    ) VALUES (
+                        :transaction_id,
+                        :user_id,
+                        :total,
+                        :amount_paid,
+                        :change_amount,
+                        :payment_method,
+                        :notes,
+                        :gcash_reference,
+                        :cashier_name,
+                        :cashier_role,
+                        'completed',
+                        NOW()
+                    )
+                ");
+                
+                $salesResult = $salesStmt->execute([
+                    ':transaction_id' => $transaction_id,
+                    ':user_id'        => $user_id,
+                    ':total'          => $total,
+                    ':amount_paid'    => $payment,
+                    ':change_amount'  => $change,
+                    ':payment_method' => $payment_method,
+                    ':notes'          => $notes,
+                    ':gcash_reference' => !empty($gcash_reference) ? $gcash_reference : null,
+                    ':cashier_name'   => $cashier,
+                    ':cashier_role'   => $cashier_role
+                ]);
+                
+                if (!$salesResult) {
+                    throw new Exception("Failed to insert sales record: " . implode(", ", $salesStmt->errorInfo()));
+                }
+                
+                // Commit transaction
+                $pdo->commit();
+                
+                error_log("=== TRANSACTION COMPLETED SUCCESSFULLY ===");
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Transaction completed successfully',
+                    'data' => [
+                        'id' => $transaction_id,
+                        'transaction_number' => 'TRX-' . str_pad($transaction_id, 6, '0', STR_PAD_LEFT)
+                    ]
+                ]);
+                
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                error_log("TRANSACTION ERROR: " . $e->getMessage());
+                error_log("Stack trace: " . $e->getTraceAsString());
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Transaction failed: ' . $e->getMessage()
+                ]);
+            }
+            break;
+            
+        case 'get_transactions':
+            $page   = isset($_POST['page'])   ? max(1, (int)$_POST['page'])   : 1;
+            $limit  = isset($_POST['limit'])  ? max(1, (int)$_POST['limit'])  : 50;
+            $offset = ($page - 1) * $limit;
+            $search    = (!empty($_POST['search']))    ? '%' . $_POST['search'] . '%' : null;
+            $date_from = (!empty($_POST['date_from'])) ? $_POST['date_from']          : null;
+            $date_to   = (!empty($_POST['date_to']))   ? $_POST['date_to']            : null;
+            $status    = (isset($_POST['status']) && $_POST['status'] !== 'all') ? $_POST['status'] : null;
+
+            $where  = [];
+            $params = [];
+
+            if ($search) {
+                $where[] = "(t.id LIKE :search OR s.cashier_name LIKE :search)";
+                $params[':search'] = $search;
+            }
+            if ($date_from) {
+                $where[] = "DATE(t.created_at) >= :date_from";
+                $params[':date_from'] = $date_from;
+            }
+            if ($date_to) {
+                $where[] = "DATE(t.created_at) <= :date_to";
+                $params[':date_to'] = $date_to;
+            }
+            if ($status) {
+                $where[] = "s.status = :status";
+                $params[':status'] = $status;
+            }
+
+            $whereClause = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+
+            // Count query
+            $countQuery = "
+                SELECT COUNT(DISTINCT t.id) AS total
+                FROM transactions t
+                LEFT JOIN sales s ON t.id = s.transaction_id
+                $whereClause
+            ";
+            $countStmt = $pdo->prepare($countQuery);
+            foreach ($params as $key => $value) {
+                $countStmt->bindValue($key, $value);
+            }
+            $countStmt->execute();
+            $total = (int)$countStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+            // ── FIX: Single query with GROUP BY instead of N+1 item_count loop ──
+            $query = "
+                SELECT
+                    t.id,
+                    t.user_id,
+                    t.items,
+                    t.total_amount,
+                    t.payment_method,
+                    t.created_at,
+                    s.status,
+                    s.amount_paid,
+                    s.change_amount,
+                    s.cashier_name,
+                    s.notes,
+                    s.cashier_role,
+                    COUNT(ti.id) AS item_count
+                FROM transactions t
+                LEFT JOIN sales s             ON t.id = s.transaction_id
+                LEFT JOIN transaction_items ti ON t.id = ti.transaction_id
+                $whereClause
+                GROUP BY t.id, s.status, s.amount_paid, s.change_amount,
+                         s.cashier_name, s.notes, s.cashier_role
+                ORDER BY t.created_at DESC
+                LIMIT :limit OFFSET :offset
+            ";
+
+            $stmt = $pdo->prepare($query);
+            foreach ($params as $key => $value) {
+                $stmt->bindValue($key, $value);
+            }
+            $stmt->bindValue(':limit',  $limit,  PDO::PARAM_INT);
+            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            $transactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Normalise types
+            foreach ($transactions as &$tx) {
+                $tx['total_amount']  = (float)$tx['total_amount'];
+                $tx['amount_paid']   = isset($tx['amount_paid'])   ? (float)$tx['amount_paid']   : 0;
+                $tx['change_amount'] = isset($tx['change_amount']) ? (float)$tx['change_amount'] : 0;
+                $tx['status']        = $tx['status'] ?? 'completed';
+                $tx['item_count']    = (int)$tx['item_count'];
+            }
+
+            echo json_encode([
+                'success'     => true,
+                'data'        => $transactions,
+                'page'        => $page,
+                'total_pages' => (int)ceil($total / $limit),
+                'total_count' => $total,
+            ]);
+            break;
+            
+        case 'get_transaction':
+            $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            
+            if ($id <= 0) {
+                echo json_encode(['success' => false, 'message' => 'Invalid transaction ID']);
+                break;
+            }
+            
+            $stmt = $pdo->prepare("
+                SELECT 
+                    t.id,
+                    t.user_id,
+                    t.items,
+                    t.total_amount,
+                    t.payment_method,
+                    t.created_at,
+                    s.status,
+                    s.amount_paid,
+                    s.change_amount,
+                    s.cashier_name,
+                    s.notes,
+                    s.cashier_role
+                FROM transactions t
+                LEFT JOIN sales s ON t.id = s.transaction_id
+                WHERE t.id = ?
+            ");
+            $stmt->execute([$id]);
+            $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if (!$transaction) {
+                echo json_encode(['success' => false, 'message' => 'Transaction not found']);
+                break;
+            }
+            
+            // Get items
+            $itemsStmt = $pdo->prepare("
+                SELECT 
+                    ti.*,
+                    p.name as product_name,
+                    p.sku as product_sku
+                FROM transaction_items ti
+                LEFT JOIN products p ON ti.product_id = p.id
+                WHERE ti.transaction_id = ?
+            ");
+            $itemsStmt->execute([$id]);
+            $transaction['items'] = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Format numbers
+            $transaction['total_amount'] = (float)$transaction['total_amount'];
+            $transaction['amount_paid'] = isset($transaction['amount_paid']) ? (float)$transaction['amount_paid'] : 0;
+            $transaction['change_amount'] = isset($transaction['change_amount']) ? (float)$transaction['change_amount'] : 0;
+            $transaction['status'] = $transaction['status'] ?? 'completed';
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $transaction
+            ]);
+            break;
+            
+        case 'void_transaction':
+            $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($id <= 0) {
+                echo json_encode(['success' => false, 'message' => 'Invalid transaction ID']);
+                break;
+            }
+            
+            $pdo->beginTransaction();
+            
+            try {
+                // Get transaction items with product names for logging
+                $stmt = $pdo->prepare("
+                    SELECT ti.*, p.name as product_name 
+                    FROM transaction_items ti
+                    LEFT JOIN products p ON ti.product_id = p.id
+                    WHERE ti.transaction_id = ?
+                ");
+                $stmt->execute([$id]);
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                if (empty($items)) {
+                    throw new Exception('Transaction items not found');
+                }
+                
+                // Check current status
+                $checkStmt = $pdo->prepare("SELECT status FROM sales WHERE transaction_id = ?");
+                $checkStmt->execute([$id]);
+                $currentStatus = $checkStmt->fetch(PDO::FETCH_ASSOC);
+                
+                if ($currentStatus && $currentStatus['status'] === 'voided') {
+                    throw new Exception('Transaction is already voided');
+                }
+                
+                // Update sales status
+                $updateStmt = $pdo->prepare("
+                    UPDATE sales 
+                    SET status = 'voided' 
+                    WHERE transaction_id = ?
+                ");
+                $updateStmt->execute([$id]);
+                
+                // Restore stock and LOG ACTIVITY
+                $stockStmt = $pdo->prepare("
+                    UPDATE products 
+                    SET stock = stock + ?, 
+                        updated_by = ?,
+                        updated_at = NOW()
+                    WHERE id = ?
+                ");
+                
+                $logStmt = $pdo->prepare("
+                    INSERT INTO inventory_history (product_id, product_name, user_id, action, changes, created_at) 
+                    VALUES (?, ?, ?, 'void', ?, NOW())
+                ");
+                
+                foreach ($items as $item) {
+                    // Update stock
+                    $stockStmt->execute([$item['quantity'], $user_id, $item['product_id']]);
+                    
+                    // Log the void action
+                    $changes = "Stock restored (+{$item['quantity']}) - Transaction #{$id} voided via Sales UI";
+                    $logStmt->execute([$item['product_id'], $item['product_name'], $user_id, $changes]);
+                }
+                
+                $pdo->commit();
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Transaction voided successfully'
+                ]);
+                
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                error_log("VOID ERROR: " . $e->getMessage());
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to void transaction: ' . $e->getMessage()
+                ]);
+            }
+            break;
+            
+        case 'get_stats':
+            $statsStmt = $pdo->query("
+                SELECT 
+                    COUNT(DISTINCT t.id) as total_transactions,
+                    COALESCE(SUM(t.total_amount), 0) as total_sales,
+                    COALESCE(SUM(CASE WHEN DATE(t.created_at) = CURDATE() THEN t.total_amount ELSE 0 END), 0) as today_sales,
+                    COALESCE(AVG(t.total_amount), 0) as avg_transaction
+                FROM transactions t
+                LEFT JOIN sales s ON t.id = s.transaction_id
+                WHERE s.status IS NULL OR s.status != 'voided'
+            ");
+            $stats = $statsStmt->fetch(PDO::FETCH_ASSOC);
+            
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'total_transactions' => (int)$stats['total_transactions'],
+                    'total_sales' => (float)$stats['total_sales'],
+                    'today_sales' => (float)$stats['today_sales'],
+                    'avg_transaction' => (float)$stats['avg_transaction']
+                ]
+            ]);
+            break;
+            
+        default:
+            error_log("Invalid action received: " . $action);
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Invalid action: ' . $action,
+                'available_actions' => ['test', 'save_transaction', 'get_transactions', 'get_transaction', 'void_transaction', 'get_stats']
+            ]);
+            break;
+    }
+    
+} catch (Exception $e) {
+    error_log("Transaction AJAX error: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Server error: ' . $e->getMessage()
+    ]);
+}
+?>

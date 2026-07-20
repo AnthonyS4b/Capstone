@@ -1,0 +1,2224 @@
+[01-Apr-2026 07:36:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 07:36:15 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 07:36:15 Europe/Berlin] Session ID: 808ikf64cohephkb51unvmq1jm
+[01-Apr-2026 07:36:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 07:36:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 07:36:15 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 07:36:15 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 07:36:15 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 07:36:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 07:36:15 Europe/Berlin] Action: get_stats
+[01-Apr-2026 07:36:15 Europe/Berlin] Session ID: 808ikf64cohephkb51unvmq1jm
+[01-Apr-2026 07:36:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 07:36:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 07:55:52 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 07:55:52 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 07:55:52 Europe/Berlin] Session ID: 808ikf64cohephkb51unvmq1jm
+[01-Apr-2026 07:55:52 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 07:55:52 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 07:55:52 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 07:55:52 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 07:55:52 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 07:55:52 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 07:55:52 Europe/Berlin] Action: get_stats
+[01-Apr-2026 07:55:52 Europe/Berlin] Session ID: 808ikf64cohephkb51unvmq1jm
+[01-Apr-2026 07:55:52 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 07:55:52 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:04:43 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:04:43 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:04:43 Europe/Berlin] Session ID: 0ghlbpgtbt1hd8qeucalbkvm1s
+[01-Apr-2026 08:04:43 Europe/Berlin] Session User ID: 1
+[01-Apr-2026 08:04:43 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:04:43 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:04:43 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:04:43 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:04:43 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:04:43 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:04:43 Europe/Berlin] Session ID: 0ghlbpgtbt1hd8qeucalbkvm1s
+[01-Apr-2026 08:04:43 Europe/Berlin] Session User ID: 1
+[01-Apr-2026 08:04:43 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:05:17 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:05:17 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:05:17 Europe/Berlin] Session ID: kr79hu7m8h12klkgpv190psobg
+[01-Apr-2026 08:05:17 Europe/Berlin] Session User ID: 3
+[01-Apr-2026 08:05:17 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:05:17 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:05:17 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:05:17 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:05:17 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:05:17 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:05:17 Europe/Berlin] Session ID: kr79hu7m8h12klkgpv190psobg
+[01-Apr-2026 08:05:17 Europe/Berlin] Session User ID: 3
+[01-Apr-2026 08:05:17 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:05:28 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:05:28 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:05:28 Europe/Berlin] Session ID: kr79hu7m8h12klkgpv190psobg
+[01-Apr-2026 08:05:28 Europe/Berlin] Session User ID: 3
+[01-Apr-2026 08:05:28 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:05:28 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:05:28 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:05:28 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:05:28 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:05:28 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:05:28 Europe/Berlin] Session ID: kr79hu7m8h12klkgpv190psobg
+[01-Apr-2026 08:05:28 Europe/Berlin] Session User ID: 3
+[01-Apr-2026 08:05:28 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:49:10 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:10 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:49:10 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:10 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:10 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:49:10 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:49:10 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:49:10 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:49:10 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:10 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:49:10 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:10 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:10 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:49:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:13 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:49:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:49:13 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:49:13 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:49:13 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:49:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:13 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:49:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:49:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:15 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:49:15 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:49:15 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:49:15 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:49:15 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:49:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:49:15 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:49:15 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:49:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:49:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:55:02 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:55:02 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:55:02 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:55:02 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:55:02 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:55:02 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:55:02 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:55:02 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:55:02 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:55:02 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:55:02 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:55:02 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:55:02 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:57:27 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:57:27 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:57:27 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:57:27 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:57:27 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:57:27 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:57:27 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:57:27 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:57:27 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:57:27 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:57:27 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:57:27 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:57:27 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 08:57:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:57:29 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 08:57:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:57:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:57:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 08:57:29 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 08:57:29 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 08:57:29 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 08:57:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 08:57:29 Europe/Berlin] Action: get_stats
+[01-Apr-2026 08:57:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 08:57:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 08:57:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:04:53 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:04:53 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:04:53 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:04:53 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:04:53 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:04:53 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:04:53 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:04:53 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:04:53 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:04:53 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:04:53 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:04:53 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:04:53 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:05:07 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:05:07 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:05:07 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:05:07 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:05:07 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:05:07 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:05:07 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:05:07 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:05:07 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:05:07 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:05:07 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:05:07 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:05:07 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:07:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:07:13 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:07:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:07:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:07:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:07:13 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:07:13 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:07:13 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:07:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:07:13 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:07:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:07:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:07:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:07:22 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:07:22 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:07:22 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:07:22 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:07:22 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:07:22 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:07:22 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:07:22 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:07:22 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:07:22 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:07:22 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:07:22 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:07:22 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:11:56 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:11:56 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:11:56 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:11:56 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:11:56 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:11:56 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:11:56 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:11:56 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:11:56 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:11:56 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:11:56 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:11:56 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:11:56 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:11:59 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:11:59 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:11:59 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:11:59 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:11:59 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:11:59 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:11:59 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:11:59 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:11:59 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:11:59 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:11:59 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:11:59 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:11:59 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:12:05 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:05 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:12:05 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:05 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:05 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:12:05 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:12:05 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:12:05 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:12:05 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:05 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:12:05 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:05 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:05 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:12:45 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:45 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:12:45 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:45 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:45 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:12:45 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:12:45 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:12:45 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:12:45 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:45 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:12:45 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:45 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:45 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:12:47 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:47 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:12:47 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:47 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:47 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:12:47 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:12:47 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:12:47 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:12:47 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:47 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:12:47 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:47 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:47 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:12:50 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:50 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:12:50 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:50 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:50 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:12:50 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:12:50 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:12:50 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:12:50 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:12:50 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:12:50 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:12:50 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:12:50 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:20:45 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:20:45 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:20:45 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:20:45 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:20:45 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:20:45 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:20:45 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:20:45 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:20:45 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:20:45 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:20:45 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:20:45 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:20:45 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:37:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:29 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:37:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:37:29 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:37:29 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:37:29 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:37:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:29 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:37:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:37:31 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:31 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:37:31 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:31 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:31 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:37:31 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:37:31 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:37:31 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:37:31 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:31 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:37:31 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:31 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:31 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:37:35 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:35 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:37:35 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:35 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:35 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:37:35 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:37:35 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:37:35 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:37:35 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:35 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:37:35 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:35 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:35 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:37:46 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:46 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:37:46 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:46 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:46 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:37:46 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:37:46 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:37:46 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:37:46 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:37:46 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:37:46 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:37:46 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:37:46 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:13 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:13 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:13 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:13 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:13 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:13 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:13 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:13 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:13 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:15 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:15 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:15 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:15 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:15 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:15 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:15 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:15 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:15 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:15 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:17 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:17 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:17 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:17 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:17 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:17 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:17 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:17 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:17 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:17 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:17 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:17 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:17 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:29 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:29 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:29 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:29 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:29 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:32 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:32 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:32 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:32 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:32 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:32 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:32 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:32 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:32 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:32 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:32 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:32 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:32 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:42:48 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:48 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:42:48 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:48 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:48 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:42:48 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:42:48 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:42:48 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:42:48 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:42:48 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:42:48 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:42:48 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:42:48 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:43:05 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:05 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:43:05 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:05 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:05 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:43:05 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:43:05 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:43:05 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:43:05 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:05 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:43:05 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:05 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:05 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:43:08 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:08 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:43:08 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:08 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:08 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:43:08 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:43:08 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:43:08 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:43:08 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:08 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:43:08 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:08 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:08 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:43:09 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:09 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:43:09 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:09 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:09 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:43:09 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:43:09 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:43:09 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:43:09 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:09 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:43:09 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:09 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:09 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:43:21 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:21 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:43:21 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:21 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:21 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:43:21 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:43:21 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:43:21 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:43:21 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:43:21 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:43:21 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:43:21 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:43:21 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:45:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:45:29 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:45:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:45:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:45:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:45:29 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:45:29 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:45:29 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:45:29 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:45:29 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:45:29 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:45:29 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:45:29 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:45:33 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:45:33 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:45:33 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:45:33 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:45:33 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:45:33 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:45:33 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:45:33 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:45:33 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:45:33 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:45:33 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:45:33 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:45:33 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 09:49:28 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:49:28 Europe/Berlin] Action: get_transactions
+[01-Apr-2026 09:49:28 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:49:28 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:49:28 Europe/Berlin] POST Data: Array
+(
+    [action] => get_transactions
+    [page] => 1
+    [limit] => 100
+    [search] => 
+    [date_from] => 
+    [date_to] => 
+    [status] => all
+)
+
+[01-Apr-2026 09:49:28 Europe/Berlin] get_transactions query - where clause: 
+[01-Apr-2026 09:49:28 Europe/Berlin] get_transactions params: Array
+(
+)
+
+[01-Apr-2026 09:49:28 Europe/Berlin] get_transactions returned 6 records
+[01-Apr-2026 09:49:28 Europe/Berlin] === TRANSACTION AJAX DEBUG ===
+[01-Apr-2026 09:49:28 Europe/Berlin] Action: get_stats
+[01-Apr-2026 09:49:28 Europe/Berlin] Session ID: nor7a05s064b9ehuhn4j2u4s07
+[01-Apr-2026 09:49:28 Europe/Berlin] Session User ID: 4
+[01-Apr-2026 09:49:28 Europe/Berlin] POST Data: Array
+(
+    [action] => get_stats
+)
+
+[01-Apr-2026 15:25:07 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:07 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:07 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:07 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:25 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:25 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:25 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:25 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:31 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:31 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:31 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:31 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:58 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:58 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:58 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:25:58 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:26:49 Europe/Berlin] Found user_id in session: 1
+[01-Apr-2026 15:26:49 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[01-Apr-2026 15:26:49 Europe/Berlin] Transaction data: User_ID=1, Total=95, Payment=100, Method=cash
+[01-Apr-2026 15:26:49 Europe/Berlin] Transaction inserted with ID: 84
+[01-Apr-2026 15:26:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[01-Apr-2026 15:27:06 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:06 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:06 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:06 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:14 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:14 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:14 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:27:14 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:28:18 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:28:18 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:28:18 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:28:18 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:58:41 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:58:41 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:58:41 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:58:41 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:59:27 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:59:27 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:59:27 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 15:59:27 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 16:00:32 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 16:00:32 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 16:00:32 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[01-Apr-2026 16:00:32 Europe/Berlin] Error in getAllCategories: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'c.deleted_at' in 'where clause'
+[02-Apr-2026 07:58:03 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 07:58:03 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 07:58:03 Europe/Berlin] Transaction data: User_ID=1, Total=900, Payment=1000, Method=cash
+[02-Apr-2026 07:58:03 Europe/Berlin] Transaction inserted with ID: 84
+[02-Apr-2026 07:58:03 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 09:24:54 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 09:24:54 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 09:24:54 Europe/Berlin] Transaction data: User_ID=1, Total=165, Payment=170, Method=cash
+[02-Apr-2026 09:24:54 Europe/Berlin] Transaction inserted with ID: 85
+[02-Apr-2026 09:24:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:11:21 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:11:21 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:11:21 Europe/Berlin] Transaction data: User_ID=1, Total=165, Payment=170, Method=cash
+[02-Apr-2026 10:11:21 Europe/Berlin] Transaction inserted with ID: 86
+[02-Apr-2026 10:11:21 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:15:53 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:15:53 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:15:53 Europe/Berlin] Transaction data: User_ID=1, Total=1240, Payment=1300, Method=cash
+[02-Apr-2026 10:15:53 Europe/Berlin] Transaction inserted with ID: 87
+[02-Apr-2026 10:15:53 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:28:13 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:28:13 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:28:13 Europe/Berlin] Transaction data: User_ID=1, Total=2250, Payment=2300, Method=cash
+[02-Apr-2026 10:28:13 Europe/Berlin] Transaction inserted with ID: 88
+[02-Apr-2026 10:28:13 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:29:33 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:29:33 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:29:33 Europe/Berlin] Transaction data: User_ID=1, Total=1425, Payment=1500, Method=cash
+[02-Apr-2026 10:29:33 Europe/Berlin] Transaction inserted with ID: 89
+[02-Apr-2026 10:29:33 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:31:30 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:31:30 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:31:30 Europe/Berlin] Transaction data: User_ID=1, Total=3850, Payment=4000, Method=cash
+[02-Apr-2026 10:31:30 Europe/Berlin] Transaction inserted with ID: 90
+[02-Apr-2026 10:31:30 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 10:34:20 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 50
+    [unit] => per bottle
+    [sku] => FIS-113
+    [barcode] => 8856120
+    [expiration_date] => 2027-11-25
+    [date_added] => 2026-04-02
+)
+
+[02-Apr-2026 10:34:20 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-113
+            [barcode] => 8856120
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-11-25
+        )
+
+)
+
+[02-Apr-2026 10:35:47 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 10:35:47 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 10:35:47 Europe/Berlin] Transaction data: User_ID=1, Total=2000, Payment=2000, Method=cash
+[02-Apr-2026 10:35:47 Europe/Berlin] Transaction inserted with ID: 91
+[02-Apr-2026 10:35:47 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:38:32 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:38:32 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:38:32 Europe/Berlin] Transaction data: User_ID=1, Total=1925, Payment=2000, Method=cash
+[02-Apr-2026 18:38:32 Europe/Berlin] Transaction inserted with ID: 87
+[02-Apr-2026 18:38:32 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:45:55 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:45:55 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:45:55 Europe/Berlin] Transaction data: User_ID=1, Total=1925, Payment=2000, Method=cash
+[02-Apr-2026 18:45:55 Europe/Berlin] Transaction inserted with ID: 87
+[02-Apr-2026 18:45:55 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:57:27 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:57:27 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:57:27 Europe/Berlin] Transaction data: User_ID=1, Total=165, Payment=200, Method=cash
+[02-Apr-2026 18:57:27 Europe/Berlin] Transaction inserted with ID: 88
+[02-Apr-2026 18:57:27 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:57:53 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:57:53 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:57:53 Europe/Berlin] Transaction data: User_ID=1, Total=590, Payment=600, Method=cash
+[02-Apr-2026 18:57:53 Europe/Berlin] Transaction inserted with ID: 89
+[02-Apr-2026 18:57:53 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:58:30 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:58:30 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:58:30 Europe/Berlin] Transaction data: User_ID=1, Total=1925, Payment=2000, Method=cash
+[02-Apr-2026 18:58:30 Europe/Berlin] Transaction inserted with ID: 90
+[02-Apr-2026 18:58:30 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 18:59:48 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 18:59:48 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 18:59:48 Europe/Berlin] Transaction data: User_ID=1, Total=1925, Payment=2000, Method=cash
+[02-Apr-2026 18:59:48 Europe/Berlin] Transaction inserted with ID: 87
+[02-Apr-2026 18:59:48 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 19:27:11 Europe/Berlin] Found user_id in session: 1
+[02-Apr-2026 19:27:11 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[02-Apr-2026 19:27:11 Europe/Berlin] Transaction data: User_ID=1, Total=165, Payment=170, Method=cash
+[02-Apr-2026 19:27:11 Europe/Berlin] Transaction inserted with ID: 87
+[02-Apr-2026 19:27:11 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Apr-2026 19:31:22 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-659
+    [barcode] => 8888026
+    [expiration_date] => 2026-11-19
+    [date_added] => 2026-04-02
+)
+
+[02-Apr-2026 19:31:22 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-659
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2026-11-19
+        )
+
+)
+
+[03-Apr-2026 13:41:10 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 13:41:10 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 13:41:10 Europe/Berlin] Transaction data: User_ID=1, Total=350, Payment=400, Method=cash
+[03-Apr-2026 13:41:10 Europe/Berlin] Transaction inserted with ID: 88
+[03-Apr-2026 13:41:10 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 14:14:18 Europe/Berlin] PHP Deprecated:  json_decode(): Passing null to parameter #1 ($json) of type string is deprecated in C:\xampp\htdocs\Capstone1\ajax\transaction_ajax.php on line 469
+[03-Apr-2026 14:14:18 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\Capstone1\ajax\transaction_ajax.php on line 495
+[03-Apr-2026 14:15:25 Europe/Berlin] PHP Deprecated:  json_decode(): Passing null to parameter #1 ($json) of type string is deprecated in C:\xampp\htdocs\Capstone1\ajax\transaction_ajax.php on line 469
+[03-Apr-2026 14:15:25 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\Capstone1\ajax\transaction_ajax.php on line 495
+[03-Apr-2026 14:37:22 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-924
+    [barcode] => 8888026
+    [expiration_date] => 2027-12-03
+    [date_added] => 2026-04-03
+)
+
+[03-Apr-2026 14:37:22 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-924
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-12-03
+        )
+
+)
+
+[03-Apr-2026 14:37:41 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 14:37:41 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 14:37:41 Europe/Berlin] Transaction data: User_ID=1, Total=400, Payment=500, Method=cash
+[03-Apr-2026 14:37:41 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 14:37:41 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 14:39:50 Europe/Berlin] Error in logActivity: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`espenida_pos`.`inventory_history`, CONSTRAINT `fk_ih_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE SET NULL)
+[03-Apr-2026 17:05:01 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 17:05:01 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 17:05:01 Europe/Berlin] Transaction data: User_ID=1, Total=350, Payment=350, Method=cash
+[03-Apr-2026 17:05:01 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 17:05:01 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 17:09:20 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 17:09:20 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 17:09:20 Europe/Berlin] Transaction data: User_ID=1, Total=350, Payment=400, Method=cash
+[03-Apr-2026 17:09:20 Europe/Berlin] Transaction inserted with ID: 88
+[03-Apr-2026 17:09:20 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 17:39:17 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-420
+    [barcode] => 8888026
+    [expiration_date] => 2027-12-03
+    [date_added] => 2026-04-03
+)
+
+[03-Apr-2026 17:39:17 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-420
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-12-03
+        )
+
+)
+
+[03-Apr-2026 17:41:13 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-481
+    [barcode] => 8888026
+    [expiration_date] => 2026-04-16
+    [date_added] => 2026-02-03
+)
+
+[03-Apr-2026 17:41:13 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 27
+    [data] => Array
+        (
+            [id] => 27
+            [sku] => FIS-481
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2026-04-16
+        )
+
+)
+
+[03-Apr-2026 17:41:56 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 17:41:56 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 17:41:56 Europe/Berlin] Transaction data: User_ID=1, Total=1000, Payment=1000, Method=cash
+[03-Apr-2026 17:41:56 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 17:41:56 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 17:42:34 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 17:42:34 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 17:42:34 Europe/Berlin] Transaction data: User_ID=1, Total=1400, Payment=1500, Method=cash
+[03-Apr-2026 17:42:34 Europe/Berlin] Transaction inserted with ID: 88
+[03-Apr-2026 17:42:34 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 17:51:37 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 17:51:37 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 17:51:37 Europe/Berlin] Transaction data: User_ID=1, Total=180, Payment=200, Method=cash
+[03-Apr-2026 17:51:37 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 17:51:37 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 17:51:43 Europe/Berlin] VOID ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'product_name' in 'field list'
+[03-Apr-2026 19:20:51 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 19:20:51 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 19:20:51 Europe/Berlin] Transaction data: User_ID=1, Total=660, Payment=700, Method=cash
+[03-Apr-2026 19:20:51 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 19:20:51 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 19:26:10 Europe/Berlin] Error in logActivity: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'product_name' in 'field list'
+[03-Apr-2026 19:26:54 Europe/Berlin] Error in logActivity: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'product_name' in 'field list'
+[03-Apr-2026 19:26:59 Europe/Berlin] Error in logActivity: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'product_name' in 'field list'
+[03-Apr-2026 19:27:32 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-514
+    [barcode] => 8888026
+    [expiration_date] => 2027-12-04
+    [date_added] => 2026-04-03
+)
+
+[03-Apr-2026 19:27:32 Europe/Berlin] Error in logActivity: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'product_name' in 'field list'
+[03-Apr-2026 19:27:32 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-514
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-12-04
+        )
+
+)
+
+[03-Apr-2026 19:47:56 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 230
+    [cost_price] => 150
+    [stock] => 20
+    [unit] => per bottle
+    [sku] => FIS-859
+    [barcode] => 8888026
+    [expiration_date] => 2027-12-04
+    [date_added] => 2026-04-03
+)
+
+[03-Apr-2026 19:47:56 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-859
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-12-04
+        )
+
+)
+
+[03-Apr-2026 19:49:06 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 19:49:06 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 19:49:06 Europe/Berlin] Transaction data: User_ID=1, Total=2070, Payment=2100, Method=cash
+[03-Apr-2026 19:49:06 Europe/Berlin] Transaction inserted with ID: 87
+[03-Apr-2026 19:49:06 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[03-Apr-2026 19:53:24 Europe/Berlin] Found user_id in session: 1
+[03-Apr-2026 19:53:24 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[03-Apr-2026 19:53:24 Europe/Berlin] Transaction data: User_ID=1, Total=330, Payment=400, Method=cash
+[03-Apr-2026 19:53:24 Europe/Berlin] Transaction inserted with ID: 88
+[03-Apr-2026 19:53:24 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[04-Apr-2026 11:18:21 Europe/Berlin] Found user_id in session: 1
+[04-Apr-2026 11:18:21 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[04-Apr-2026 11:18:21 Europe/Berlin] Transaction data: User_ID=1, Total=135, Payment=200, Method=cash
+[04-Apr-2026 11:18:21 Europe/Berlin] Transaction inserted with ID: 87
+[04-Apr-2026 11:18:21 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[04-Apr-2026 11:19:15 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquaman Shampoo
+    [description] => 
+    [price] => 230
+    [cost_price] => 150
+    [stock] => 15
+    [unit] => per bottle
+    [sku] => FIS-352
+    [barcode] => 8888026
+    [expiration_date] => 2027-12-04
+    [date_added] => 2026-04-04
+)
+
+[04-Apr-2026 11:19:15 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => FIS-352
+            [barcode] => 8888026
+            [unit] => per bottle
+            [cost_price] => 150
+            [expiration_date] => 2027-12-04
+        )
+
+)
+
+[04-Apr-2026 11:29:35 Europe/Berlin] Found user_id in session: 1
+[04-Apr-2026 11:29:35 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[04-Apr-2026 11:29:35 Europe/Berlin] Transaction data: User_ID=1, Total=17325, Payment=20000, Method=cash
+[04-Apr-2026 11:29:35 Europe/Berlin] Transaction inserted with ID: 88
+[04-Apr-2026 11:29:35 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:19:33 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:19:33 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:19:33 Europe/Berlin] Transaction data: User_ID=1, Total=75, Payment=75, Method=gcash
+[12-Apr-2026 09:19:33 Europe/Berlin] Transaction inserted with ID: 87
+[12-Apr-2026 09:19:34 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:20:05 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:20:05 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:20:05 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 09:20:05 Europe/Berlin] Transaction inserted with ID: 88
+[12-Apr-2026 09:20:07 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:51:12 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:51:12 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:51:12 Europe/Berlin] Transaction data: User_ID=1, Total=680, Payment=680, Method=gcash
+[12-Apr-2026 09:51:12 Europe/Berlin] Transaction inserted with ID: 89
+[12-Apr-2026 09:51:13 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:51:49 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:51:49 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:51:49 Europe/Berlin] Transaction data: User_ID=1, Total=185, Payment=185, Method=gcash
+[12-Apr-2026 09:51:49 Europe/Berlin] Transaction inserted with ID: 90
+[12-Apr-2026 09:51:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:56:50 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:56:50 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:56:50 Europe/Berlin] Transaction data: User_ID=1, Total=620, Payment=620, Method=gcash
+[12-Apr-2026 09:56:50 Europe/Berlin] Transaction inserted with ID: 91
+[12-Apr-2026 09:56:50 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 09:58:02 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 09:58:02 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 09:58:02 Europe/Berlin] Transaction data: User_ID=1, Total=350, Payment=350, Method=cash
+[12-Apr-2026 09:58:02 Europe/Berlin] Transaction inserted with ID: 92
+[12-Apr-2026 09:58:02 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:01:04 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:01:05 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:01:05 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=250, Method=cash
+[12-Apr-2026 10:01:05 Europe/Berlin] Transaction inserted with ID: 87
+[12-Apr-2026 10:01:07 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:03:44 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:03:44 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:03:44 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:03:44 Europe/Berlin] Transaction inserted with ID: 88
+[12-Apr-2026 10:03:44 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:08:19 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:08:19 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:08:19 Europe/Berlin] Transaction data: User_ID=1, Total=165, Payment=165, Method=gcash
+[12-Apr-2026 10:08:19 Europe/Berlin] Transaction inserted with ID: 89
+[12-Apr-2026 10:08:20 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:09:15 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:09:15 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:09:15 Europe/Berlin] Transaction data: User_ID=1, Total=195, Payment=195, Method=gcash
+[12-Apr-2026 10:09:15 Europe/Berlin] Transaction inserted with ID: 90
+[12-Apr-2026 10:09:16 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:16:09 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:16:09 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:16:09 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:16:09 Europe/Berlin] Transaction inserted with ID: 91
+[12-Apr-2026 10:16:10 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:20:08 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:20:08 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:20:08 Europe/Berlin] Transaction data: User_ID=1, Total=150, Payment=150, Method=gcash
+[12-Apr-2026 10:20:08 Europe/Berlin] Transaction inserted with ID: 92
+[12-Apr-2026 10:20:08 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:25:18 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:25:18 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:25:18 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:27:10 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:27:10 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:27:10 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:27:10 Europe/Berlin] Transaction inserted with ID: 93
+[12-Apr-2026 10:27:11 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:27:25 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:27:25 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:27:25 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:31:26 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:31:26 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:31:26 Europe/Berlin] Transaction data: User_ID=1, Total=580, Payment=580, Method=gcash
+[12-Apr-2026 10:31:26 Europe/Berlin] Transaction inserted with ID: 94
+[12-Apr-2026 10:31:27 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:33:36 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:33:36 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:33:36 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:34:00 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:34:00 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:34:00 Europe/Berlin] Transaction data: User_ID=1, Total=420, Payment=420, Method=gcash
+[12-Apr-2026 10:34:11 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:34:11 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:34:11 Europe/Berlin] Transaction data: User_ID=1, Total=1480, Payment=1480, Method=gcash
+[12-Apr-2026 10:35:31 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:35:31 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:35:31 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:35:39 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:35:39 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:35:39 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 10:35:39 Europe/Berlin] Transaction inserted with ID: 95
+[12-Apr-2026 10:35:40 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 10:36:59 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 10:36:59 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 10:36:59 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=gcash
+[12-Apr-2026 14:52:38 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => asda
+    [description] => asdad
+    [price] => 555
+    [cost_price] => 55
+    [stock] => 2
+    [unit] => whole sack
+    [sku] => DOG-348
+    [barcode] => 12345678901
+    [expiration_date] => 2222-12-22
+    [date_added] => 2026-04-12
+)
+
+[12-Apr-2026 14:52:38 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 26
+    [data] => Array
+        (
+            [id] => 26
+            [sku] => DOG-348
+            [barcode] => 12345678901
+            [unit] => whole sack
+            [cost_price] => 55
+            [expiration_date] => 2222-12-22
+        )
+
+)
+
+[12-Apr-2026 14:53:04 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 7
+    [name] => 31231
+    [description] => 32132
+    [price] => 23123
+    [cost_price] => 231
+    [stock] => 5
+    [unit] => half sack
+    [sku] => DOG-826
+    [barcode] => 4214132131
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-12
+)
+
+[12-Apr-2026 14:53:07 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 27
+    [data] => Array
+        (
+            [id] => 27
+            [sku] => DOG-826
+            [barcode] => 4214132131
+            [unit] => half sack
+            [cost_price] => 231
+            [expiration_date] => 2222-02-22
+        )
+
+)
+
+[12-Apr-2026 17:55:05 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 17:55:08 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 17:55:08 Europe/Berlin] Transaction data: User_ID=1, Total=385, Payment=385, Method=gcash
+[12-Apr-2026 17:55:15 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 17:55:15 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 17:55:15 Europe/Berlin] Transaction data: User_ID=1, Total=385, Payment=400, Method=cash
+[12-Apr-2026 17:55:15 Europe/Berlin] Transaction inserted with ID: 96
+[12-Apr-2026 17:55:18 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Apr-2026 17:57:30 Europe/Berlin] Found user_id in session: 1
+[12-Apr-2026 17:57:30 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[12-Apr-2026 17:57:30 Europe/Berlin] Transaction data: User_ID=1, Total=245, Payment=245, Method=gcash
+[13-Apr-2026 05:41:27 Europe/Berlin] Found user_id in session: 4
+[13-Apr-2026 05:41:27 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[13-Apr-2026 05:41:27 Europe/Berlin] Transaction data: User_ID=4, Total=165, Payment=165, Method=cash
+[13-Apr-2026 05:41:27 Europe/Berlin] Transaction inserted with ID: 97
+[13-Apr-2026 05:41:38 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[13-Apr-2026 06:55:22 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => assda
+    [description] => 
+    [price] => 231
+    [cost_price] => 100
+    [stock] => 2323
+    [unit] => whole sack
+    [sku] => CAT-799
+    [barcode] => 21315713423
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-13
+)
+
+[13-Apr-2026 06:55:22 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 28
+    [data] => Array
+        (
+            [id] => 28
+            [sku] => CAT-799
+            [barcode] => 21315713423
+            [unit] => whole sack
+            [cost_price] => 100
+            [expiration_date] => 2222-02-22
+        )
+
+)
+
+[13-Apr-2026 06:56:36 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => asdasd132
+    [description] => 132312
+    [price] => 231241
+    [cost_price] => 123123
+    [stock] => 55555
+    [unit] => half sack
+    [sku] => DOG-989
+    [barcode] => 12315123
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-13
+)
+
+[13-Apr-2026 06:56:40 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 29
+    [data] => Array
+        (
+            [id] => 29
+            [sku] => DOG-989
+            [barcode] => 12315123
+            [unit] => half sack
+            [cost_price] => 123123
+            [expiration_date] => 2222-02-22
+        )
+
+)
+
+[13-Apr-2026 09:18:23 Europe/Berlin] Found user_id in session: 4
+[13-Apr-2026 09:18:23 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[13-Apr-2026 09:18:23 Europe/Berlin] Transaction data: User_ID=4, Total=715, Payment=800, Method=cash
+[13-Apr-2026 09:18:23 Europe/Berlin] Transaction inserted with ID: 98
+[13-Apr-2026 09:18:24 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[13-Apr-2026 16:46:33 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:34 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:34 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:34 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:39 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:39 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:43 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[13-Apr-2026 16:46:44 Europe/Berlin] PHP Fatal error:  Cannot declare class ProductController, because the name is already in use in D:\xampp\htdocs\Capstone\controllers\ProductController.php on line 5
+[16-Apr-2026 07:31:25 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 07:31:25 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 07:31:25 Europe/Berlin] Transaction data: User_ID=1, Total=135, Payment=135, Method=cash
+[16-Apr-2026 07:31:25 Europe/Berlin] Transaction inserted with ID: 99
+[16-Apr-2026 07:31:25 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 07:46:06 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Cat food
+    [description] => dasd
+    [price] => 550
+    [cost_price] => 500
+    [stock] => 200
+    [unit] => whole sack
+    [sku] => CAT-415
+    [barcode] => 123121234
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-16
+)
+
+[16-Apr-2026 07:46:12 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 30
+    [data] => Array
+        (
+            [id] => 30
+            [sku] => CAT-415
+            [barcode] => 123121234
+            [unit] => whole sack
+            [cost_price] => 500
+            [expiration_date] => 2222-02-22
+        )
+
+)
+
+[16-Apr-2026 09:05:55 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 09:05:55 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 09:05:55 Europe/Berlin] Transaction data: User_ID=1, Total=245, Payment=250, Method=cash
+[16-Apr-2026 09:05:55 Europe/Berlin] Transaction inserted with ID: 100
+[16-Apr-2026 09:05:56 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 09:06:26 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 09:06:26 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 09:06:26 Europe/Berlin] Transaction data: User_ID=1, Total=620, Payment=620, Method=cash
+[16-Apr-2026 09:06:26 Europe/Berlin] Transaction inserted with ID: 101
+[16-Apr-2026 09:06:27 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 09:06:57 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 09:06:57 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 09:06:57 Europe/Berlin] Transaction data: User_ID=1, Total=4500, Payment=4500, Method=cash
+[16-Apr-2026 09:06:57 Europe/Berlin] Transaction inserted with ID: 102
+[16-Apr-2026 09:06:57 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 09:07:40 Europe/Berlin] Found user_id in session: 4
+[16-Apr-2026 09:07:40 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[16-Apr-2026 09:07:40 Europe/Berlin] Transaction data: User_ID=4, Total=950, Payment=1000, Method=cash
+[16-Apr-2026 09:07:40 Europe/Berlin] Transaction inserted with ID: 103
+[16-Apr-2026 09:07:40 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 15:29:35 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 15:29:35 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 15:29:35 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[16-Apr-2026 15:29:35 Europe/Berlin] Transaction inserted with ID: 104
+[16-Apr-2026 15:29:41 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 15:31:54 Europe/Berlin] Found user_id in session: 4
+[16-Apr-2026 15:31:54 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[16-Apr-2026 15:31:54 Europe/Berlin] Transaction data: User_ID=4, Total=385, Payment=385, Method=cash
+[16-Apr-2026 15:31:54 Europe/Berlin] Transaction inserted with ID: 105
+[16-Apr-2026 15:31:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 16:33:54 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 16:33:54 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 16:33:54 Europe/Berlin] Transaction data: User_ID=1, Total=148300, Payment=150000, Method=cash
+[16-Apr-2026 16:33:54 Europe/Berlin] Transaction inserted with ID: 106
+[16-Apr-2026 16:33:55 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 16:35:05 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 16:35:05 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 16:35:05 Europe/Berlin] Transaction data: User_ID=1, Total=108000, Payment=110000, Method=cash
+[16-Apr-2026 16:35:05 Europe/Berlin] Transaction inserted with ID: 107
+[16-Apr-2026 16:35:06 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 16:36:02 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 16:36:02 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 16:36:02 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[16-Apr-2026 16:36:02 Europe/Berlin] Transaction inserted with ID: 108
+[16-Apr-2026 16:36:02 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[16-Apr-2026 16:38:49 Europe/Berlin] Found user_id in session: 1
+[16-Apr-2026 16:38:49 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[16-Apr-2026 16:38:49 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=cash
+[16-Apr-2026 16:38:49 Europe/Berlin] Transaction inserted with ID: 109
+[16-Apr-2026 16:38:51 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 14:56:53 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 14:56:53 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 14:56:53 Europe/Berlin] Transaction data: User_ID=1, Total=9900, Payment=10000, Method=cash
+[18-Apr-2026 14:56:53 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 14:56:53 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:26:20 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:26:20 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:26:20 Europe/Berlin] Transaction data: User_ID=1, Total=5500, Payment=5500, Method=cash
+[18-Apr-2026 15:26:20 Europe/Berlin] Transaction inserted with ID: 111
+[18-Apr-2026 15:26:20 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:33:28 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:33:28 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:33:28 Europe/Berlin] Transaction data: User_ID=1, Total=9900, Payment=10000, Method=cash
+[18-Apr-2026 15:33:28 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 15:33:28 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:34:24 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:34:24 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:34:24 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[18-Apr-2026 15:34:24 Europe/Berlin] Transaction inserted with ID: 111
+[18-Apr-2026 15:34:24 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:35:03 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:35:03 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:35:03 Europe/Berlin] Transaction data: User_ID=1, Total=9900, Payment=10000, Method=cash
+[18-Apr-2026 15:35:03 Europe/Berlin] Transaction inserted with ID: 112
+[18-Apr-2026 15:35:03 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:41:10 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:41:10 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:41:10 Europe/Berlin] Transaction data: User_ID=1, Total=9900, Payment=10000, Method=cash
+[18-Apr-2026 15:41:10 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 15:41:10 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:41:32 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:41:32 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:41:32 Europe/Berlin] Transaction data: User_ID=1, Total=11000, Payment=12000, Method=cash
+[18-Apr-2026 15:41:32 Europe/Berlin] Transaction inserted with ID: 111
+[18-Apr-2026 15:41:32 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 15:52:14 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 15:52:14 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 15:52:14 Europe/Berlin] Transaction data: User_ID=1, Total=108900, Payment=110000, Method=cash
+[18-Apr-2026 15:52:14 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 15:52:14 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 16:01:38 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 16:01:38 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 16:01:38 Europe/Berlin] Transaction data: User_ID=1, Total=11000, Payment=11000, Method=cash
+[18-Apr-2026 16:01:38 Europe/Berlin] Transaction inserted with ID: 111
+[18-Apr-2026 16:01:38 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 16:06:18 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 16:06:18 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 16:06:18 Europe/Berlin] Transaction data: User_ID=1, Total=11000, Payment=11000, Method=cash
+[18-Apr-2026 16:06:18 Europe/Berlin] Transaction inserted with ID: 112
+[18-Apr-2026 16:06:18 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 16:08:25 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 16:08:25 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 16:08:25 Europe/Berlin] Transaction data: User_ID=1, Total=9900, Payment=10000, Method=cash
+[18-Apr-2026 16:08:25 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 16:08:25 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 16:15:23 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 16:15:23 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 16:15:23 Europe/Berlin] Transaction data: User_ID=1, Total=108900, Payment=110000, Method=cash
+[18-Apr-2026 16:15:23 Europe/Berlin] Transaction inserted with ID: 110
+[18-Apr-2026 16:15:23 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 20:52:54 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 20:52:54 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 20:52:54 Europe/Berlin] Transaction data: User_ID=1, Total=412.5, Payment=450, Method=cash
+[18-Apr-2026 20:52:54 Europe/Berlin] Transaction inserted with ID: 111
+[18-Apr-2026 20:52:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[18-Apr-2026 20:54:42 Europe/Berlin] Found user_id in session: 1
+[18-Apr-2026 20:54:42 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[18-Apr-2026 20:54:42 Europe/Berlin] Transaction data: User_ID=1, Total=412.5, Payment=450, Method=cash
+[18-Apr-2026 20:54:42 Europe/Berlin] Transaction inserted with ID: 112
+[18-Apr-2026 20:54:43 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[19-Apr-2026 09:29:03 Europe/Berlin] Found user_id in session: 1
+[19-Apr-2026 09:29:03 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[19-Apr-2026 09:29:03 Europe/Berlin] Transaction data: User_ID=1, Total=385, Payment=400, Method=cash
+[19-Apr-2026 09:29:03 Europe/Berlin] Transaction inserted with ID: 501
+[19-Apr-2026 09:29:03 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[19-Apr-2026 09:30:44 Europe/Berlin] Found user_id in session: 1
+[19-Apr-2026 09:30:44 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[19-Apr-2026 09:30:44 Europe/Berlin] Transaction data: User_ID=1, Total=5800, Payment=6000, Method=cash
+[19-Apr-2026 09:30:44 Europe/Berlin] Transaction inserted with ID: 502
+[19-Apr-2026 09:30:44 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[19-Apr-2026 10:58:30 Europe/Berlin] Found user_id in session: 1
+[19-Apr-2026 10:58:30 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[19-Apr-2026 10:58:30 Europe/Berlin] Transaction data: User_ID=1, Total=138.75, Payment=140, Method=cash
+[19-Apr-2026 10:58:30 Europe/Berlin] Transaction inserted with ID: 503
+[19-Apr-2026 10:58:30 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[19-Apr-2026 19:30:45 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Cat foodssss
+    [description] => 1231
+    [price] => 2131
+    [cost_price] => 222
+    [stock] => 13231
+    [unit] => whole sack
+    [sku] => CAT-435
+    [barcode] => 4800016110542
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-19
+)
+
+[19-Apr-2026 19:30:46 Europe/Berlin] Error in createProduct: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'espenida_pos.product_batches' doesn't exist
+[19-Apr-2026 19:30:46 Europe/Berlin] Data: Array
+(
+    [category_id] => 2
+    [name] => Cat foodssss
+    [description] => 1231
+    [price] => 2131
+    [cost_price] => 222
+    [stock] => 13231
+    [unit] => whole sack
+    [sku] => CAT-435
+    [barcode] => 4800016110542
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-19
+)
+
+[19-Apr-2026 19:30:46 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 
+    [message] => Database error: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'espenida_pos.product_batches' doesn't exist
+)
+
+[19-Apr-2026 19:30:50 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Cat foodssss
+    [description] => 1231
+    [price] => 2131
+    [cost_price] => 222
+    [stock] => 13231
+    [unit] => whole sack
+    [sku] => CAT-435
+    [barcode] => 4800016110542
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-19
+)
+
+[19-Apr-2026 19:30:57 Europe/Berlin] Error in createProduct: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'CAT-435' for key 'sku'
+[19-Apr-2026 19:30:57 Europe/Berlin] Data: Array
+(
+    [category_id] => 2
+    [name] => Cat foodssss
+    [description] => 1231
+    [price] => 2131
+    [cost_price] => 222
+    [stock] => 13231
+    [unit] => whole sack
+    [sku] => CAT-435
+    [barcode] => 4800016110542
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-04-19
+)
+
+[19-Apr-2026 19:30:57 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 
+    [message] => Database error: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'CAT-435' for key 'sku'
+)
+
+[19-Apr-2026 19:39:22 Europe/Berlin] Error in getProductsByCategory: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.status' in 'field list'
+[19-Apr-2026 19:39:23 Europe/Berlin] Error in getProductsByCategory: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.status' in 'field list'
+[19-Apr-2026 19:39:43 Europe/Berlin] Error in getProductsByCategory: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.status' in 'field list'
+[19-Apr-2026 20:53:08 Europe/Berlin] Found user_id in session: 1
+[19-Apr-2026 20:53:08 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[19-Apr-2026 20:53:08 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[19-Apr-2026 20:53:08 Europe/Berlin] Transaction inserted with ID: 501
+[19-Apr-2026 20:53:29 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Apr-2026 15:12:54 Europe/Berlin] Found user_id in session: 1
+[20-Apr-2026 15:12:54 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[20-Apr-2026 15:12:54 Europe/Berlin] Transaction data: User_ID=1, Total=680, Payment=680, Method=cash
+[20-Apr-2026 15:12:54 Europe/Berlin] Transaction inserted with ID: 502
+[20-Apr-2026 15:12:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Apr-2026 15:18:52 Europe/Berlin] Found user_id in session: 1
+[20-Apr-2026 15:18:52 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[20-Apr-2026 15:18:52 Europe/Berlin] Transaction data: User_ID=1, Total=95, Payment=95, Method=cash
+[20-Apr-2026 15:18:52 Europe/Berlin] Transaction inserted with ID: 503
+[20-Apr-2026 15:18:53 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Apr-2026 16:39:20 Europe/Berlin] Found user_id in session: 4
+[20-Apr-2026 16:39:20 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[20-Apr-2026 16:39:20 Europe/Berlin] Transaction data: User_ID=4, Total=180, Payment=180, Method=cash
+[20-Apr-2026 16:39:20 Europe/Berlin] Transaction inserted with ID: 504
+[20-Apr-2026 16:39:24 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[27-Apr-2026 05:32:29 Europe/Berlin] Found user_id in session: 1
+[27-Apr-2026 05:32:31 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[27-Apr-2026 05:32:31 Europe/Berlin] Transaction data: User_ID=1, Total=95, Payment=95, Method=cash
+[27-Apr-2026 05:32:31 Europe/Berlin] Transaction inserted with ID: 505
+[27-Apr-2026 05:32:50 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[27-Apr-2026 05:34:21 Europe/Berlin] Found user_id in session: 1
+[27-Apr-2026 05:34:21 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[27-Apr-2026 05:34:21 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[27-Apr-2026 05:34:21 Europe/Berlin] Transaction inserted with ID: 506
+[27-Apr-2026 05:34:21 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[27-Apr-2026 05:35:59 Europe/Berlin] Found user_id in session: 4
+[27-Apr-2026 05:35:59 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[27-Apr-2026 05:35:59 Europe/Berlin] Transaction data: User_ID=4, Total=385, Payment=385, Method=cash
+[27-Apr-2026 05:35:59 Europe/Berlin] Transaction inserted with ID: 507
+[27-Apr-2026 05:35:59 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[27-Apr-2026 05:48:35 Europe/Berlin] Found user_id in session: 1
+[27-Apr-2026 05:48:35 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[27-Apr-2026 05:48:35 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[27-Apr-2026 05:48:35 Europe/Berlin] Transaction inserted with ID: 508
+[27-Apr-2026 05:48:35 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[27-Apr-2026 06:04:03 Europe/Berlin] Found user_id in session: 1
+[27-Apr-2026 06:04:03 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[27-Apr-2026 06:04:03 Europe/Berlin] Transaction data: User_ID=1, Total=210, Payment=210, Method=cash
+[27-Apr-2026 06:04:03 Europe/Berlin] Transaction inserted with ID: 509
+[27-Apr-2026 06:04:04 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[28-Apr-2026 17:51:31 Europe/Berlin] Found user_id in session: 1
+[28-Apr-2026 17:51:31 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[28-Apr-2026 17:51:31 Europe/Berlin] Transaction data: User_ID=1, Total=550, Payment=550, Method=cash
+[28-Apr-2026 17:51:31 Europe/Berlin] Transaction inserted with ID: 1501
+[28-Apr-2026 17:51:37 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[30-Apr-2026 16:39:10 Europe/Berlin] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in D:\xampp\htdocs\Capstone\config\database.php on line 13
+[30-Apr-2026 18:05:53 Europe/Berlin] Found user_id in session: 1
+[30-Apr-2026 18:05:53 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[30-Apr-2026 18:05:53 Europe/Berlin] Transaction data: User_ID=1, Total=111, Payment=111, Method=cash
+[30-Apr-2026 18:05:53 Europe/Berlin] Transaction inserted with ID: 1502
+[30-Apr-2026 18:06:04 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[30-Apr-2026 18:26:58 Europe/Berlin] Found user_id in session: 1
+[30-Apr-2026 18:26:58 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[30-Apr-2026 18:26:58 Europe/Berlin] Transaction data: User_ID=1, Total=426, Payment=426, Method=cash
+[30-Apr-2026 18:27:00 Europe/Berlin] Transaction inserted with ID: 1503
+[30-Apr-2026 18:27:02 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[30-Apr-2026 18:27:19 Europe/Berlin] Found user_id in session: 1
+[30-Apr-2026 18:27:19 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[30-Apr-2026 18:27:19 Europe/Berlin] Transaction data: User_ID=1, Total=426, Payment=426, Method=cash
+[30-Apr-2026 18:27:19 Europe/Berlin] Transaction inserted with ID: 1504
+[30-Apr-2026 18:27:20 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Jul-2026 18:28:07 Europe/Berlin] Found user_id in session: 1
+[20-Jul-2026 18:28:07 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[20-Jul-2026 18:28:07 Europe/Berlin] Transaction data: User_ID=1, Total=960, Payment=1000, Method=cash
+[20-Jul-2026 18:28:07 Europe/Berlin] Transaction inserted with ID: 1505
+[20-Jul-2026 18:28:07 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Jul-2026 18:28:28 Europe/Berlin] Found user_id in session: 1
+[20-Jul-2026 18:28:28 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[20-Jul-2026 18:28:28 Europe/Berlin] Transaction data: User_ID=1, Total=480, Payment=500, Method=cash
+[20-Jul-2026 18:28:28 Europe/Berlin] Transaction inserted with ID: 1506
+[20-Jul-2026 18:28:28 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
