@@ -332,16 +332,50 @@ class RecommendationModel:
         features: Dict[str, Any],
         risk_score: float,
         risk_level: str = None,
+        used_strategy_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Recommend best marketing strategies for product based on its risk level.
 
         Filters strategies by the product's risk_level first (CRITICAL/WARNING/MONITOR),
-        then ranks by condition fit score. Returns max 2 strategies.
-        For MONITOR products, includes a monitoring message.
+        then excludes any strategy already applied within the no-repeat window, and
+        finally ranks by condition fit score. Returns max 2 strategies.
 
-        Returns strategies ranked by priority and fit score.
+        Args:
+            used_strategy_ids: strategy IDs already applied within the no-repeat lookback
+                window.  These are excluded so the engine never cycles the same advice.
+                When all applicable strategies are exhausted, an escalation advisory is
+                returned instead.
         """
+        if used_strategy_ids is None:
+            used_strategy_ids = []
+
+        _ESCALATION_ADVISORY = {
+            "strategy_id": "escalate_reevaluate",
+            "strategy_name": "Escalate & Re-evaluate",
+            "priority": 99,
+            "fit_score": 0.1,
+            "recommended_discount": 0,
+            "duration_days": 14,
+            "expected_impact_min": 0,
+            "expected_impact_max": 10,
+            "implementation_steps": [
+                "All standard promotional strategies have already been tried for this product recently.",
+                "Review whether the current selling price is still competitive in the market.",
+                "Consider negotiating better terms with the supplier or switching to a different supplier.",
+                "Evaluate whether this product should be bundled with a higher-demand item permanently.",
+                "If stock levels are still high, consult with the owner about returning or liquidating remaining units.",
+                "Update the product's cost price and selling price in the system if conditions have changed.",
+            ],
+            "why_it_works": (
+                "When repeated promotions have not resolved a slow-moving or high-risk product, "
+                "the next step is a deeper business review — pricing strategy, supplier relationship, "
+                "or product discontinuation. This prevents an endless cycle of discounts."
+            ),
+            "risk_level_target": "ALL",
+            "is_escalation": True,
+        }
+
         recommended = []
 
         try:
@@ -364,27 +398,30 @@ class RecommendationModel:
             db_strategies = self._load_db_strategies()
             strategies_to_use = db_strategies if db_strategies else STRATEGIES
 
-            # Filter strategies by risk_level
+            # ── Rule 1: Filter by risk_level ─────────────────────────────────────
             filtered_strategies = []
             for strategy in strategies_to_use:
                 strategy_risk_levels = strategy.get("risk_levels", [])
-                # If strategy has risk_levels defined, filter by them
                 if strategy_risk_levels:
                     if risk_level in strategy_risk_levels:
                         filtered_strategies.append(strategy)
                 else:
-                    # Legacy strategies without risk_levels — use condition matching
                     filtered_strategies.append(strategy)
 
-            # If no strategies match the risk level, fall back to all strategies
             if not filtered_strategies:
                 filtered_strategies = strategies_to_use
 
-            for strategy in filtered_strategies:
+            # ── Rule 2: Exclude recently-tried strategies (no-repeat window) ─────
+            used_set = set(str(sid) for sid in used_strategy_ids)
+            fresh_strategies = [s for s in filtered_strategies if str(s["id"]) not in used_set]
+
+            all_exhausted = len(fresh_strategies) == 0
+            strategies_to_score = fresh_strategies if not all_exhausted else filtered_strategies
+
+            for strategy in strategies_to_score:
                 fit_score = 0
                 conditions = strategy.get("conditions", [])
 
-                # Check conditions match
                 if "critical_expiry" in conditions and is_expiring_soon:
                     fit_score += 0.5
                 if "slow_moving" in conditions and is_slow_moving:
@@ -394,19 +431,18 @@ class RecommendationModel:
                 if "moderate_stock" in conditions and is_moderate_stock:
                     fit_score += 0.2
                 if "complementary_products" in conditions:
-                    fit_score += 0.1  # Always modest fit for cross-sell
+                    fit_score += 0.1
                 if "low_priority" in conditions and risk_level == "MONITOR":
-                    fit_score += 0.4  # Good fit for monitor-level items
+                    fit_score += 0.4
                 if "seasonal" in conditions:
-                    fit_score += 0.1  # Small seasonal bonus
+                    fit_score += 0.1
                 if "packaged" in conditions:
                     if is_packaged:
                         fit_score += 0.4
                     else:
-                        fit_score -= 1.0  # Must be packaged
+                        fit_score -= 1.0
 
                 if fit_score > 0:
-                    # Calculate recommended discount
                     d_range = strategy.get("discount_range", (0, 10))
                     if isinstance(d_range, (list, tuple)):
                         discount_min, discount_max = d_range
@@ -426,12 +462,16 @@ class RecommendationModel:
                         impact_min = strategy.get("expected_impact_min", 0)
                         impact_max = strategy.get("expected_impact_max", 0)
 
+                    # Add a small random jitter to break ties dynamically
+                    import random
+                    dynamic_fit_score = fit_score + random.uniform(0.01, 0.09)
+
                     recommended.append(
                         {
-                            "strategy_id": strategy["id"],
+                            "strategy_id": str(strategy["id"]),
                             "strategy_name": strategy["name"],
                             "priority": strategy.get("priority", 1),
-                            "fit_score": float(fit_score),
+                            "fit_score": float(dynamic_fit_score),
                             "recommended_discount": float(recommended_discount),
                             "duration_days": strategy.get("duration_days", 7),
                             "expected_impact_min": int(impact_min),
@@ -439,14 +479,21 @@ class RecommendationModel:
                             "implementation_steps": strategy.get("implementation_steps", []),
                             "why_it_works": strategy.get("why_it_works", ""),
                             "risk_level_target": risk_level,
+                            # Tag previously-used strategies so UI can warn the user
+                            "previously_used": str(strategy["id"]) in used_set,
                         }
                     )
 
-            # Sort by priority and fit_score
             recommended.sort(key=lambda x: (-x["fit_score"], x["priority"]))
-
-            # Limit to 2 strategies
             result = recommended[:2]
+
+            # ── Rule 3: Escalation when all fresh strategies are exhausted ────────
+            if all_exhausted:
+                logger.info(
+                    f"All strategies already tried recently for product {product_id} "
+                    f"(used={used_strategy_ids}). Returning escalation advisory."
+                )
+                return [_ESCALATION_ADVISORY]
 
             # For MONITOR products, add monitoring message if no strong strategies
             if risk_level == "MONITOR":
@@ -455,7 +502,6 @@ class RecommendationModel:
                         "This item is selling normally. Monitor it weekly and "
                         "revisit if sales decline for 2+ consecutive weeks."
                     )
-                # If no strategies matched, still return a monitor advisory
                 if not result:
                     result = [{
                         "strategy_id": "monitor_advisory",

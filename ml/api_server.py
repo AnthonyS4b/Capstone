@@ -10,6 +10,7 @@ is not yet trained.
 import logging
 import os
 import sys
+import random
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -244,8 +245,14 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         risk_level_config = RISK_LEVELS.get(risk_level, RISK_LEVELS["LOW"])
         markup_pct = ((price - cost) / cost) * 100 if cost > 0 else 0
 
-        # Pick strategies from DB — filtered by risk_level
-        strategies = _pick_strategies_from_db(is_critical, is_slow, stock > 20, markup_pct, risk_level, is_packaged)
+        # Fetch strategy IDs already tried within the no-repeat window
+        recent_strategy_ids = _get_recent_strategy_ids(int(row["id"]))
+
+        # Pick strategies from DB — filtered by risk_level, excluding recently-used ones
+        strategies = _pick_strategies_from_db(
+            is_critical, is_slow, stock > 20, markup_pct, risk_level, is_packaged,
+            used_strategy_ids=recent_strategy_ids,
+        )
 
         # Count historical strategies
         history_count = _get_strategy_history_count(int(row["id"]))
@@ -351,6 +358,29 @@ def _get_strategy_history_count(product_id: int) -> int:
         return 0
 
 
+NO_REPEAT_LOOKBACK_DAYS = 30  # strategies tried within this window won't be re-recommended
+
+
+def _get_recent_strategy_ids(product_id: int, lookback_days: int = NO_REPEAT_LOOKBACK_DAYS) -> List[str]:
+    """
+    Return the list of strategy IDs that were already applied to this product
+    within the last `lookback_days` days.  These will be excluded from new
+    recommendations so the engine never cycles the same advice.
+    """
+    try:
+        rows = DatabaseConnector.execute_query(
+            """SELECT DISTINCT strategy_id
+               FROM strategy_history
+               WHERE product_id = %s
+                 AND started_at >= DATE_SUB(NOW(), INTERVAL %s DAY)""",
+            (product_id, lookback_days),
+        )
+        return [str(r["strategy_id"]) for r in rows] if rows else []
+    except Exception as e:
+        logger.warning(f"Could not fetch recent strategy IDs for product {product_id}: {e}")
+        return []
+
+
 def _load_strategies_from_db() -> List[Dict[str, Any]]:
     """Load strategy templates from the database."""
     try:
@@ -396,6 +426,34 @@ def _load_strategies_from_db() -> List[Dict[str, Any]]:
         return []
 
 
+# Escalation advisory returned when all applicable strategies have been tried recently
+_ESCALATION_ADVISORY = {
+    "strategy_id": "escalate_reevaluate",
+    "strategy_name": "Escalate & Re-evaluate",
+    "priority": 99,
+    "fit_score": 0.1,
+    "recommended_discount": 0,
+    "duration_days": 14,
+    "expected_impact_min": 0,
+    "expected_impact_max": 10,
+    "implementation_steps": [
+        "All standard promotional strategies have already been tried for this product recently.",
+        "Review whether the current selling price is still competitive in the market.",
+        "Consider negotiating better terms with the supplier or switching to a different supplier.",
+        "Evaluate whether this product should be bundled with a higher-demand item permanently.",
+        "If stock levels are still high, consult with the owner about returning or liquidating remaining units.",
+        "Update the product's cost price and selling price in the system if conditions have changed.",
+    ],
+    "why_it_works": (
+        "When repeated promotions have not resolved a slow-moving or high-risk product, "
+        "the next step is a deeper business review — pricing strategy, supplier relationship, "
+        "or product discontinuation. This prevents an endless cycle of discounts."
+    ),
+    "risk_level_target": "ALL",
+    "is_escalation": True,
+}
+
+
 def _pick_strategies_from_db(
     is_critical: bool,
     is_slow: bool,
@@ -403,8 +461,18 @@ def _pick_strategies_from_db(
     markup_pct: float,
     risk_level: str = "WARNING",
     is_packaged: bool = True,
+    used_strategy_ids: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
-    """Pick best strategies from DB templates based on product risk level and conditions."""
+    """
+    Pick best strategies from DB templates based on product risk level and conditions.
+
+    `used_strategy_ids`: strategy IDs already applied within the no-repeat window.
+    Strategies in this list are excluded so the engine never cycles the same advice.
+    When all applicable strategies are exhausted the escalation advisory is returned.
+    """
+    if used_strategy_ids is None:
+        used_strategy_ids = []
+
     db_strategies = _load_strategies_from_db()
 
     # Fallback to hardcoded if DB is empty
@@ -417,7 +485,7 @@ def _pick_strategies_from_db(
             if "why_it_works" not in s:
                 s["why_it_works"] = ""
 
-    # Filter strategies by risk_level first
+    # ── Rule 1: Filter by risk level ──────────────────────────────────────────
     filtered_strategies = []
     for strategy in db_strategies:
         strategy_risk_levels = strategy.get("risk_levels", [])
@@ -431,9 +499,18 @@ def _pick_strategies_from_db(
     if not filtered_strategies:
         filtered_strategies = db_strategies
 
+    # ── Rule 2: Exclude recently-tried strategies (no-repeat window) ──────────
+    used_set = set(str(sid) for sid in used_strategy_ids)
+    fresh_strategies = [s for s in filtered_strategies if str(s["id"]) not in used_set]
+
+    # If every risk-appropriate strategy has been tried recently, note that for
+    # the escalation fallback but still score from the fresh pool.
+    all_exhausted = len(fresh_strategies) == 0
+    strategies_to_score = fresh_strategies if not all_exhausted else filtered_strategies
+
     is_moderate_stock = not is_high_stock  # simplified
     recommended = []
-    for strategy in filtered_strategies:
+    for strategy in strategies_to_score:
         fit_score = 0.0
         conditions = strategy.get("conditions", [])
         if "critical_expiry" in conditions and is_critical:
@@ -451,10 +528,8 @@ def _pick_strategies_from_db(
         if "seasonal" in conditions:
             fit_score += 0.1
         if "packaged" in conditions:
-            if is_packaged:
-                fit_score += 0.4
-            else:
-                fit_score -= 1.0
+            if not is_packaged:
+                fit_score -= 1.0  # Disqualify: BOGO doesn't work for loose/bulk items
 
         if fit_score > 0:
             d_range = strategy.get("discount_range", (0, 10))
@@ -468,11 +543,15 @@ def _pick_strategies_from_db(
                 impact_min = strategy.get("expected_impact_min", 0)
                 impact_max = strategy.get("expected_impact_max", 0)
 
+            # Add a small random jitter (0.01 to 0.09) to break ties. 
+            # This ensures that other recommendations with the same base score also show up.
+            dynamic_fit_score = fit_score + random.uniform(0.01, 0.09)
+
             entry = {
-                "strategy_id": strategy["id"],
+                "strategy_id": str(strategy["id"]),
                 "strategy_name": strategy["name"],
                 "priority": strategy["priority"],
-                "fit_score": fit_score,
+                "fit_score": dynamic_fit_score,
                 "recommended_discount": round(disc, 1),
                 "duration_days": strategy["duration_days"],
                 "expected_impact_min": int(impact_min),
@@ -480,6 +559,8 @@ def _pick_strategies_from_db(
                 "implementation_steps": strategy.get("implementation_steps", []),
                 "why_it_works": strategy.get("why_it_works", ""),
                 "risk_level_target": risk_level,
+                # Tag previously-used strategies so the UI can warn the user
+                "previously_used": str(strategy["id"]) in used_set,
             }
 
             # Add monitor message for MONITOR strategies
@@ -491,10 +572,19 @@ def _pick_strategies_from_db(
 
             recommended.append(entry)
 
+    # Sort primarily by dynamic fit score. Priority is only a fallback.
     recommended.sort(key=lambda x: (-x["fit_score"], x["priority"]))
 
     # Limit to 2 strategies
     result = recommended[:2]
+
+    # ── Rule 3: Escalation when all fresh strategies are exhausted ────────────
+    if all_exhausted:
+        logger.info(
+            f"All strategies already tried recently (used={used_strategy_ids}). "
+            "Returning escalation advisory."
+        )
+        return [_ESCALATION_ADVISORY.copy()]
 
     # For MONITOR with no matching strategies, provide a default advisory
     if risk_level == "MONITOR" and not result:
@@ -876,7 +966,12 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
         confidence = recommender.get_prediction_confidence(
             product_id, pred_val, features["monthly_sales_velocity"]
         )
-        strategies = recommender.recommend_strategy(product_id, product, features, risk_score, risk_level)
+        # Fetch strategy IDs already tried within the no-repeat window
+        recent_strategy_ids = _get_recent_strategy_ids(product_id)
+        strategies = recommender.recommend_strategy(
+            product_id, product, features, risk_score, risk_level,
+            used_strategy_ids=recent_strategy_ids,
+        )
 
         # Calculate days in stock from features (already computed correctly)
         days_in_stock = features.get("days_in_stock", 0)

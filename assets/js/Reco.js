@@ -208,7 +208,21 @@ function buildCard(r) {
 
     // Strategy section: show monitor message for MONITOR items
     let strategyHTML = '';
-    if (isMonitor && r.monitor_message) {
+    const firstStrategy = r.strategies?.[0] || {};
+    const isEscalation = firstStrategy.strategy_id === 'escalate_reevaluate' || firstStrategy.is_escalation;
+
+    if (isEscalation) {
+        strategyHTML = `
+            <div class="strategy-section escalation-strategy" style="border-left: 4px solid #ef4444; background: rgba(239,68,68,0.06);">
+                <div class="strategy-header">
+                    <span class="strategy-name" style="color:#ef4444;">⚠ Escalate &amp; Re-evaluate</span>
+                    <span class="discount-pill" style="background:#ef444420;color:#ef4444;border:1px solid #ef444440;">Strategies Exhausted</span>
+                </div>
+                <div class="strategy-description">
+                    All standard strategies have been tried recently. A deeper business review is recommended.
+                </div>
+            </div>`;
+    } else if (isMonitor && r.monitor_message) {
         strategyHTML = `
             <div class="strategy-section monitor-strategy">
             <div class="strategy-header">
@@ -283,7 +297,9 @@ function buildCard(r) {
             <button class="btn-action btn-forecast" onclick='openForecastModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'> 
                 View Details
             </button>
-            <button class="btn-action btn-apply" onclick='openApplyModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'> 
+            <button class="btn-action btn-apply" 
+                onclick='openApplyModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'
+                ${isEscalation ? 'disabled title="No applicable strategy to apply — please review manually" style=\"opacity:0.5;cursor:not-allowed;\"' : ''}> 
                 Apply Strategy
             </button>
         </div>
@@ -418,6 +434,24 @@ function buildStrategyTab(rec) {
     const monthly = Math.round(rec.monthly_sales || 0);
     const price = rec.current_price || 0;
     const confidence = Math.round((rec.confidence || 0.65) * 100);
+
+    // Detect escalation
+    const firstStrategy = strategies[0] || {};
+    const isEscalation = firstStrategy.strategy_id === 'escalate_reevaluate' || firstStrategy.is_escalation;
+
+    if (isEscalation) {
+        return `
+        <div class="detail-card" style="border-left:4px solid #ef4444;">
+            <h6 style="color:#ef4444;font-weight:700;">&#x26A0; Strategies Exhausted — Escalate &amp; Re-evaluate</h6>
+            <p class="text-muted small">${esc(firstStrategy.why_it_works || '')}</p>
+            <div class="strategy-steps">
+                <div class="steps-title">Recommended Business Review Actions:</div>
+                <ol class="steps-list">
+                    ${(firstStrategy.implementation_steps || []).map(step => `<li>${esc(step)}</li>`).join('')}
+                </ol>
+            </div>
+        </div>`;
+    }
 
     // Show only 2 strategies max
     const displayStrategies = strategies.slice(0, 2);
@@ -827,6 +861,27 @@ function openApplyModal(rec) {
     if (!content) return;
 
     const strategies = rec.strategies || [];
+    const firstStrategy = strategies[0] || {};
+    const isEscalation = firstStrategy.strategy_id === 'escalate_reevaluate' || firstStrategy.is_escalation;
+
+    if (isEscalation) {
+        content.innerHTML = `
+            <div class="text-center py-3">
+                <div style="font-size:2.5rem;margin-bottom:8px;">&#x26A0;&#xFE0F;</div>
+                <h6 style="color:#ef4444;font-weight:700;">Strategies Exhausted</h6>
+                <p class="text-muted small mb-3">All standard promotional strategies have been tried recently for <strong>${esc(rec.product_name)}</strong>. A deeper business review is needed.</p>
+            </div>
+            <div class="escalation-steps" style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;">
+                <div style="font-weight:600;margin-bottom:10px;color:#ef4444;">Recommended Actions:</div>
+                <ol style="padding-left:18px;margin:0;">
+                    ${(firstStrategy.implementation_steps || []).map(step => `<li style="margin-bottom:6px;font-size:13px;">${esc(step)}</li>`).join('')}
+                </ol>
+            </div>`;
+        const confirmBtn = document.getElementById('confirmApplyBtn');
+        if (confirmBtn) confirmBtn.style.display = 'none';
+        modal.show();
+        return;
+    }
 
     if (!strategies.length) {
         content.innerHTML = `<div class="text-center text-muted py-4">
