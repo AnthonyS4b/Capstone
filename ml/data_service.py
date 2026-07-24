@@ -10,9 +10,13 @@ import logging
 from contextlib import contextmanager
 from typing import Any, Optional, List, Dict, Tuple
 
+# pyrefly: ignore [missing-import]
 import numpy as np
+# pyrefly: ignore [missing-import]
 import pandas as pd
+# pyrefly: ignore [missing-import]
 import pymysql
+# pyrefly: ignore [missing-import]
 import pymysql.cursors
 
 try:
