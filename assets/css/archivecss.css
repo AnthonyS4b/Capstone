@@ -791,4 +791,24 @@ body {
         text-align: center;
         gap: 10px;
     }
+
+    .main-content {
+        padding: 12px;
+        padding-top: 62px;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .archive-section {
+        padding: 14px;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .archive-table {
+        min-width: 720px;
+    }
 }

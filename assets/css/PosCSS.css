@@ -1417,3 +1417,83 @@ body {
         padding: 1rem;
     }
 }
+
+/* Mobile POS: the desktop split pane must stack instead of overflowing off-screen. */
+@media (max-width: 768px) {
+    body,
+    .pos-container {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .pos-main {
+        min-width: 0;
+        overflow: visible;
+    }
+
+    .pos-header {
+        padding: 14px 16px;
+        padding-top: 62px;
+        flex-wrap: wrap;
+    }
+
+    .pos-header h1 {
+        font-size: 1.25rem;
+        margin: 0;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .header-actions .date-time {
+        width: 100%;
+        text-align: center;
+    }
+
+    .pos-content {
+        flex-direction: column;
+        overflow: visible;
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .pos-content .products-section,
+    .pos-content .cart-section {
+        width: 100%;
+        flex: none;
+        min-width: 0;
+    }
+
+    .pos-content .products-section {
+        min-height: 540px;
+    }
+
+    .pos-content .cart-section {
+        min-height: 420px;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+        max-height: none;
+    }
+
+    .category-filters {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+
+    .category-btn {
+        flex: 0 0 auto;
+    }
+}
+
+@media (max-width: 390px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -49,6 +49,21 @@ THRESHOLDS: Dict[str, Any] = {
     "days_in_stock_warning": 50,  # 50+ days = WARNING
 }
 
+# Recommendation delivery policy.  Keep these values together so the rules
+# used to decide *whether* to show a recommendation are explicit and easy to
+# tune without changing ranking or presentation code.
+RECOMMENDATION_POLICY: Dict[str, Any] = {
+    # A non-expiring product needs this much shelf time before it can alert.
+    "minimum_days_in_stock": 14,
+    # Any one of these conditions makes an eligible product recommendable.
+    "monthly_sales_below": 50,       # fewer than 50 units in the last 30 days
+    "days_in_stock_at_least": 50,    # aging inventory, regardless of sales
+    "expiry_within_days": 14,        # imminent expiry always takes precedence
+    # Same product + strategy is a repeat during this window.  Other eligible
+    # strategies may still be offered, so a worsening risk tier can escalate.
+    "strategy_cooldown_days": 30,
+}
+
 
 # ============================================================================
 # DISCOUNT STRATEGY MATRIX (Priority-Based)

@@ -10,7 +10,6 @@ is not yet trained.
 import logging
 import os
 import sys
-import random
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -21,11 +20,11 @@ from flask_cors import CORS
 # Handle imports for both module and script execution
 try:
     from .data_service import DataProcessor, DatabaseConnector
-    from .ml_config import API_CONFIG, CONFIDENCE_LEVELS, RISK_LEVELS, THRESHOLDS, STRATEGIES
+    from .ml_config import API_CONFIG, CONFIDENCE_LEVELS, RISK_LEVELS, THRESHOLDS, STRATEGIES, RECOMMENDATION_POLICY
     from .recommendation_model import RecommendationModel
 except ImportError:
     from data_service import DataProcessor, DatabaseConnector
-    from ml_config import API_CONFIG, CONFIDENCE_LEVELS, RISK_LEVELS, THRESHOLDS, STRATEGIES
+    from ml_config import API_CONFIG, CONFIDENCE_LEVELS, RISK_LEVELS, THRESHOLDS, STRATEGIES, RECOMMENDATION_POLICY
     from recommendation_model import RecommendationModel
 
 # ============================================================================
@@ -205,13 +204,19 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         HAVING
             (days_until_expiry IS NOT NULL AND days_until_expiry <= %s)
             OR monthly_sales < %s
+            OR days_in_stock >= %s
         ORDER BY days_until_expiry ASC, monthly_sales ASC
         LIMIT %s
     """
     try:
         rows = DatabaseConnector.execute_query(
             query,
-            (THRESHOLDS["critical_stock_days"], THRESHOLDS["slow_moving_threshold"], limit),
+            (
+                RECOMMENDATION_POLICY["expiry_within_days"],
+                RECOMMENDATION_POLICY["monthly_sales_below"],
+                RECOMMENDATION_POLICY["days_in_stock_at_least"],
+                limit,
+            ),
         )
     except Exception as e:
         logger.error(f"DB recommendations query failed: {e}")
@@ -233,7 +238,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         days_in_stock = int(row.get("days_in_stock") or 0)
 
         is_critical = days_expiry <= THRESHOLDS["critical_stock_days"] and days_expiry >= 0
-        is_slow = velocity < THRESHOLDS["slow_moving_threshold"]
+        is_slow = velocity < RECOMMENDATION_POLICY["monthly_sales_below"]
 
         # Compute simple risk score
         expiry_factor = max(0.0, min(1.0, 1 - (days_expiry / 30))) if days_expiry < 30 else 0.0
@@ -305,7 +310,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             )
 
         # 14-Day Minimum Rule: Skip if new, unless it is expiring
-        if days_in_stock < 14 and not is_critical:
+        if days_in_stock < RECOMMENDATION_POLICY["minimum_days_in_stock"] and not is_critical:
             continue
 
         results.append(rec)
@@ -358,7 +363,7 @@ def _get_strategy_history_count(product_id: int) -> int:
         return 0
 
 
-NO_REPEAT_LOOKBACK_DAYS = 30  # strategies tried within this window won't be re-recommended
+NO_REPEAT_LOOKBACK_DAYS = RECOMMENDATION_POLICY["strategy_cooldown_days"]
 
 
 def _get_recent_strategy_ids(product_id: int, lookback_days: int = NO_REPEAT_LOOKBACK_DAYS) -> List[str]:
@@ -543,15 +548,11 @@ def _pick_strategies_from_db(
                 impact_min = strategy.get("expected_impact_min", 0)
                 impact_max = strategy.get("expected_impact_max", 0)
 
-            # Add a small random jitter (0.01 to 0.09) to break ties. 
-            # This ensures that other recommendations with the same base score also show up.
-            dynamic_fit_score = fit_score + random.uniform(0.01, 0.09)
-
             entry = {
                 "strategy_id": str(strategy["id"]),
                 "strategy_name": strategy["name"],
                 "priority": strategy["priority"],
-                "fit_score": dynamic_fit_score,
+                "fit_score": fit_score,
                 "recommended_discount": round(disc, 1),
                 "duration_days": strategy["duration_days"],
                 "expected_impact_min": int(impact_min),
@@ -572,8 +573,9 @@ def _pick_strategies_from_db(
 
             recommended.append(entry)
 
-    # Sort primarily by dynamic fit score. Priority is only a fallback.
-    recommended.sort(key=lambda x: (-x["fit_score"], x["priority"]))
+    # Deterministic ordering prevents equal candidates from swapping places on
+    # refresh.  Template priority is the stable tie-breaker displayed in the UI.
+    recommended.sort(key=lambda x: (-x["fit_score"], x["priority"], x["strategy_id"]))
 
     # Limit to 2 strategies
     result = recommended[:2]
@@ -938,9 +940,10 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             return None
 
         is_critical = features["is_critical_expiry"]
-        is_slow = features["monthly_sales_velocity"] < THRESHOLDS["slow_moving_threshold"]
+        is_slow = features["monthly_sales_velocity"] < RECOMMENDATION_POLICY["monthly_sales_below"]
 
-        if not (is_critical or is_slow):
+        is_aging = features.get("days_in_stock", 0) >= RECOMMENDATION_POLICY["days_in_stock_at_least"]
+        if not (is_critical or is_slow or is_aging):
             return None
 
         risk_score = recommender.calculate_risk_score(product_id, product, features)
@@ -1057,7 +1060,8 @@ def _get_all_recommendations(limit: int) -> List[Dict[str, Any]]:
             rec = _get_single_recommendation(product["id"])
             if rec:
                 # 14-Day Minimum Rule: Skip if new, unless it is expiring
-                if rec.get("days_in_stock", 0) < 14 and not rec.get("is_critical_expiry"):
+                if (rec.get("days_in_stock", 0) < RECOMMENDATION_POLICY["minimum_days_in_stock"]
+                        and not rec.get("is_critical_expiry")):
                     continue
                 recommendations.append(rec)
 

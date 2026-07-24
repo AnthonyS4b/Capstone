@@ -8,6 +8,16 @@ let allRecommendations = [];
 let currentFilter = 'all';
 let forecastChart = null;
 
+// One source of truth for strategy priority labels.  These ranges correspond
+// to strategy_templates.priority and are used everywhere a strategy is shown
+// or selected; array position must never determine priority.
+function strategyPriorityMeta(strategy) {
+    const priority = Number(strategy?.priority ?? 10);
+    if (priority <= 3) return { label: 'HIGH PRIORITY', className: 'high', priority };
+    if (priority <= 6) return { label: 'MEDIUM PRIORITY', className: 'medium', priority };
+    return { label: 'LOW PRIORITY', className: 'low', priority };
+}
+
 // ═══════════ INIT ═══════════
 
 $(document).ready(function () {
@@ -485,16 +495,7 @@ function buildStrategyTab(rec) {
     }
 
     displayStrategies.forEach((s, idx) => {
-        const priorityLabel = idx === 0 ? 'HIGH PRIORITY' : 'MEDIUM';
-        const priorityClass = idx === 0 ? 'high' : 'medium';
-
-        // For MONITOR items, adjust labels
-        let displayPriorityLabel = priorityLabel;
-        let displayPriorityClass = priorityClass;
-        if (isMonitor) {
-            displayPriorityLabel = idx === 0 ? 'LOW PRIORITY' : 'OPTIONAL';
-            displayPriorityClass = 'low';
-        }
+        const priority = strategyPriorityMeta(s);
 
         const steps = s.implementation_steps || [];
         const impactRange = `${s.expected_impact_min || 0}–${s.expected_impact_max || 0}%`;
@@ -510,7 +511,7 @@ function buildStrategyTab(rec) {
                 <div class="strategy-plan-info">
                     <div class="strategy-plan-name">
                         ${esc(s.strategy_name)}
-                        <span class="priority-badge priority-${displayPriorityClass}">${displayPriorityLabel}</span>
+                        <span class="priority-badge priority-${priority.className}">${priority.label}</span>
                     </div>
                     ${discountTagHTML}
                 </div>
@@ -899,6 +900,7 @@ function openApplyModal(rec) {
         <p class="text-muted small mb-3">Current price: ₱${(rec.current_price || 0).toFixed(2)}</p>
         <div class="strategies-list">
             ${strategies.map((s, i) => {
+                const priority = strategyPriorityMeta(s);
                 const isBogo = s.strategy_id === 'buy_one_take_one' || (s.strategy_name || '').toLowerCase().includes('buy 1 take 1');
                 const badgeHTML = isBogo 
                     ? `<span class="discount-pill bogo-pill" style="background:var(--accent);color:white;">Buy 1 Take 1</span>` 
@@ -910,6 +912,7 @@ function openApplyModal(rec) {
                 <div class="strategy-option ${i === 0 ? 'selected' : ''}" data-strategy="${s.strategy_id}" data-discount="${effectiveDiscount}" data-name="${esc(s.strategy_name)}" onclick="selectStrategy(this)">
                     <div class="strategy-option-header">
                         <strong>${esc(s.strategy_name)}</strong>
+                        <span class="priority-badge priority-${priority.className}">${priority.label}</span>
                         ${badgeHTML}
                     </div>
                     <div class="strategy-option-details">

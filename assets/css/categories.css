@@ -972,6 +972,40 @@ body {
     .welcome-text h1 {
         font-size: 20px;
     }
+
+    .main-content {
+        padding: 12px;
+        padding-top: 62px;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .welcome-banner {
+        align-items: flex-start;
+    }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .category-actions {
+        opacity: 1;
+    }
+
+    .products-section {
+        padding: 14px;
+    }
+
+    /* Preserve readable columns; swipe the table instead of squeezing text. */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .product-table {
+        min-width: 880px;
+        table-layout: auto;
+    }
 }
 
 /* ===== ADDED: New field styles ===== */

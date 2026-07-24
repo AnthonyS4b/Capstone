@@ -25,6 +25,7 @@ try:
         ML_CONFIG,
         MODEL_PATHS,
         RISK_LEVELS,
+        RECOMMENDATION_POLICY,
         STRATEGIES,
         THRESHOLDS,
     )
@@ -35,6 +36,7 @@ except ImportError:
         ML_CONFIG,
         MODEL_PATHS,
         RISK_LEVELS,
+        RECOMMENDATION_POLICY,
         STRATEGIES,
         THRESHOLDS,
     )
@@ -386,7 +388,7 @@ class RecommendationModel:
             is_expiring_soon = features["is_critical_expiry"]
             is_slow_moving = (
                 features["monthly_sales_velocity"]
-                < THRESHOLDS["slow_moving_threshold"]
+                < RECOMMENDATION_POLICY["monthly_sales_below"]
             )
             is_high_stock = features["current_stock"] > 20
             is_moderate_stock = 5 <= features["current_stock"] <= 20
@@ -462,16 +464,12 @@ class RecommendationModel:
                         impact_min = strategy.get("expected_impact_min", 0)
                         impact_max = strategy.get("expected_impact_max", 0)
 
-                    # Add a small random jitter to break ties dynamically
-                    import random
-                    dynamic_fit_score = fit_score + random.uniform(0.01, 0.09)
-
                     recommended.append(
                         {
                             "strategy_id": str(strategy["id"]),
                             "strategy_name": strategy["name"],
                             "priority": strategy.get("priority", 1),
-                            "fit_score": float(dynamic_fit_score),
+                            "fit_score": float(fit_score),
                             "recommended_discount": float(recommended_discount),
                             "duration_days": strategy.get("duration_days", 7),
                             "expected_impact_min": int(impact_min),
@@ -484,7 +482,9 @@ class RecommendationModel:
                         }
                     )
 
-            recommended.sort(key=lambda x: (-x["fit_score"], x["priority"]))
+            # Stable tie-breaking keeps the displayed strategy order and its
+            # configured priority consistent across refreshes.
+            recommended.sort(key=lambda x: (-x["fit_score"], x["priority"], x["strategy_id"]))
             result = recommended[:2]
 
             # ── Rule 3: Escalation when all fresh strategies are exhausted ────────

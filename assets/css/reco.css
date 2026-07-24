@@ -1236,11 +1236,11 @@ body {
 
 @media (max-width: 768px) {
     .welcome-banner {
-        flex-direction: row !important;
+        flex-direction: column !important;
         text-align: left !important;
-        padding: 20px 15px !important;
-        justify-content: space-between !important;
-        gap: 10px !important;
+        padding: 18px 15px !important;
+        align-items: stretch !important;
+        gap: 12px !important;
     }
 
     .welcome-text h1 {
@@ -1252,13 +1252,24 @@ body {
     }
 
     .banner-actions {
-        flex-direction: row !important;
+        flex-direction: column !important;
         gap: 8px !important;
+        align-items: stretch !important;
     }
 
     .status-indicator, .date-display, .btn-update-analysis {
         padding: 6px 12px !important;
         font-size: 0.75rem !important;
+    }
+
+    .filter-bar,
+    .filter-group {
+        flex-wrap: wrap;
+    }
+
+    .filter-group:last-child,
+    #searchBox {
+        width: 100%;
     }
 
     .recommendations-grid {
