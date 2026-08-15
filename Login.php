@@ -3,6 +3,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+require_once __DIR__ . '/includes/security.php';
 
 // Check if user is already logged in
 if(isset($_SESSION['user_id'])) {
@@ -34,6 +35,7 @@ try {
     
     // Handle login
     if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pin'], $_POST['user_id'])) {
+        security_require_csrf();
         $pin = $_POST['pin'];
         $user_id = $_POST['user_id'];
         
@@ -44,7 +46,14 @@ try {
         $stmt->execute();
         $user = $stmt->fetch();
         
-        if($user && password_verify($pin, $user['pin'])) {
+        $limitKey = security_client_key('login', (string)$user_id);
+        $limit = security_rate_limit($limitKey, 5, 300);
+
+        if (!$limit['allowed']) {
+            $error = 'Too many incorrect attempts. Please try again in a few minutes.';
+        } elseif($user && password_verify($pin, $user['pin'])) {
+            security_clear_failures($limitKey);
+            session_regenerate_id(true);
             
             // Set session variables
             $_SESSION['user_id'] = $user['id'];
@@ -68,6 +77,7 @@ try {
             header("Location: dashboard.php");
             exit();
         } else {
+            security_record_failure($limitKey);
             $error = "Invalid PIN! Please try again.";
         }
     }
@@ -81,58 +91,9 @@ try {
     $users = $stmt->fetchAll();
     
 } catch(PDOException $e) {
-    // Database connection failed - use fallback data
-    $db_error = "Database connection failed. Using fallback data.";
-    
-    // Fallback users data
-    $users = [
-        ['id' => 1, 'first_name' => 'Kenneth', 'last_name' => 'P.', 'position' => 'Store Manager', 'role' => 'employee', 'pin' => '1234'],
-        ['id' => 2, 'first_name' => 'Princess', 'last_name' => 'M.', 'position' => 'Cashier', 'role' => 'employee', 'pin' => '5678'],
-        ['id' => 3, 'first_name' => 'Ezzar', 'last_name' => 'O.', 'position' => 'Cashier', 'role' => 'employee', 'pin' => '9012'],
-        ['id' => 4, 'first_name' => 'John Anthony', 'last_name' => 'S.', 'position' => 'Store Owner', 'role' => 'owner', 'pin' => '4321'],
-        ['id' => 5, 'first_name' => 'Anthony', 'last_name' => 'S.', 'position' => 'Co-Owner', 'role' => 'owner', 'pin' => '8765']
-    ];
-    
-    // Handle login with fallback data
-    if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pin'], $_POST['user_id'])) {
-        $pin = $_POST['pin'];
-        $user_id = $_POST['user_id'];
-        $login_success = false;
-        
-        foreach($users as $user) {
-            if($user['id'] == $user_id && $user['pin'] == $pin) {
-                // Set session variables
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['first_name'] = $user['first_name'];
-                $_SESSION['last_name'] = $user['last_name'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['position'] = $user['position'];
-                $_SESSION['email'] = isset($user['email']) ? $user['email'] : '';
-                $_SESSION['fallback_mode'] = true;
-                
-                // ===== TRACK THIS LOGIN (even in fallback mode) =====
-                // Note: In fallback mode, we can't track to database, but we can still track in session
-                $_SESSION['login_tracked'] = [
-                    'user_id' => $user['id'],
-                    'login_time' => date('Y-m-d H:i:s'),
-                    'action' => 'login'
-                ];
-                
-                // Set welcome toast for fallback mode
-                $_SESSION['toast_message'] = [
-                    'type' => 'success',
-                    'title' => 'Welcome ' . $user['first_name'] . '!',
-                    'message' => 'You have successfully logged in (Offline Mode). Redirecting to dashboard...'
-                ];
-                
-                // Redirect to dashboard
-                header("Location: dashboard.php");
-                exit();
-            }
-        }
-        
-        $error = "Invalid PIN! (Fallback Mode)";
-    }
+    error_log('Login database connection failed: ' . $e->getMessage());
+    $db_error = 'The database is unavailable. Login is disabled until the connection is restored.';
+    $users = [];
 }
 
 // Site configuration
@@ -275,6 +236,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                     <?php endif; ?>
                     
                     <form id="loginForm" method="POST" action="">
+                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                         <input type="hidden" name="user_id" id="user_id">
                         <input type="hidden" name="pin" id="pin">
                         

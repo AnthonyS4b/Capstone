@@ -20,6 +20,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
 header('Content-Type: application/json');
 
+require_once dirname(__DIR__) . '/includes/security.php';
+security_require_login();
+security_require_post_csrf();
+
 try {
     require_once dirname(__DIR__) . '/config/database.php';
 
@@ -130,6 +134,86 @@ try {
             $pdo->beginTransaction();
             
             try {
+                // Never trust browser-submitted names, prices, totals, or change.
+                // Lock and reload every product so stock and pricing are authoritative.
+                if (!in_array($payment_method, ['cash', 'gcash'], true)) {
+                    throw new Exception('Unsupported payment method');
+                }
+
+                $productStmt = $pdo->prepare("
+                    SELECT
+                        p.id, p.name, p.price, p.stock,
+                        COALESCE((
+                            SELECT sh.discounted_price
+                            FROM strategy_history sh
+                            WHERE sh.product_id = p.id
+                              AND sh.status = 'applied'
+                              AND (sh.ended_at IS NULL OR sh.ended_at > NOW())
+                            ORDER BY sh.id DESC
+                            LIMIT 1
+                        ), p.price) AS effective_price
+                    FROM products p
+                    WHERE p.id = ?
+                      AND p.deleted_at IS NULL
+                      AND p.status = 'active'
+                      AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())
+                    FOR UPDATE
+                ");
+
+                $validatedItems = [];
+                $calculatedTotal = 0.0;
+                foreach ($items as $submittedItem) {
+                    $productId = filter_var($submittedItem['id'] ?? null, FILTER_VALIDATE_INT);
+                    $quantity = filter_var($submittedItem['quantity'] ?? null, FILTER_VALIDATE_INT);
+                    if (!$productId || !$quantity || $quantity <= 0) {
+                        throw new Exception('Invalid product or quantity in the cart');
+                    }
+
+                    $productStmt->execute([$productId]);
+                    $product = $productStmt->fetch(PDO::FETCH_ASSOC);
+                    if (!$product) {
+                        throw new Exception('A cart product is unavailable or expired');
+                    }
+                    if ((int)$product['stock'] < $quantity) {
+                        throw new Exception('Insufficient stock for product: ' . $product['name']);
+                    }
+
+                    $unitPrice = round((float)$product['effective_price'], 2);
+                    if ($unitPrice < 0) {
+                        throw new Exception('Invalid database price for product: ' . $product['name']);
+                    }
+
+                    $validatedItems[] = [
+                        'id' => (int)$product['id'],
+                        'name' => $product['name'],
+                        'price' => $unitPrice,
+                        'quantity' => $quantity,
+                    ];
+                    $calculatedTotal += $unitPrice * $quantity;
+                }
+
+                $items = $validatedItems;
+                $total = round($calculatedTotal, 2);
+                if ($total <= 0) {
+                    throw new Exception('Transaction total must be greater than zero');
+                }
+
+                if ($payment_method === 'cash') {
+                    if ($payment + 0.00001 < $total) {
+                        throw new Exception('Insufficient cash payment');
+                    }
+                    $change = round($payment - $total, 2);
+                } else {
+                    $payment = $total;
+                    $change = 0.0;
+                    if (empty($gcash_reference)) {
+                        throw new Exception('GCash reference is required');
+                    }
+                }
+
+                $cashier = $user['first_name'] . ' ' . $user['last_name'];
+                $cashier_role = $user['role'];
+
                 // 1. Insert into transactions table with EXPLICIT user_id
                 $stmt = $pdo->prepare("
                     INSERT INTO transactions (
@@ -308,7 +392,12 @@ try {
                     'message' => 'Transaction completed successfully',
                     'data' => [
                         'id' => $transaction_id,
-                        'transaction_number' => 'TRX-' . str_pad($transaction_id, 6, '0', STR_PAD_LEFT)
+                        'transaction_number' => 'TRX-' . str_pad($transaction_id, 6, '0', STR_PAD_LEFT),
+                        'items' => $items,
+                        'total' => $total,
+                        'payment' => $payment,
+                        'change' => $change,
+                        'payment_method' => $payment_method
                     ]
                 ]);
                 
@@ -334,6 +423,11 @@ try {
 
             $where  = [];
             $params = [];
+
+            if (($_SESSION['role'] ?? '') !== 'owner') {
+                $where[] = 't.user_id = :session_user_id';
+                $params[':session_user_id'] = (int)$_SESSION['user_id'];
+            }
 
             if ($search) {
                 $where[] = "(t.id LIKE :search OR s.cashier_name LIKE :search)";
@@ -446,8 +540,9 @@ try {
                 FROM transactions t
                 LEFT JOIN sales s ON t.id = s.transaction_id
                 WHERE t.id = ?
+                  AND (? = 'owner' OR t.user_id = ?)
             ");
-            $stmt->execute([$id]);
+            $stmt->execute([$id, $_SESSION['role'] ?? '', (int)$_SESSION['user_id']]);
             $transaction = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if (!$transaction) {
@@ -481,6 +576,7 @@ try {
             break;
             
         case 'void_transaction':
+            security_require_role(['owner']);
             $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
             $user_id = $_SESSION['user_id'] ?? null;
             
@@ -558,12 +654,13 @@ try {
                 error_log("VOID ERROR: " . $e->getMessage());
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Failed to void transaction: ' . $e->getMessage()
+                    'message' => 'Failed to void the transaction.'
                 ]);
             }
             break;
             
         case 'get_stats':
+            security_require_role(['owner']);
             $statsStmt = $pdo->query("
                 SELECT 
                     COUNT(DISTINCT t.id) as total_transactions,
@@ -602,7 +699,7 @@ try {
     error_log("Stack trace: " . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => 'Server error: ' . $e->getMessage()
+        'message' => 'An internal server error occurred.'
     ]);
 }
 ?>

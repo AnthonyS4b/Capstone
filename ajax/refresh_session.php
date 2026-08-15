@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_require_login();
 header('Content-Type: application/json');
 
 // Check if user is logged in
@@ -35,7 +37,7 @@ try {
 } catch (PDOException $e) {
     echo json_encode([
         'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
+        'message' => 'Unable to refresh the session right now.'
     ]);
 }
 ?>

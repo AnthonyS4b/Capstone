@@ -314,14 +314,17 @@ class DataProcessor:
                 "std_dev": 0,
             }
 
+        # Work on a copy so callers do not get their DataFrame mutated.
+        sales_df = sales_df.copy()
         sales_df["sale_date"] = pd.to_datetime(sales_df["sale_date"])
+        sales_df["revenue"] = sales_df["price"] * sales_df["quantity"]
         today = pd.Timestamp.now().normalize()
         thirty_days_ago = today - pd.Timedelta(days=30)
 
         # Aggregate by date
         daily_sales = (
             sales_df.groupby(sales_df["sale_date"].dt.date)
-            .agg({"quantity": "sum", "price": "sum"})
+            .agg({"quantity": "sum", "revenue": "sum"})
             .reset_index()
         )
 
@@ -339,7 +342,7 @@ class DataProcessor:
             }
 
         total_units = daily_sales["quantity"].sum()
-        total_revenue = daily_sales["price"].sum()
+        total_revenue = daily_sales["revenue"].sum()
         
         # Calculate last 30 days total
         last_30d_df = sales_df[sales_df["sale_date"] >= thirty_days_ago]
@@ -397,8 +400,10 @@ class DataProcessor:
             }
 
         try:
-            expiry_date = pd.to_datetime(product_data["expiration_date"])
-            today = pd.Timestamp.now()
+            # Expiration values are calendar dates. Normalize both operands so
+            # a product remains valid throughout its expiration date.
+            expiry_date = pd.to_datetime(product_data["expiration_date"]).normalize()
+            today = pd.Timestamp.now().normalize()
             days_remaining = (expiry_date - today).days
 
             return {

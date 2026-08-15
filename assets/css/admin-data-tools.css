@@ -1,0 +1,77 @@
+.data-tools-header {
+    background: linear-gradient(135deg, #2c5530, #3d7042);
+    color: #fff;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 22px;
+    box-shadow: 0 10px 28px rgba(44, 85, 48, .18);
+}
+
+.data-tools-header h1 { margin: 0 0 6px; font-size: 1.55rem; font-weight: 800; }
+.data-tools-header p { margin: 0; opacity: .88; }
+
+.data-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 18px;
+}
+
+.data-tool-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+}
+
+.data-tool-card form { margin: 0; flex: 0 0 auto; }
+
+/* Keep link elements visually identical to the dashboard sidebar buttons. */
+.sidebar a.profile-btn,
+.sidebar a.recommendation-btn,
+.sidebar a.logout-btn {
+    text-decoration: none;
+}
+
+.sidebar .dropdown-toggle.active {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.data-tool-card.backup-card { border-top: 4px solid #8B4513; }
+.data-tool-card.export-card { border-top: 4px solid #2c5530; }
+.data-tool-card h2 { color: #1e293b; font-size: 1.1rem; font-weight: 800; margin: 0 0 6px; }
+.data-tool-card > p { color: #64748b; font-size: .86rem; margin-bottom: 18px; }
+
+.tool-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 13px 0;
+    border-top: 1px solid #eef2f7;
+}
+
+.tool-option:first-of-type { border-top: 0; }
+.tool-option strong { display: block; color: #334155; font-size: .88rem; }
+.tool-option small { display: block; color: #64748b; margin-top: 2px; }
+
+.btn-data-download {
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 13px;
+    min-width: 112px;
+    color: #fff;
+    background: #2c5530;
+    font-size: .78rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.backup-card .btn-data-download { background: #8B4513; }
+.btn-data-download:hover { filter: brightness(.9); }
+.security-note { margin-top: 18px; padding: 13px 15px; border-radius: 9px; background: #f8fafc; color: #475569; font-size: .8rem; line-height: 1.5; }
+
+@media (max-width: 900px) { .data-tools-grid { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .tool-option { align-items: stretch; flex-direction: column; } .btn-data-download { width: 100%; } }

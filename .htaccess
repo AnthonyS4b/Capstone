@@ -1,0 +1,17 @@
+Options -Indexes
+
+# Never serve operational data, source artifacts, secrets, or local tooling.
+<FilesMatch "(?i)(^\.|\.log$|\.sql$|\.sqlite$|\.db$|\.env$|\.ini$|\.bat$|\.vbs$|\.pkl$|\.pyc$|\.py$|requirements\.txt$|README\.md$|DEPLOYMENT_GUIDE\.md$)">
+    Require all denied
+</FilesMatch>
+
+<Files "Database">
+    Require all denied
+</Files>
+
+# Basic response hardening. Content-Type is intentionally left to PHP/assets.
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

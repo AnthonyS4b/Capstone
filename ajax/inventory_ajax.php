@@ -1,17 +1,20 @@
 <?php
 // ajax/inventory_ajax.php - TRACKING ONLY VERSION
-session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_start_session();
 header('Content-Type: application/json');
 
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
-    exit();
-}
+security_require_login();
+security_require_post_csrf();
 
 require_once '../config/database.php';
 
 $user_id = $_SESSION['user_id'];
 $action = $_POST['action'] ?? '';
+
+if (in_array($action, ['restore_product', 'get_user_sessions', 'get_filtered_activity', 'get_user_stats', 'get_account_switches'], true)) {
+    security_require_role(['owner']);
+}
 
 try {
     $pdo = getDBConnection();

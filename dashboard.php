@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/includes/security.php';
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['toast_message'] = [
         'type'    => 'warning',
@@ -164,6 +165,8 @@ if ($is_owner) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+    <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Dashboard · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -250,9 +253,7 @@ if ($is_owner) {
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-database"></i> End of Shifts</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cloud"></i> Sync</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                    <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
                 </ul>
             </div>
         <?php endif; ?>
@@ -632,7 +633,7 @@ if ($is_owner) {
                         </div>
                         <?php endforeach; else: ?><div class="text-center py-4"><i class="fas fa-users-slash fa-3x mb-3 text-muted"></i><p class="text-muted">No other accounts available</p></div><?php endif; } catch (PDOException $e) { echo '<div class="alert alert-danger">Unable to load accounts.</div>'; } ?>
                     </div>
-                    <div id="quickLoginForm" style="display: none;" class="mt-4 p-3 border-top"><h6 class="mb-3"><i class="fas fa-lock me-2"></i>Enter PIN for <span id="selectedAccountName"></span></h6><form id="switchAccountForm" method="POST" action="switch_account.php"><input type="hidden" name="user_id" id="selectedUserId"><div class="mb-3"><label for="accountPin" class="form-label">PIN</label><input type="password" class="form-control" id="accountPin" name="pin" maxlength="4" pattern="\d{4}" placeholder="Enter Pin" required></div><div class="d-grid gap-2"><button type="submit" class="btn btn-brown"><i class="fas fa-exchange-alt me-2"></i>Switch Account</button><button type="button" class="btn btn-outline-secondary" onclick="cancelAccountSelection()">Cancel</button></div></form></div>
+                    <div id="quickLoginForm" style="display: none;" class="mt-4 p-3 border-top"><h6 class="mb-3"><i class="fas fa-lock me-2"></i>Enter PIN for <span id="selectedAccountName"></span></h6><form id="switchAccountForm" method="POST" action="switch_account.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>"><input type="hidden" name="user_id" id="selectedUserId"><div class="mb-3"><label for="accountPin" class="form-label">PIN</label><input type="password" class="form-control" id="accountPin" name="pin" maxlength="4" pattern="\d{4}" placeholder="Enter Pin" required></div><div class="d-grid gap-2"><button type="submit" class="btn btn-brown"><i class="fas fa-exchange-alt me-2"></i>Switch Account</button><button type="button" class="btn btn-outline-secondary" onclick="cancelAccountSelection()">Cancel</button></div></form></div>
                 </div>
             </div>
         </div>
@@ -771,7 +772,7 @@ if ($is_owner) {
         <?php include 'includes/notifications.php'; ?>
     </script>
     <script src="assets/js/dashboardJS.js"></script>
-    <script src="assets/js/userManagement.js"></script>
+    <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/notif.js"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>

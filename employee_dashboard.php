@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/includes/security.php';
 
 // ── Auth guard ────────────────────────────────────────────────────────────────
 if (!isset($_SESSION['user_id'])) {
@@ -80,6 +81,8 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+    <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Dashboard · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -563,6 +566,7 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
                     <div id="quickLoginForm" style="display:none;" class="mt-4 p-3 border-top">
                         <h6 class="mb-3"><i class="fas fa-lock me-2"></i>Enter PIN for <span id="selectedAccountName"></span></h6>
                         <form id="switchAccountForm" method="POST" action="switch_account.php">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="user_id" id="selectedUserId">
                             <div class="mb-3">
                                 <label class="form-label">PIN</label>

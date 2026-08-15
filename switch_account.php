@@ -1,12 +1,20 @@
 <?php
 session_start();
+require_once __DIR__ . '/includes/security.php';
+security_require_login();
 
 require_once 'config/database.php';
 require_once 'includes/session_tracker.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pin'])) {
+    security_require_csrf();
     $target_user_id = $_POST['user_id'];
     $pin = $_POST['pin'];
+    $limitKey = security_client_key('switch_account', (string)$target_user_id);
+    $limit = security_rate_limit($limitKey, 5, 300);
+    if (!$limit['allowed']) {
+        security_json_error('Too many incorrect attempts. Try again in a few minutes.', 429);
+    }
     
     try {
         $pdo = getDBConnection();
@@ -17,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user && password_verify($pin, $user['pin'])) {
+            security_clear_failures($limitKey);
             // Store current session data to preserve store progress
             $current_session_data = $_SESSION;
             
@@ -67,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
             header("Location: dashboard.php");
             exit();
         } else {
+            security_record_failure($limitKey);
             // Invalid PIN
             $_SESSION['toast_message'] = [
                 'type' => 'error',

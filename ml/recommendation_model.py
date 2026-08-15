@@ -339,9 +339,9 @@ class RecommendationModel:
         """
         Recommend best marketing strategies for product based on its risk level.
 
-        Filters strategies by the product's risk_level first (CRITICAL/WARNING/MONITOR),
+        Filters strategies by the product's risk level and observable conditions,
         then excludes any strategy already applied within the no-repeat window, and
-        finally ranks by condition fit score. Returns max 2 strategies.
+        finally ranks by condition fit score. Returns up to 3 strategies.
 
         Args:
             used_strategy_ids: strategy IDs already applied within the no-repeat lookback
@@ -392,6 +392,7 @@ class RecommendationModel:
             )
             is_high_stock = features["current_stock"] > 20
             is_moderate_stock = 5 <= features["current_stock"] <= 20
+            bogo_margin_safe = features["markup_percentage"] >= 100
 
             unit_str = str(product_data.get("unit") or "packaged").lower()
             is_packaged = not ("kilo" in unit_str or "gram" in unit_str)
@@ -401,11 +402,18 @@ class RecommendationModel:
             strategies_to_use = db_strategies if db_strategies else STRATEGIES
 
             # ── Rule 1: Filter by risk_level ─────────────────────────────────────
+            compatible_risk_levels = {
+                "CRITICAL": {"CRITICAL", "WARNING"},
+                "WARNING": {"WARNING"},
+                "MONITOR": {"MONITOR"},
+                "LOW": {"MONITOR"},
+            }.get(risk_level, {risk_level})
+
             filtered_strategies = []
             for strategy in strategies_to_use:
                 strategy_risk_levels = strategy.get("risk_levels", [])
                 if strategy_risk_levels:
-                    if risk_level in strategy_risk_levels:
+                    if compatible_risk_levels.intersection(strategy_risk_levels):
                         filtered_strategies.append(strategy)
                 else:
                     filtered_strategies.append(strategy)
@@ -421,30 +429,39 @@ class RecommendationModel:
             strategies_to_score = fresh_strategies if not all_exhausted else filtered_strategies
 
             for strategy in strategies_to_score:
-                fit_score = 0
                 conditions = strategy.get("conditions", [])
+                observable_matches = {
+                    "critical_expiry": is_expiring_soon,
+                    "slow_moving": is_slow_moving,
+                    "high_stock": is_high_stock,
+                    "moderate_stock": is_moderate_stock,
+                    "packaged": is_packaged,
+                    "low_priority": risk_level in ("MONITOR", "LOW"),
+                }
+                required = [c for c in conditions if c in observable_matches]
 
-                if "critical_expiry" in conditions and is_expiring_soon:
-                    fit_score += 0.5
-                if "slow_moving" in conditions and is_slow_moving:
-                    fit_score += 0.5
-                if "high_stock" in conditions and is_high_stock:
-                    fit_score += 0.3
-                if "moderate_stock" in conditions and is_moderate_stock:
-                    fit_score += 0.2
-                if "complementary_products" in conditions:
-                    fit_score += 0.1
-                if "low_priority" in conditions and risk_level == "MONITOR":
-                    fit_score += 0.4
-                if "seasonal" in conditions:
-                    fit_score += 0.1
-                if "packaged" in conditions:
-                    if is_packaged:
-                        fit_score += 0.4
-                    else:
-                        fit_score -= 1.0
+                # Treat observable conditions as requirements. The previous
+                # partial-match scoring let BOGO win on "packaged + slow" even
+                # when an item was not near expiry.
+                if any(not observable_matches[c] for c in required):
+                    continue
+                if str(strategy.get("id")) == "buy_one_take_one" and not bogo_margin_safe:
+                    continue
 
-                if fit_score > 0:
+                condition_weights = {
+                    "critical_expiry": 0.35,
+                    "high_stock": 0.25,
+                    "moderate_stock": 0.20,
+                    "slow_moving": 0.10,
+                    "packaged": 0.05,
+                    "low_priority": 0.10,
+                }
+                fit_score = 1.0 + sum(condition_weights.get(c, 0.05) for c in required)
+                fit_score += 0.05 * sum(
+                    1 for c in conditions if c in ("complementary_products", "seasonal")
+                )
+
+                if required or conditions:
                     d_range = strategy.get("discount_range", (0, 10))
                     if isinstance(d_range, (list, tuple)):
                         discount_min, discount_max = d_range
@@ -485,7 +502,7 @@ class RecommendationModel:
             # Stable tie-breaking keeps the displayed strategy order and its
             # configured priority consistent across refreshes.
             recommended.sort(key=lambda x: (-x["fit_score"], x["priority"], x["strategy_id"]))
-            result = recommended[:2]
+            result = recommended[:3]
 
             # ── Rule 3: Escalation when all fresh strategies are exhausted ────────
             if all_exhausted:

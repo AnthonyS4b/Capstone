@@ -1,5 +1,6 @@
     <?php
-    session_start();
+    require_once dirname(__DIR__) . '/includes/security.php';
+    security_start_session();
     header('Content-Type: application/json');
 
     // Enable error reporting for debugging
@@ -9,22 +10,11 @@
     // Log to PHP error log
     error_log("=== add_user.php called ===");
 
-    // Check if user is logged in and is owner
-    if (!isset($_SESSION['user_id'])) {
-        error_log("User not logged in");
-        echo json_encode(['success' => false, 'message' => 'Not logged in']);
-        exit();
-    }
-
-    if ($_SESSION['role'] !== 'owner') {
-        error_log("User is not owner. Role: " . $_SESSION['role']);
-        echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-        exit();
-    }
+    security_require_role(['owner']);
+    security_require_csrf();
 
     // Get the raw POST data
     $input = file_get_contents('php://input');
-    error_log("Raw input: " . $input);
 
     if (!$input) {
         error_log("No input received");
@@ -34,7 +24,6 @@
 
     // Decode JSON
     $data = json_decode($input, true);
-    error_log("Decoded data: " . print_r($data, true));
 
     if ($data === null) {
         error_log("JSON decode error: " . json_last_error_msg());
@@ -129,9 +118,6 @@
         
     } catch (PDOException $e) {
         error_log("Database error in add_user.php: " . $e->getMessage());
-        echo json_encode([
-            'success' => false,
-            'message' => 'Database error: ' . $e->getMessage()
-        ]);
+        security_json_error('Unable to add the user right now.', 500);
     }
     ?>

@@ -6,6 +6,7 @@
 const API_URL = 'ajax/ml_recommendation_ajax.php';
 let allRecommendations = [];
 let currentFilter = 'all';
+let currentView = 'list';
 let forecastChart = null;
 
 // One source of truth for strategy priority labels.  These ranges correspond
@@ -32,15 +33,27 @@ function wireEvents() {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
-        renderCards(filterRecommendations(allRecommendations, currentFilter));
+        renderCards(getVisibleRecommendations());
     });
 
     // Search
     $('#searchBox').on('input', function () {
-        const q = $(this).val().toLowerCase();
-        const filtered = filterRecommendations(allRecommendations, currentFilter)
-            .filter(r => r.product_name.toLowerCase().includes(q));
-        renderCards(filtered);
+        renderCards(getVisibleRecommendations());
+    });
+
+    // List/card layout. List is intentionally the default on every page load.
+    $(document).on('click', '.view-toggle-btn', function () {
+        const requestedView = $(this).data('view');
+        if (requestedView !== 'list' && requestedView !== 'card') return;
+
+        currentView = requestedView;
+        $('.view-toggle-btn')
+            .removeClass('active')
+            .attr('aria-pressed', 'false');
+        $(this)
+            .addClass('active')
+            .attr('aria-pressed', 'true');
+        applyRecommendationView();
     });
 
     // Sidebar recommendation button
@@ -171,11 +184,26 @@ function filterRecommendations(recs, filter) {
     return recs;
 }
 
+function getVisibleRecommendations() {
+    const q = ($('#searchBox').val() || '').trim().toLowerCase();
+    const filtered = filterRecommendations(allRecommendations, currentFilter);
+    if (!q) return filtered;
+
+    return filtered.filter(r => {
+        const productName = String(r.product_name || '').toLowerCase();
+        const category = String(r.category || '').toLowerCase();
+        return productName.includes(q) || category.includes(q);
+    });
+}
+
 // ═══════════ RENDER CARDS ═══════════
 
 function renderCards(recs) {
     const c = document.getElementById('recommendationsContainer');
     if (!c) return;
+
+    applyRecommendationView();
+    updateResultCount(recs.length);
 
     if (!recs.length) {
         showEmptyState('No items match this filter', 'Try a different filter or search term.');
@@ -183,6 +211,31 @@ function renderCards(recs) {
     }
 
     c.innerHTML = recs.map(r => buildCard(r)).join('');
+    applyRecommendationView();
+}
+
+function applyRecommendationView() {
+    const c = document.getElementById('recommendationsContainer');
+    if (!c) return;
+
+    c.classList.toggle('list-view', currentView === 'list');
+    c.classList.toggle('card-view', currentView === 'card');
+
+    const listHeader = document.getElementById('recommendationsListHeader');
+    if (listHeader) {
+        listHeader.hidden = currentView !== 'list' || !c.querySelector('.product-card');
+        listHeader.setAttribute('aria-hidden', String(listHeader.hidden));
+    }
+}
+
+function updateResultCount(count) {
+    const resultCount = document.getElementById('recommendationResultCount');
+    if (!resultCount) return;
+
+    const total = allRecommendations.length;
+    resultCount.textContent = count === total
+        ? `${count} recommendation${count === 1 ? '' : 's'}`
+        : `${count} of ${total} recommendations`;
 }
 
 function buildCard(r) {
@@ -304,13 +357,13 @@ function buildCard(r) {
         ${strategyHTML}
 
         <div class="action-buttons">
-            <button class="btn-action btn-forecast" onclick='openForecastModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'> 
-                View Details
+            <button class="btn-action btn-forecast" onclick='openForecastModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
+                <i class="fas fa-chart-line" aria-hidden="true"></i> View Details
             </button>
             <button class="btn-action btn-apply" 
                 onclick='openApplyModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'
                 ${isEscalation ? 'disabled title="No applicable strategy to apply — please review manually" style=\"opacity:0.5;cursor:not-allowed;\"' : ''}> 
-                Apply Strategy
+                <i class="fas fa-check" aria-hidden="true"></i> Apply Strategy
             </button>
         </div>
     </div>`;
@@ -325,6 +378,8 @@ function showEmptyState(title, msg) {
                 <p>${esc(msg)}</p>
             </div>`;
     }
+    updateResultCount(0);
+    applyRecommendationView();
 }
 
 // ═══════════ FORECAST MODAL (4 tabs) ═══════════

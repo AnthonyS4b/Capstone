@@ -13,21 +13,18 @@ ini_set('error_log', __DIR__ . '/../error.log');
 
 header('Content-Type: application/json');
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once dirname(__DIR__) . '/includes/security.php';
+security_start_session();
 
 // Auth check
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'message' => 'Not authenticated']);
-    exit;
-}
+security_require_role(['owner']);
 
 // Validate request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
+security_require_csrf();
 
 if (!isset($_FILES['image']) || $_FILES['image']['error'] === UPLOAD_ERR_NO_FILE) {
     echo json_encode(['success' => false, 'message' => 'No image file provided']);

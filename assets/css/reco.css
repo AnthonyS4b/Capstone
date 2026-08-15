@@ -192,6 +192,10 @@ body {
     flex-wrap: wrap;
 }
 
+.filter-tools {
+    align-items: center;
+}
+
 .filter-btn {
     padding: 7px 18px;
     border-radius: 30px;
@@ -210,6 +214,101 @@ body {
     color: white;
 }
 
+.view-toggle {
+    display: inline-flex;
+    padding: 3px;
+    gap: 3px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.view-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 5px 11px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, box-shadow .2s ease;
+}
+
+.view-toggle-btn:hover {
+    color: #6B3410;
+}
+
+.view-toggle-btn.active {
+    background: white;
+    color: #8B4513;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+
+.view-toggle-btn:focus-visible {
+    outline: 3px solid rgba(139, 69, 19, 0.25);
+    outline-offset: 1px;
+}
+
+.recommendations-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: -10px 2px 10px;
+    min-height: 24px;
+    color: #64748b;
+    font-size: 0.8rem;
+}
+
+.result-count {
+    color: #334155;
+    font-weight: 700;
+}
+
+.list-view-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.recommendations-list-header {
+    display: grid;
+    grid-template-columns: minmax(145px, 1fr) minmax(130px, .8fr) minmax(210px, 1.2fr) minmax(190px, 1.2fr) minmax(130px, .65fr);
+    gap: 0;
+    padding: 11px 0 10px 4px;
+    color: #76563f;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: .55px;
+    text-transform: uppercase;
+    background: #fffdfb;
+    border: 1px solid #eadfd6;
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+}
+
+.recommendations-list-header span {
+    padding: 0 8px;
+}
+
+.recommendations-list-header span:first-child {
+    padding-left: 16px;
+}
+
+.recommendations-list-header span:last-child {
+    padding-right: 12px;
+}
+
+.recommendations-list-header[hidden] {
+    display: none;
+}
+
 /* ═══════════ RECOMMENDATIONS GRID ═══════════ */
 
 .recommendations-grid {
@@ -217,6 +316,158 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
     gap: 16px;
     margin-bottom: 40px;
+}
+
+/* The same recommendation markup powers both views, so actions and details
+   remain identical when the layout changes. */
+.recommendations-grid.list-view {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+}
+
+.recommendations-grid.list-view .product-card {
+    /* PosCSS also owns .product-card and marks its POS layout !important.
+       These scoped overrides keep recommendation rows independent. */
+    display: grid !important;
+    flex-direction: initial !important;
+    align-self: stretch !important;
+    width: 100%;
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    cursor: default;
+    grid-template-columns: minmax(145px, 1fr) minmax(130px, .8fr) minmax(210px, 1.2fr) minmax(190px, 1.2fr) minmax(130px, .65fr);
+    grid-template-areas:
+        "product top metrics strategy actions"
+        "product insights metrics strategy actions"
+        "expiry expiry expiry expiry actions";
+    min-height: 0;
+    align-items: center;
+    border-left: 4px solid #94a3b8;
+    border-radius: 8px;
+}
+
+.recommendations-grid.card-view .product-card {
+    display: flex !important;
+    align-self: stretch !important;
+    overflow: hidden !important;
+    cursor: default;
+}
+
+.recommendations-grid.list-view .product-card:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 22px rgba(15,23,42,.1);
+}
+
+.recommendations-grid.list-view .product-card:focus-within {
+    box-shadow: 0 0 0 3px rgba(139,69,19,.14), 0 8px 22px rgba(15,23,42,.08);
+}
+
+.recommendations-grid.list-view .product-card[data-risk="critical"] { border-left-color: #ef4444; }
+.recommendations-grid.list-view .product-card[data-risk="warning"] { border-left-color: #f59e0b; }
+.recommendations-grid.list-view .product-card[data-risk="monitor"] { border-left-color: #8B4513; }
+.recommendations-grid.list-view .product-card[data-risk="low"] { border-left-color: #10b981; }
+
+.recommendations-grid.list-view .product-card::before {
+    display: none;
+}
+
+.recommendations-grid.list-view .card-top-bar {
+    grid-area: top;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-start;
+    align-content: center;
+    padding: 16px 8px;
+}
+
+.recommendations-grid.list-view .badge-priority,
+.recommendations-grid.list-view .badge-risk {
+    padding: 4px 9px;
+    font-size: .64rem;
+}
+
+.recommendations-grid.list-view .product-header {
+    grid-area: product;
+    padding: 16px 12px 16px 16px;
+}
+
+.recommendations-grid.list-view .product-info h4 {
+    font-size: .9rem;
+}
+
+.recommendations-grid.list-view .metrics-row {
+    grid-area: metrics;
+    align-self: stretch;
+    margin: 12px 8px;
+    background: #f7f9fb;
+}
+
+.recommendations-grid.list-view .metric-value {
+    font-size: 1rem;
+}
+
+.recommendations-grid.list-view .smart-insights {
+    grid-area: insights;
+    margin: 0 8px 12px;
+    padding: 7px 10px;
+}
+
+.recommendations-grid.list-view .strategy-section {
+    grid-area: strategy;
+    align-self: stretch;
+    margin: 12px 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #fffaf1;
+}
+
+.recommendations-grid.list-view .expiry-alert {
+    grid-area: expiry;
+    margin: 0 16px 12px;
+}
+
+.recommendations-grid.list-view .action-buttons {
+    grid-area: actions;
+    grid-template-columns: 1fr;
+    align-self: stretch;
+    align-content: center;
+    margin-top: 0;
+    padding: 12px;
+    border-left: 1px solid #eef2f7;
+}
+
+.recommendations-grid.list-view .btn-action {
+    min-height: 38px;
+    white-space: nowrap;
+}
+
+@media (max-width: 1050px) {
+    .recommendations-list-header {
+        display: none;
+    }
+
+    .recommendations-grid.list-view .product-card {
+        display: grid !important;
+        grid-template-columns: minmax(210px, .8fr) minmax(320px, 1.4fr);
+        grid-template-areas:
+            "top top"
+            "product metrics"
+            "insights strategy"
+            "expiry expiry"
+            "actions actions";
+    }
+
+    .recommendations-grid.list-view .action-buttons {
+        grid-template-columns: 1fr 1fr;
+        border-top: 1px solid #eef2f7;
+        border-left: 0;
+    }
 }
 
 /* ═══════════ PRODUCT CARD ═══════════ */
@@ -1272,8 +1523,35 @@ body {
         width: 100%;
     }
 
+    .filter-tools .view-toggle {
+        flex: 0 0 auto;
+    }
+
+    .recommendations-summary {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 3px;
+    }
+
     .recommendations-grid {
         grid-template-columns: 1fr;
+    }
+    .recommendations-grid.list-view .product-card {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    .recommendations-grid.list-view .metrics-row {
+        align-self: stretch;
+        margin: 12px 18px 0;
+    }
+    .recommendations-grid.list-view .smart-insights,
+    .recommendations-grid.list-view .strategy-section,
+    .recommendations-grid.list-view .expiry-alert {
+        margin-left: 18px;
+        margin-right: 18px;
+    }
+    .recommendations-grid.list-view .action-buttons {
+        border-left: 0;
     }
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);

@@ -1,5 +1,8 @@
 <?php
 session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_require_role(['owner']);
+security_require_post_csrf();
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['user_id'])) {

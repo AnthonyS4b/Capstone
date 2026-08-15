@@ -557,6 +557,24 @@ function calculateChange() {
     }
 }
 
+function setQuickCashAmount(button) {
+    const amount = Number(button.dataset.cashAmount);
+    const targetId = button.dataset.cashTarget;
+    const input = document.getElementById(targetId);
+
+    if (!input || !Number.isFinite(amount)) return;
+
+    input.value = String(amount);
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+
+    const group = button.closest('.quick-cash-grid');
+    group?.querySelectorAll('.quick-cash-btn').forEach(candidate => {
+        candidate.classList.toggle('active', candidate === button);
+    });
+
+    input.focus();
+}
+
 function filterProducts() {
     const searchTerm = (searchInput?.value || '').toLowerCase();
     const activeBtn = document.querySelector('.category-btn.active');
@@ -690,7 +708,17 @@ function processPayment(total, payment, change, paymentMethod, reference) {
         success: function(response) {
             hideLoading();
             if (response.success) {
-                finishTransaction(response, cartSnapshot, total, payment, change, paymentMethod, reference, cashierName);
+                const saved = response.data || {};
+                finishTransaction(
+                    response,
+                    saved.items || cartSnapshot,
+                    Number(saved.total ?? total),
+                    Number(saved.payment ?? payment),
+                    Number(saved.change ?? change),
+                    saved.payment_method || paymentMethod,
+                    reference,
+                    cashierName
+                );
             } else {
                 showToast('error', 'Error', response.message || 'Failed to save transaction');
             }
@@ -738,6 +766,7 @@ function finishTransaction(response, items, total, payment, change, paymentMetho
     
     // Reset payment input
     if (paymentInput) paymentInput.value = '';
+    document.querySelectorAll('.quick-cash-btn.active').forEach(button => button.classList.remove('active'));
     calculateChange();
     
     // Reload products to update stock
@@ -1022,6 +1051,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clearCartBtn) clearCartBtn.addEventListener('click', clearCart);
     if (paymentInput) paymentInput.addEventListener('input', calculateChange);
     if (checkoutBtn) checkoutBtn.addEventListener('click', processCheckout);
+    document.querySelectorAll('.quick-cash-btn').forEach(button => {
+        button.addEventListener('click', () => setQuickCashAmount(button));
+    });
     
     // Sidebar collapse
     const sidebar = document.getElementById('sidebar');

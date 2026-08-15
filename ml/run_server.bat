@@ -2,22 +2,27 @@
 REM ml/run_server.bat
 REM Windows batch file to start the ML API Server
 
+set "ML_DIR=%~dp0"
+set "PYTHON_EXE=%ML_DIR%..\.venv\Scripts\python.exe"
+
 echo.
 echo ========================================
 echo ML Recommendation API Server Startup
 echo ========================================
 echo.
 
-REM Check if Python is installed
-python --version >nul 2>&1
+REM Use the project virtual environment so startup does not depend on PATH.
+"%PYTHON_EXE%" --version >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: Python is not installed or not in PATH
-    echo Please install Python 3.8+ and add it to your system PATH
+    echo ERROR: Project Python environment was not found or is broken:
+    echo %PYTHON_EXE%
     pause
     exit /b 1
 )
 
-REM Check if we're in the right directory
+REM Make startup independent of the caller's current directory.
+cd /d "%ML_DIR%"
+
 if not exist "api_server.py" (
     echo ERROR: api_server.py not found in current directory
     echo Please run this script from the ml directory
@@ -27,7 +32,7 @@ if not exist "api_server.py" (
 
 echo.
 echo Installing dependencies from requirements.txt...
-pip install -r requirements.txt
+"%PYTHON_EXE%" -m pip install -r requirements.txt
 if errorlevel 1 (
     echo ERROR: Failed to install dependencies
     pause
@@ -42,6 +47,6 @@ echo.
 echo Press Ctrl+C to stop the server
 echo.
 
-python api_server.py
+"%PYTHON_EXE%" api_server.py
 
 pause

@@ -3,9 +3,11 @@
 // Handles communication between PHP frontend and Python ML API
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
-session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_start_session();
+security_require_login();
+security_require_post_csrf();
 
 define('ML_API_URL', 'http://127.0.0.1:5000');
 define('ML_API_TIMEOUT', 30);

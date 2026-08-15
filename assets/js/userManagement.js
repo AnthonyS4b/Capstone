@@ -3,15 +3,35 @@
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log("userManagement.js loaded");
+
+    const roleModal = document.getElementById('roleManagementModal');
+    if (roleModal) {
+        roleModal.addEventListener('show.bs.modal', refreshUserList);
+    }
     
     // Set up auto-refresh for user list (every 30 seconds)
-    if (typeof isOwner !== 'undefined' && isOwner) {
+    if (isUserManagementOwner()) {
         setInterval(refreshUserList, 30000);
     }
     
     // Set up search and filter listeners
     setupFilterListeners();
 });
+
+function isUserManagementOwner() {
+    if (typeof isOwner !== 'undefined') return Boolean(isOwner);
+    return document.getElementById('roleManagementModal') !== null;
+}
+
+function getUserManagementBaseUrl() {
+    if (typeof baseUrl !== 'undefined') return baseUrl;
+    return window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+}
+
+function getCurrentUserId() {
+    if (typeof currentUser !== 'undefined' && currentUser?.id != null) return currentUser.id;
+    return window.userManagementCurrentUserId ?? null;
+}
 
 // Setup filter listeners
 function setupFilterListeners() {
@@ -70,11 +90,11 @@ function filterUsers() {
 
 // Refresh user list from database
 function refreshUserList() {
-    if (typeof isOwner === 'undefined' || !isOwner) return;
+    if (!isUserManagementOwner()) return;
     
     showToast('info', 'Refreshing', 'Updating user list...');
     
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const url = baseApiUrl + 'ajax/get_user.php';
     
     console.log('Fetching users from:', url);
@@ -85,11 +105,16 @@ function refreshUserList() {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => {
+    .then(async response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error(`User API returned HTTP ${response.status}`);
         }
-        return response.json();
+        const responseText = await response.text();
+        try {
+            return JSON.parse(responseText);
+        } catch (error) {
+            throw new Error('User API returned invalid JSON');
+        }
     })
     .then(data => {
         console.log('User data received:', data);
@@ -102,7 +127,7 @@ function refreshUserList() {
     })
     .catch(error => {
         console.error('Error refreshing users:', error);
-        showToast('error', 'Connection Error', 'Failed to connect to server');
+        showToast('error', 'Connection Error', error.message || 'Failed to connect to server');
     });
 }
 
@@ -148,7 +173,7 @@ function updateUsersTable(users) {
                     <button class="btn btn-sm btn-outline-primary" onclick="editUserRole(${user.id}, '${escapeHtml(user.first_name)}', '${escapeHtml(user.last_name)}', '${escapeHtml(user.email)}', '${user.role}', '${escapeHtml(user.position || '')}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    ${user.id != currentUser.id ? `
+                    ${user.id != getCurrentUserId() ? `
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id}, '${escapeHtml(user.first_name)} ${escapeHtml(user.last_name)}')">
                             <i class="fas fa-trash"></i>
                         </button>
@@ -280,7 +305,7 @@ function saveNewUser() {
     saveBtn.disabled = true;
     
     // Determine base URL
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const endpoint = baseApiUrl + 'ajax/add_user.php';
     
     console.log('Sending to endpoint:', endpoint);
@@ -425,7 +450,7 @@ function saveRoleChanges() {
         }
     }
 
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
 
     // Step 1 — save role + position
     fetch(baseApiUrl + 'ajax/update_user_role.php', {
@@ -473,7 +498,7 @@ function closeEditModalAndRefresh(userId) {
     const modal = bootstrap.Modal.getInstance(modalElement);
     if (modal) modal.hide();
     refreshUserList();
-    if (userId == currentUser.id) updateCurrentUserSession();
+    if (userId == getCurrentUserId()) updateCurrentUserSession();
 }
 
 // Delete user
@@ -484,7 +509,7 @@ function deleteUser(userId, userName) {
     
     showToast('warning', 'Deleting', `Removing user ${userName}...`);
     
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const endpoint = baseApiUrl + 'ajax/delete_user.php';
     
     fetch(endpoint, {
@@ -519,7 +544,7 @@ function deleteUser(userId, userName) {
 
 // Update current user session
 function updateCurrentUserSession() {
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const endpoint = baseApiUrl + 'ajax/refresh_session.php';
     
     fetch(endpoint, {
@@ -552,7 +577,7 @@ function refreshProfileData() {
     refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Refreshing...';
     refreshBtn.disabled = true;
 
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const endpoint = baseApiUrl + 'ajax/get_current_user.php';
     
     console.log('Fetching from:', endpoint);
@@ -696,7 +721,7 @@ function changeOwnPin() {
         return;
     }
 
-    const baseApiUrl = typeof baseUrl !== 'undefined' ? baseUrl : '/PinLogin/';
+    const baseApiUrl = getUserManagementBaseUrl();
     const params = new URLSearchParams({ action: 'change_own_pin', current_pin: current, new_pin: newPin });
 
     fetch(baseApiUrl + 'ajax/user_ajax.php', {

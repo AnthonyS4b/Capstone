@@ -849,6 +849,56 @@ body {
     border-color: #4a6fa5;
 }
 
+.quick-cash-wrap {
+    margin: -2px 0 12px;
+}
+
+.quick-cash-label {
+    display: block;
+    margin-bottom: 5px;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.quick-cash-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.quick-cash-btn {
+    padding: 7px 4px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: #fff;
+    color: #2c5530;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.1;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.quick-cash-btn:hover,
+.quick-cash-btn:focus-visible,
+.quick-cash-btn.active {
+    border-color: #2c5530;
+    background: #2c5530;
+    color: #fff;
+    outline: none;
+}
+
+.quick-cash-btn:active {
+    transform: translateY(1px);
+}
+
+.quick-cash-modal {
+    margin: 5px 0 8px;
+}
+
 .change-amount {
     background: #f1f5f9;
     padding: 10px;

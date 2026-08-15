@@ -1,6 +1,7 @@
 <?php
 // Recommendations Page
 session_start();
+require_once __DIR__ . '/includes/security.php';
 require_once 'config/config.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -42,12 +43,14 @@ if ($toast_message) unset($_SESSION['toast_message']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Recommendations · Espenida's Pet & Poultry Supply</title>
+    <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+    <script src="assets/js/security.js?v=20260814-1" defer></script>
+    <title>Recommendations</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/dashboardCSS.css">
     <link rel="stylesheet" href="assets/css/PosCSS.css">
-    <link rel="stylesheet" href="assets/css/reco.css">
+    <link rel="stylesheet" href="assets/css/reco.css?v=20260814-3">
     <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -129,8 +132,8 @@ if ($toast_message) unset($_SESSION['toast_message']);
                     <i class="fa-solid fa-user"></i><span>System & Admin</span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-lock"></i> User Roles</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-database"></i> Backup & Restore</a></li>
+                    <li><a class="dropdown-item" href="#roleManagementModal" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
+                    <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
                 </ul>
             </div>
         <?php endif; ?>
@@ -216,13 +219,36 @@ if ($toast_message) unset($_SESSION['toast_message']);
                 <button class="filter-btn" data-filter="monitor">Monitor</button>
                 <button class="filter-btn" data-filter="warning">Warning</button>
             </div>
-            <div class="filter-group">
+            <div class="filter-group filter-tools">
+                <div class="view-toggle" role="group" aria-label="Recommendation view">
+                    <button type="button" class="view-toggle-btn active" data-view="list" aria-pressed="true" title="List view">
+                        <i class="fas fa-list" aria-hidden="true"></i>
+                        <span>List</span>
+                    </button>
+                    <button type="button" class="view-toggle-btn" data-view="card" aria-pressed="false" title="Card view">
+                        <i class="fas fa-th-large" aria-hidden="true"></i>
+                        <span>Cards</span>
+                    </button>
+                </div>
                 <input type="text" class="form-control" id="searchBox" placeholder="Search products..." style="width: 250px;">
             </div>
         </div>
 
-        <!-- Recommendations Grid -->
-        <div id="recommendationsContainer" class="recommendations-grid">
+        <div class="recommendations-summary">
+            <span id="recommendationResultCount" class="result-count" aria-live="polite">Loading recommendations...</span>
+            <span class="list-view-hint"><i class="fas fa-info-circle" aria-hidden="true"></i> Select View Details for the full forecast.</span>
+        </div>
+
+        <div id="recommendationsListHeader" class="recommendations-list-header" hidden aria-hidden="true">
+            <span>Product</span>
+            <span>Risk &amp; price</span>
+            <span>Stock activity</span>
+            <span>Recommended action</span>
+            <span class="text-end">Actions</span>
+        </div>
+
+        <!-- Recommendations: list view is the default -->
+        <div id="recommendationsContainer" class="recommendations-grid list-view">
             <div class="empty-state" style="grid-column: 1/-1;">
                 <div class="loading-spinner"></div>
                 <h3>Loading Recommendations...</h3>
@@ -306,8 +332,11 @@ if ($toast_message) unset($_SESSION['toast_message']);
         </div>
     </div>
 
-    <script src="assets/js/Reco.js"></script>
+    <?php include 'includes/user_roles_modal.php'; ?>
+
+    <script src="assets/js/Reco.js?v=20260814-3"></script>
     <script src="assets/js/active_strategies.js"></script>
+    <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>
 </html>

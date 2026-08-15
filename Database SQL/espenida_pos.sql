@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 27, 2026 at 09:51 AM
+-- Generation Time: Aug 13, 2026 at 07:06 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -212,7 +212,23 @@ INSERT INTO `inventory_history` (`id`, `product_id`, `product_name`, `user_id`, 
 (134, 52, 'Thunderbird Grower Mash 25kg', 1, 'edit', 'Product details updated', '2026-04-27 15:25:29'),
 (135, 53, 'Unahco Chick Booster 25kg', 1, 'edit', 'Product details updated', '2026-04-27 15:25:48'),
 (136, 12, 'Vitarich Broiler Starter 25kg', 1, 'edit', 'Product details updated', '2026-04-27 15:26:03'),
-(137, 56, 'Vitarich Finisher Crumbles 25kg', 1, 'edit', 'Product details updated', '2026-04-27 15:26:16');
+(137, 56, 'Vitarich Finisher Crumbles 25kg', 1, 'edit', 'Product details updated', '2026-04-27 15:26:16'),
+(138, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:09:40'),
+(139, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:17:17'),
+(140, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:32:06'),
+(141, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:32:19'),
+(142, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:32:36'),
+(143, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:42:46'),
+(144, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:43:50'),
+(145, 49, 'Temptations Catnip Treats 85g', 1, 'edit', 'Product details updated', '2026-04-28 23:44:32'),
+(146, 49, 'Temptations Catnip Treats 85g', 1, 'edit', 'Product details updated', '2026-04-28 23:44:49'),
+(147, 49, 'Temptations Catnip Treats 85g', 1, 'edit', 'Product details updated', '2026-04-28 23:45:01'),
+(148, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:45:31'),
+(149, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:49:59'),
+(150, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:50:37'),
+(151, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-28 23:51:01'),
+(152, 30, 'Cat food', 1, 'edit', 'Product details updated', '2026-04-30 22:41:41'),
+(153, 15, 'Chicken Multivitamin Supplement 500g', 1, 'edit', 'Product details updated', '2026-04-30 22:42:49');
 
 -- --------------------------------------------------------
 
@@ -348,7 +364,7 @@ INSERT INTO `login_sessions` (`id`, `user_id`, `action`, `ip_address`, `user_age
 (119, 4, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 13:51:47', NULL, NULL),
 (120, 1, 'switch', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'ana@espenida.com', 4, '2026-04-16 13:51:47', NULL, NULL),
 (121, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 14:39:50', NULL, NULL),
-(122, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 14:47:52', NULL, NULL),
+(122, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 14:47:52', '2026-04-27 16:15:04', 955632),
 (123, 4, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 15:07:23', NULL, NULL),
 (124, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 18:51:50', '2026-04-16 19:32:02', 2412),
 (125, 4, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-16 18:55:44', '2026-04-16 19:32:16', 2192),
@@ -366,7 +382,45 @@ INSERT INTO `login_sessions` (`id`, `user_id`, `action`, `ip_address`, `user_age
 (137, 1, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-18 19:52:26', NULL, NULL),
 (138, 4, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-18 19:52:30', '2026-04-18 19:53:31', 61),
 (139, 4, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-18 19:53:31', NULL, NULL),
-(140, 1, 'switch', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'ana@espenida.com', 4, '2026-04-18 19:53:31', NULL, NULL);
+(140, 1, 'switch', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'ana@espenida.com', 4, '2026-04-18 19:53:31', NULL, NULL),
+(141, 1, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-27 16:15:05', NULL, NULL),
+(142, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-27 16:25:41', NULL, NULL),
+(143, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-28 23:09:01', NULL, NULL),
+(144, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-28 23:15:51', NULL, NULL),
+(145, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-28 23:37:13', NULL, NULL),
+(146, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-04-30 22:32:06', NULL, NULL),
+(147, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', NULL, NULL, '2026-05-01 22:39:14', NULL, NULL),
+(148, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', NULL, NULL, '2026-05-23 15:03:12', '2026-05-23 15:14:28', 676),
+(149, 1, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', NULL, NULL, '2026-05-23 15:14:29', NULL, NULL),
+(150, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36', NULL, NULL, '2026-05-23 15:35:08', NULL, NULL),
+(151, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36', NULL, NULL, '2026-07-08 19:54:00', NULL, NULL),
+(152, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-09 19:54:15', '2026-07-09 19:58:48', 273),
+(153, 1, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-09 19:58:48', NULL, NULL),
+(154, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-09 19:59:22', NULL, NULL),
+(155, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-09 20:33:23', NULL, NULL),
+(156, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-14 10:00:33', NULL, NULL),
+(157, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-14 10:38:44', NULL, NULL),
+(158, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-14 10:45:59', NULL, NULL),
+(159, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-14 11:03:01', NULL, NULL),
+(160, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-15 16:55:56', NULL, NULL),
+(161, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 00:27:28', NULL, NULL),
+(162, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 00:40:49', NULL, NULL),
+(163, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 00:59:50', NULL, NULL),
+(164, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 01:04:53', NULL, NULL),
+(165, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 16:56:37', NULL, NULL),
+(166, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 17:27:55', NULL, NULL),
+(167, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 17:42:22', NULL, NULL),
+(168, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-21 17:45:21', NULL, NULL),
+(169, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-24 12:02:47', NULL, NULL),
+(170, 1, 'login', '192.168.18.4', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36', NULL, NULL, '2026-07-24 12:16:59', NULL, NULL),
+(171, 1, 'login', '192.168.18.4', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36', NULL, NULL, '2026-07-24 12:28:47', NULL, NULL),
+(172, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-24 12:53:05', '2026-07-24 12:59:05', 360),
+(173, 1, 'logout', '192.168.18.4', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36', NULL, NULL, '2026-07-24 12:59:05', NULL, NULL),
+(174, 1, 'login', '192.168.18.4', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Mobile Safari/537.36', NULL, NULL, '2026-07-24 12:59:12', NULL, NULL),
+(175, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-07-24 13:12:44', NULL, NULL),
+(176, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-08-13 17:48:57', '2026-08-14 00:53:20', 25463),
+(177, 1, 'logout', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-08-14 00:53:20', NULL, NULL),
+(178, 1, 'login', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, NULL, '2026-08-14 00:53:26', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -380,6 +434,97 @@ CREATE TABLE `ml_model_metrics` (
   `metric_value` varchar(100) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ml_model_metrics`
+--
+
+INSERT INTO `ml_model_metrics` (`id`, `metric_name`, `metric_value`, `created_at`) VALUES
+(1, 'mse', '0.027459582116984047', '2026-07-09 21:15:55'),
+(2, 'rmse', '0.16570933020498288', '2026-07-09 21:15:56'),
+(3, 'mae', '0.10007977843915336', '2026-07-09 21:15:56'),
+(4, 'r2_score', '0.996107851295138', '2026-07-09 21:15:56'),
+(5, 'training_samples', '60', '2026-07-09 21:15:56'),
+(6, 'mse', '0.002746305555555556', '2026-07-21 17:13:24'),
+(7, 'rmse', '0.05240520542422819', '2026-07-21 17:13:24'),
+(8, 'mae', '0.01927777777777778', '2026-07-21 17:13:24'),
+(9, 'r2_score', '0.5781674666666665', '2026-07-21 17:13:24'),
+(10, 'training_samples', '60', '2026-07-21 17:13:24'),
+(11, 'mse', '0.002746305555555556', '2026-07-21 17:13:39'),
+(12, 'rmse', '0.05240520542422819', '2026-07-21 17:13:39'),
+(13, 'mae', '0.01927777777777778', '2026-07-21 17:13:39'),
+(14, 'r2_score', '0.5781674666666665', '2026-07-21 17:13:39'),
+(15, 'training_samples', '60', '2026-07-21 17:13:39'),
+(16, 'mse', '0.002845657466458806', '2026-07-21 17:28:27'),
+(17, 'rmse', '0.053344704202561724', '2026-07-21 17:28:27'),
+(18, 'mae', '0.01718105158730159', '2026-07-21 17:28:27'),
+(19, 'r2_score', '0.5629070131519274', '2026-07-21 17:28:27'),
+(20, 'training_samples', '60', '2026-07-21 17:28:27'),
+(21, 'mse', '0.002845657466458806', '2026-07-21 17:28:53'),
+(22, 'rmse', '0.053344704202561724', '2026-07-21 17:28:53'),
+(23, 'mae', '0.01718105158730159', '2026-07-21 17:28:53'),
+(24, 'r2_score', '0.5629070131519274', '2026-07-21 17:28:53'),
+(25, 'training_samples', '60', '2026-07-21 17:28:53'),
+(26, 'mse', '0.002845657466458806', '2026-07-21 17:29:02'),
+(27, 'rmse', '0.053344704202561724', '2026-07-21 17:29:02'),
+(28, 'mae', '0.01718105158730159', '2026-07-21 17:29:02'),
+(29, 'r2_score', '0.5629070131519274', '2026-07-21 17:29:02'),
+(30, 'training_samples', '60', '2026-07-21 17:29:02'),
+(31, 'mse', '0.002845657466458806', '2026-07-21 17:29:10'),
+(32, 'rmse', '0.053344704202561724', '2026-07-21 17:29:10'),
+(33, 'mae', '0.01718105158730159', '2026-07-21 17:29:10'),
+(34, 'r2_score', '0.5629070131519274', '2026-07-21 17:29:10'),
+(35, 'training_samples', '60', '2026-07-21 17:29:10'),
+(36, 'mse', '0.002845657466458806', '2026-07-21 17:29:30'),
+(37, 'rmse', '0.053344704202561724', '2026-07-21 17:29:30'),
+(38, 'mae', '0.01718105158730159', '2026-07-21 17:29:30'),
+(39, 'r2_score', '0.5629070131519274', '2026-07-21 17:29:30'),
+(40, 'training_samples', '60', '2026-07-21 17:29:30'),
+(41, 'mse', '0.002845657466458806', '2026-07-21 17:41:50'),
+(42, 'rmse', '0.053344704202561724', '2026-07-21 17:41:50'),
+(43, 'mae', '0.01718105158730159', '2026-07-21 17:41:50'),
+(44, 'r2_score', '0.5629070131519274', '2026-07-21 17:41:50'),
+(45, 'training_samples', '60', '2026-07-21 17:41:50'),
+(46, 'mse', '0.002845657466458806', '2026-07-21 17:51:46'),
+(47, 'rmse', '0.053344704202561724', '2026-07-21 17:51:46'),
+(48, 'mae', '0.01718105158730159', '2026-07-21 17:51:46'),
+(49, 'r2_score', '0.5629070131519274', '2026-07-21 17:51:46'),
+(50, 'training_samples', '60', '2026-07-21 17:51:46'),
+(51, 'mse', '0.002845657466458806', '2026-07-21 17:55:03'),
+(52, 'rmse', '0.053344704202561724', '2026-07-21 17:55:03'),
+(53, 'mae', '0.01718105158730159', '2026-07-21 17:55:03'),
+(54, 'r2_score', '0.5629070131519274', '2026-07-21 17:55:03'),
+(55, 'training_samples', '60', '2026-07-21 17:55:03'),
+(56, 'mse', '0.002845657466458806', '2026-07-21 17:55:56'),
+(57, 'rmse', '0.053344704202561724', '2026-07-21 17:55:56'),
+(58, 'mae', '0.01718105158730159', '2026-07-21 17:55:56'),
+(59, 'r2_score', '0.5629070131519274', '2026-07-21 17:55:56'),
+(60, 'training_samples', '60', '2026-07-21 17:55:56'),
+(61, 'mse', '0.002845657466458806', '2026-07-21 17:57:01'),
+(62, 'rmse', '0.053344704202561724', '2026-07-21 17:57:01'),
+(63, 'mae', '0.01718105158730159', '2026-07-21 17:57:01'),
+(64, 'r2_score', '0.5629070131519274', '2026-07-21 17:57:01'),
+(65, 'training_samples', '60', '2026-07-21 17:57:01'),
+(66, 'mse', '0.002845657466458806', '2026-07-24 12:05:24'),
+(67, 'rmse', '0.053344704202561724', '2026-07-24 12:05:24'),
+(68, 'mae', '0.01718105158730159', '2026-07-24 12:05:24'),
+(69, 'r2_score', '0.5629070131519274', '2026-07-24 12:05:24'),
+(70, 'training_samples', '60', '2026-07-24 12:05:24'),
+(71, 'mse', '0.002845657466458806', '2026-07-24 12:05:35'),
+(72, 'rmse', '0.053344704202561724', '2026-07-24 12:05:35'),
+(73, 'mae', '0.01718105158730159', '2026-07-24 12:05:35'),
+(74, 'r2_score', '0.5629070131519274', '2026-07-24 12:05:35'),
+(75, 'training_samples', '60', '2026-07-24 12:05:35'),
+(76, 'mse', '0.002845657466458806', '2026-07-24 12:05:47'),
+(77, 'rmse', '0.053344704202561724', '2026-07-24 12:05:47'),
+(78, 'mae', '0.01718105158730159', '2026-07-24 12:05:47'),
+(79, 'r2_score', '0.5629070131519274', '2026-07-24 12:05:47'),
+(80, 'training_samples', '60', '2026-07-24 12:05:47'),
+(81, 'mse', '0.002845657466458806', '2026-07-24 12:05:58'),
+(82, 'rmse', '0.053344704202561724', '2026-07-24 12:05:58'),
+(83, 'mae', '0.01718105158730159', '2026-07-24 12:05:58'),
+(84, 'r2_score', '0.5629070131519274', '2026-07-24 12:05:58'),
+(85, 'training_samples', '60', '2026-07-24 12:05:58');
 
 -- --------------------------------------------------------
 
@@ -404,7 +549,14 @@ CREATE TABLE `ml_recommendation_logs` (
 INSERT INTO `ml_recommendation_logs` (`id`, `product_id`, `strategy_id`, `discount_percentage`, `status`, `notes`, `created_at`) VALUES
 (1, 9, 'emergency_clearance', 30.00, 'applied', 'Kit Cat expiring soon - 30% flash sale applied', '2026-03-28 10:00:00'),
 (2, 14, 'emergency_clearance', 25.00, 'applied', 'Duck feed expiring - clearance sale', '2026-03-30 09:00:00'),
-(3, 17, 'targeted_promotion', 15.00, 'applied', 'Vaccine promo to move slow inventory', '2026-03-31 11:00:00');
+(3, 17, 'targeted_promotion', 15.00, 'applied', 'Vaccine promo to move slow inventory', '2026-03-31 11:00:00'),
+(4, 9, 'emergency_clearance', 25.00, 'applied', '', '2026-04-30 23:37:27'),
+(5, 50, 'buy_one_take_one', 40.00, 'applied', '', '2026-05-01 00:04:16'),
+(6, 53, 'buy_one_take_one', 40.00, 'applied', '', '2026-05-01 00:26:17'),
+(7, 51, 'emergency_clearance', 25.00, 'applied', '', '2026-07-14 11:46:30'),
+(8, 8, 'buy_one_take_one', 50.00, 'applied', '', '2026-07-14 11:47:18'),
+(9, 69, 'emergency_clearance', 25.00, 'applied', '', '2026-07-14 11:48:39'),
+(10, 20, 'buy_one_take_one', 50.00, 'applied', '', '2026-07-21 17:13:53');
 
 -- --------------------------------------------------------
 
@@ -450,19 +602,19 @@ INSERT INTO `products` (`id`, `category_id`, `category`, `name`, `description`, 
 (5, 1, 'Dog Food & Treats', 'Purepet Beef Jerky Treats 100g', '', 'DOG-005', '8888005', 'assets/uploads/products/prod_1777272572_e36069ab.webp', 95.00, 65.00, 5, 'per pack', '2028-10-22', '2026-03-01', 1, 1, NULL, NULL, NULL, '2026-03-01 08:00:00', '2026-04-27 14:49:32', NULL, 'active'),
 (6, 2, 'Cat Food & Supplies', 'Whiskas Adult Tuna Dry 1.2kg', '', 'CAT-001', '8888006', 'assets/uploads/products/prod_1777271953_2ff7f053.png', 245.00, 180.00, 31, 'per bag', '2026-08-15', '2025-11-15', 1, 1, NULL, NULL, NULL, '2025-11-15 08:00:00', '2026-04-27 14:39:13', NULL, 'active'),
 (7, 2, 'Cat Food & Supplies', 'Friskies Cat Wet Food 400g', '', 'CAT-002', '8888007', 'assets/uploads/products/prod_1777271681_6109303d.jpg', 75.00, 52.00, 50, 'per can', '2026-07-10', '2025-12-25', 1, 1, NULL, NULL, NULL, '2025-12-25 08:00:00', '2026-04-27 14:34:41', NULL, 'active'),
-(8, 2, 'Cat Food & Supplies', 'Maxi Cat Litter Clumping 5L', '', 'CAT-003', '8888008', 'assets/uploads/products/prod_1777271794_1173f03c.webp', 185.00, 130.00, 20, 'per bag', NULL, '2025-01-20', 1, 1, NULL, NULL, NULL, '2025-01-20 08:00:00', '2026-04-27 14:36:34', NULL, 'active'),
-(9, 2, 'Cat Food & Supplies', 'Kit Cat Royale Ocean Fish 1.5kg', '', 'CAT-004', '8888009', 'assets/uploads/products/prod_1777271751_c60b33fc.jpg', 310.00, 230.00, 106, 'per bag', '2026-05-10', '2026-03-20', 1, 1, NULL, NULL, NULL, '2026-03-20 08:00:00', '2026-04-27 14:35:51', NULL, 'active'),
+(8, 2, 'Cat Food & Supplies', 'Maxi Cat Litter Clumping 5L', '', 'CAT-003', '8888008', 'assets/uploads/products/prod_1777271794_1173f03c.webp', 92.50, 130.00, 20, 'per bag', NULL, '2025-01-20', 1, 1, NULL, NULL, NULL, '2025-01-20 08:00:00', '2026-07-14 11:47:18', NULL, 'active'),
+(9, 2, 'Cat Food & Supplies', 'Kit Cat Royale Ocean Fish 1.5kg', '', 'CAT-004', '8888009', 'assets/uploads/products/prod_1777271751_c60b33fc.jpg', 310.00, 230.00, 106, 'per bag', '2026-05-10', '2026-03-20', 1, 1, NULL, NULL, NULL, '2026-03-20 08:00:00', '2026-04-30 23:51:59', NULL, 'active'),
 (10, 2, 'Cat Food & Supplies', 'Catit Stainless Steel Bowl', '', 'CAT-005', '8888010', 'assets/uploads/products/prod_1777271577_2473b028.jpg', 220.00, 155.00, 108, 'per piece', NULL, '2025-04-30', 1, 1, NULL, NULL, NULL, '2025-04-30 08:00:00', '2026-04-27 14:32:57', NULL, 'active'),
 (11, 3, 'Poultry Feed', 'MCP Layer Pellets 50kg', '', 'PTR-001', '8888011', 'assets/uploads/products/prod_1777274642_4db2d55c.jpg', 1250.00, 980.00, 112, 'whole sack', '2026-05-30', '2025-12-05', 1, 1, NULL, NULL, NULL, '2025-12-05 08:00:00', '2026-04-27 15:24:02', NULL, 'active'),
 (12, 3, 'Poultry Feed', 'Vitarich Broiler Starter 25kg', '', 'PTR-002', '8888012', 'assets/uploads/products/prod_1777274762_e913c527.jpg', 680.00, 530.00, 18, 'half sack', '2026-06-15', '2026-01-15', 1, 1, NULL, NULL, NULL, '2026-01-15 08:00:00', '2026-04-27 15:26:03', NULL, 'active'),
 (13, 3, 'Poultry Feed', 'San Miguel Grower Mash 25kg', '', 'PTR-003', '8888013', 'assets/uploads/products/prod_1777274707_2b7f4150.jpg', 640.00, 495.00, 25, 'half sack', '2026-06-01', '2026-02-01', 1, 1, NULL, NULL, NULL, '2026-02-01 08:00:00', '2026-04-27 15:25:07', NULL, 'active'),
-(14, 3, 'Poultry Feed', 'Duck Pelleted Feed 25kg', '', 'PTR-004', '8888014', 'assets/uploads/products/prod_1777274592_d01ec2c4.jpg', 590.00, 460.00, 104, 'half sack', '2026-08-12', '2026-02-15', 1, 1, NULL, NULL, NULL, '2026-02-15 08:00:00', '2026-04-27 15:23:12', NULL, 'active'),
-(15, 3, 'Poultry Feed', 'Chicken Multivitamin Supplement 500g', '', 'PTR-005', '8888015', 'assets/uploads/products/prod_1777274566_6709b582.jpg', 165.00, 110.00, 106, 'per pouch', '2026-04-08', '2026-01-25', 1, 1, NULL, NULL, NULL, '2026-01-25 08:00:00', '2026-04-27 15:22:46', NULL, 'active'),
+(14, 3, 'Poultry Feed', 'Duck Pelleted Feed 25kg', '', 'PTR-004', '8888014', 'assets/uploads/products/prod_1777274592_d01ec2c4.jpg', 590.00, 460.00, 104, 'half sack', '2026-08-12', '2026-02-15', 1, 1, NULL, NULL, NULL, '2026-02-15 08:00:00', '2026-04-30 23:51:47', NULL, 'active'),
+(15, 3, 'Poultry Feed', 'Chicken Multivitamin Supplement 500g', '', 'PTR-005', '8888015', 'assets/uploads/products/prod_1777274566_6709b582.jpg', 165.00, 110.00, 106, 'Per Pouch', '2026-05-20', '2026-01-25', 1, 1, NULL, NULL, NULL, '2026-01-25 08:00:00', '2026-04-30 22:42:46', NULL, 'active'),
 (16, 4, 'Pet Medications', 'Frontline Plus Flea & Tick Dog', '', 'MED-001', '8888016', 'assets/uploads/products/prod_1777273793_749e0f73.jpg', 580.00, 420.00, 102, 'per piece', '2026-09-01', '2025-10-10', 1, 1, NULL, NULL, NULL, '2025-10-10 08:00:00', '2026-04-27 15:09:53', NULL, 'active'),
 (17, 4, 'Pet Medications', 'Canine Distemper Vaccine', '', 'MED-002', '8888017', 'assets/uploads/products/prod_1777273754_14368b56.jpg', 350.00, 260.00, 102, 'per vial', '2026-04-15', '2026-03-01', 1, 1, NULL, NULL, NULL, '2026-03-01 08:00:00', '2026-04-27 15:09:14', NULL, 'active'),
 (18, 4, 'Pet Medications', 'Drontal Plus Dewormer (4 tabs)', '', 'MED-003', '8888018', 'assets/uploads/products/prod_1777273780_e8a9dff3.webp', 195.00, 140.00, 13, 'per pack', '2026-12-01', '2025-05-15', 1, 1, NULL, NULL, NULL, '2025-05-15 08:00:00', '2026-04-27 15:09:40', NULL, 'active'),
 (19, 4, 'Pet Medications', 'Heartgard Plus Monthly (3pk)', '', 'MED-004', '8888019', 'assets/uploads/products/prod_1777273807_f6796df1.jpg', 920.00, 700.00, 102, 'per pack', '2026-07-01', '2026-01-18', 1, 1, NULL, NULL, NULL, '2026-01-18 08:00:00', '2026-04-27 15:10:07', NULL, 'active'),
-(20, 4, 'Pet Medications', 'Pet Electrolytes Powder 100g', '', 'MED-005', '8888020', 'assets/uploads/products/prod_1777273836_ba2e17b6.png', 120.00, 80.00, 22, 'per pack', '2026-08-01', '2026-02-05', 1, 1, NULL, NULL, NULL, '2026-02-05 08:00:00', '2026-04-27 15:10:36', NULL, 'active'),
+(20, 4, 'Pet Medications', 'Pet Electrolytes Powder 100g', '', 'MED-005', '8888020', 'assets/uploads/products/prod_1777273836_ba2e17b6.png', 120.00, 80.00, 20, 'per pack', '2026-08-01', '2026-02-05', 1, 1, NULL, NULL, NULL, '2026-02-05 08:00:00', '2026-07-21 17:14:50', NULL, 'active'),
 (21, 5, 'Pet Accessories', 'Adjustable Dog Collar (M)', '', 'ACC-001', '8888021', 'assets/uploads/products/prod_1777273166_0dd583f2.webp', 95.00, 60.00, 35, 'per piece', NULL, '2025-05-20', 1, 1, NULL, NULL, NULL, '2025-05-20 08:00:00', '2026-04-27 14:59:26', NULL, 'active'),
 (22, 5, 'Pet Accessories', 'Retractable Dog Leash 5m', '', 'ACC-002', '8888022', 'assets/uploads/products/prod_1777273506_2776cad1.webp', 285.00, 195.00, 18, 'per piece', NULL, '2025-06-15', 1, 1, NULL, NULL, NULL, '2025-06-15 08:00:00', '2026-04-27 15:05:06', NULL, 'active'),
 (23, 5, 'Pet Accessories', 'Stainless Steel Dog Bowl (L)', '', 'ACC-003', '8888023', 'assets/uploads/products/prod_1777273515_d090b16f.jpg', 150.00, 100.00, 27, 'per piece', NULL, '2025-10-01', 1, 1, NULL, NULL, NULL, '2025-10-01 08:00:00', '2026-04-27 15:05:15', NULL, 'active'),
@@ -470,7 +622,7 @@ INSERT INTO `products` (`id`, `category_id`, `category`, `name`, `description`, 
 (25, 6, 'Fish & Aquatics', 'API Aquarium Salt 737g', '', 'FSH-002', '8888025', 'assets/uploads/products/prod_1777272756_7fcc5246.png', 210.00, 145.00, 104, 'per box', '2027-01-01', '2025-11-25', 1, 1, NULL, NULL, NULL, '2025-11-25 08:00:00', '2026-04-27 14:52:36', NULL, 'active'),
 (28, 1, 'Dog Food & Treats', 'assda', '', 'CAT-799', '21315713423', NULL, 231.00, 100.00, 2323, 'whole sack', '2222-02-22', '2026-04-13', 1, NULL, 1, NULL, NULL, '2026-04-13 12:55:22', '2026-04-13 12:56:12', '2026-04-13 12:56:12', 'active'),
 (29, 1, 'Dog Food & Treats', 'asdasd132', '132312', 'DOG-989', '12315123', NULL, 231241.00, 123123.00, 40000, 'half sack', '2222-02-22', '2026-04-13', 1, NULL, 4, NULL, NULL, '2026-04-13 12:56:36', '2026-04-13 12:58:35', '2026-04-13 12:58:35', 'active'),
-(30, 2, 'Cat Food & Supplies', 'Cat food', 'dasd', 'CAT-415', '123121234', 'assets/uploads/products/prod_1777271267_695c78fd.jpg', 550.00, 500.00, 218, 'per bag', '2027-07-22', '2026-04-16', 4, 1, NULL, NULL, NULL, '2026-04-16 13:46:06', '2026-04-27 14:27:47', NULL, 'active'),
+(30, 2, 'Cat Food & Supplies', 'Cat food', 'dasd', 'CAT-415', '123121234', 'assets/uploads/products/prod_1777271267_695c78fd.jpg', 550.00, 500.00, 25, 'Per Pack', '2027-07-22', '2026-04-16', 4, 1, NULL, NULL, NULL, '2026-04-16 13:46:06', '2026-04-30 22:41:41', NULL, 'active'),
 (31, 1, 'Dog Food & Treats', 'Aozi Organic Puppy Food 1kg', '', 'DOG-006', '8888031', 'assets/uploads/products/prod_1777272114_94e9da68.jpeg', 245.00, 175.00, 60, 'per bag', '2026-12-15', '2026-01-10', 1, 1, NULL, NULL, NULL, '2026-01-10 08:00:00', '2026-04-27 14:41:54', NULL, 'active'),
 (32, 1, 'Dog Food & Treats', 'Cesar Premium Wet Dog Food 100g', '', 'DOG-007', '8888032', 'assets/uploads/products/prod_1777272267_a1ba3700.jpg', 55.00, 38.00, 120, 'per piece', '2026-09-30', '2026-02-05', 1, 1, NULL, NULL, NULL, '2026-02-05 08:00:00', '2026-04-27 14:44:27', NULL, 'active'),
 (33, 1, 'Dog Food & Treats', 'Nutri Chunks Hi-Protein 5kg', '', 'DOG-008', '8888033', 'assets/uploads/products/prod_1777272515_6c1d4955.webp', 420.00, 310.00, 40, 'per bag', '2026-11-20', '2025-12-01', 1, 1, NULL, NULL, NULL, '2025-12-01 08:00:00', '2026-04-27 14:48:35', NULL, 'active'),
@@ -478,8 +630,8 @@ INSERT INTO `products` (`id`, `category_id`, `category`, `name`, `description`, 
 (35, 1, 'Dog Food & Treats', 'Pedigree Dentastix Medium 7pk', '', 'DOG-010', '8888035', 'assets/uploads/products/prod_1777272547_b0756575.jpg', 165.00, 115.00, 55, 'per pack', '2026-10-01', '2026-02-10', 1, 1, NULL, NULL, NULL, '2026-02-10 08:00:00', '2026-04-27 14:49:07', NULL, 'active'),
 (36, 1, 'Dog Food & Treats', 'Special Dog Puppy Lamb 1.5kg', '', 'DOG-011', '8888036', 'assets/uploads/products/prod_1777272692_99d337b2.webp', 195.00, 140.00, 45, 'per bag', '2026-08-20', '2025-11-20', 1, 1, NULL, NULL, NULL, '2025-11-20 08:00:00', '2026-04-27 14:51:32', NULL, 'active'),
 (37, 1, 'Dog Food & Treats', 'Vitality Premium Dry Dog 3kg', '', 'DOG-012', '8888037', 'assets/uploads/products/prod_1777272705_f833dbbe.webp', 350.00, 260.00, 30, 'per bag', '2026-11-15', '2026-03-01', 1, 1, NULL, NULL, NULL, '2026-03-01 08:00:00', '2026-04-27 14:51:45', NULL, 'active'),
-(38, 1, 'Dog Food & Treats', 'Jerhigh Chicken Strip Snack 70g', '', 'DOG-013', '8888038', 'assets/uploads/products/prod_1777272500_1cef0eca.jpg', 65.00, 42.00, 90, 'per pack', '2027-01-10', '2026-01-25', 1, 1, NULL, NULL, NULL, '2026-01-25 08:00:00', '2026-04-27 14:48:20', NULL, 'active'),
-(39, 1, 'Dog Food & Treats', 'Holistic Recipe Adult Salmon 1.5kg', '', 'DOG-014', '8888039', 'assets/uploads/products/prod_1777272477_76e61075.jpg', 480.00, 360.00, 25, 'per bag', '2026-10-30', '2026-02-15', 1, 1, NULL, NULL, NULL, '2026-02-15 08:00:00', '2026-04-27 14:47:57', NULL, 'active'),
+(38, 1, 'Dog Food & Treats', 'Jerhigh Chicken Strip Snack 70g', '', 'DOG-013', '8888038', 'assets/uploads/products/prod_1777272500_1cef0eca.jpg', 65.00, 42.00, 89, 'per pack', '2027-01-10', '2026-01-25', 1, 1, NULL, NULL, NULL, '2026-01-25 08:00:00', '2026-07-24 12:35:54', NULL, 'active'),
+(39, 1, 'Dog Food & Treats', 'Holistic Recipe Adult Salmon 1.5kg', '', 'DOG-014', '8888039', 'assets/uploads/products/prod_1777272477_76e61075.jpg', 480.00, 360.00, 22, 'per bag', '2026-10-30', '2026-02-15', 1, 1, NULL, NULL, NULL, '2026-02-15 08:00:00', '2026-07-21 00:28:28', NULL, 'active'),
 (40, 1, 'Dog Food & Treats', 'SmartHeart Chicken Liver 3kg', '', 'DOG-015', '8888040', 'assets/uploads/products/prod_1777272682_02a12fd6.jpg', 290.00, 210.00, 50, 'per bag', '2026-09-15', '2025-12-20', 1, 1, NULL, NULL, NULL, '2025-12-20 08:00:00', '2026-04-27 14:51:22', NULL, 'active'),
 (41, 2, 'Cat Food & Supplies', 'Meow Mix Original Choice 1.5kg', '', 'CAT-006', '8888041', 'assets/uploads/products/prod_1777271835_d87435bc.jpg', 320.00, 240.00, 35, 'per bag', '2026-10-20', '2026-01-05', 1, 1, NULL, NULL, NULL, '2026-01-05 08:00:00', '2026-04-27 14:37:15', NULL, 'active'),
 (42, 2, 'Cat Food & Supplies', 'Sheba Tuna Pate 85g', '', 'CAT-007', '8888042', 'assets/uploads/products/prod_1777271849_a7bcafb3.jpg', 45.00, 30.00, 150, 'per can', '2026-08-15', '2026-02-01', 1, 1, NULL, NULL, NULL, '2026-02-01 08:00:00', '2026-04-27 14:37:42', NULL, 'active'),
@@ -489,11 +641,11 @@ INSERT INTO `products` (`id`, `category_id`, `category`, `name`, `description`, 
 (46, 2, 'Cat Food & Supplies', 'Feline Natural Lamb Feast 170g', '', 'CAT-011', '8888046', 'assets/uploads/products/prod_1777271640_c3500096.jpg', 195.00, 140.00, 40, 'per can', '2026-12-01', '2026-02-20', 1, 1, NULL, NULL, NULL, '2026-02-20 08:00:00', '2026-04-27 14:34:00', NULL, 'active'),
 (47, 2, 'Cat Food & Supplies', 'Tidy Cats Clumping Litter 6.35kg', '', 'CAT-012', '8888047', 'assets/uploads/products/prod_1777271933_0dbdef0e.jpg', 550.00, 400.00, 20, 'per bag', NULL, '2025-11-15', 1, 1, NULL, NULL, NULL, '2025-11-15 08:00:00', '2026-04-27 14:38:53', NULL, 'active'),
 (48, 2, 'Cat Food & Supplies', 'Catit Flower Water Fountain', '', 'CAT-013', '8888048', 'assets/uploads/products/prod_1777271555_19e6e905.webp', 1200.00, 850.00, 8, 'per set', NULL, '2026-03-01', 1, 1, NULL, NULL, NULL, '2026-03-01 08:00:00', '2026-04-27 14:32:35', NULL, 'active'),
-(49, 2, 'Cat Food & Supplies', 'Temptations Catnip Treats 85g', '', 'CAT-014', '8888049', 'assets/uploads/products/prod_1777271883_dabf096b.jpg', 95.00, 65.00, 70, 'per pack', '2026-10-15', '2026-01-30', 1, 1, NULL, NULL, NULL, '2026-01-30 08:00:00', '2026-04-27 14:38:03', NULL, 'active'),
-(50, 2, 'Cat Food & Supplies', 'Me-O Tuna Adult Dry 1.2kg', '', 'CAT-015', '8888050', 'assets/uploads/products/prod_1777271810_576cd3c7.jpg', 185.00, 130.00, 55, 'per bag', '2026-08-30', '2025-12-15', 1, 1, NULL, NULL, NULL, '2025-12-15 08:00:00', '2026-04-27 14:36:50', NULL, 'active'),
-(51, 3, 'Poultry Feed', 'B-MEG Premium Layer 50kg', '', 'PTR-006', '8888051', 'assets/uploads/products/prod_1777274489_3b712da5.jpg', 1350.00, 1050.00, 30, 'whole sack', '2026-07-15', '2026-01-10', 1, 1, NULL, NULL, NULL, '2026-01-10 08:00:00', '2026-04-27 15:21:29', NULL, 'active'),
+(49, 2, 'Cat Food & Supplies', 'Temptations Catnip Treats 85g', '', 'CAT-014', '8888049', 'assets/uploads/products/prod_1777271883_dabf096b.jpg', 95.00, 65.00, 70, 'Per Pack', '2026-10-15', '2026-01-30', 1, 1, NULL, NULL, NULL, '2026-01-30 08:00:00', '2026-04-28 23:44:59', NULL, 'active'),
+(50, 2, 'Cat Food & Supplies', 'Me-O Tuna Adult Dry 1.2kg', '', 'CAT-015', '8888050', 'assets/uploads/products/prod_1777271810_576cd3c7.jpg', 185.00, 130.00, 54, 'per bag', '2026-08-30', '2025-12-15', 1, 1, NULL, NULL, NULL, '2025-12-15 08:00:00', '2026-05-01 00:06:44', NULL, 'active'),
+(51, 3, 'Poultry Feed', 'B-MEG Premium Layer 50kg', '', 'PTR-006', '8888051', 'assets/uploads/products/prod_1777274489_3b712da5.jpg', 1350.00, 1050.00, 30, 'whole sack', '2026-07-15', '2026-01-10', 1, 1, NULL, NULL, NULL, '2026-01-10 08:00:00', '2026-07-14 11:47:01', NULL, 'active'),
 (52, 3, 'Poultry Feed', 'Thunderbird Grower Mash 25kg', '', 'PTR-007', '8888052', 'assets/uploads/products/prod_1777274727_ec5db3f2.webp', 620.00, 480.00, 25, 'half sack', '2026-06-20', '2026-02-01', 1, 1, NULL, NULL, NULL, '2026-02-01 08:00:00', '2026-04-27 15:25:27', NULL, 'active'),
-(53, 3, 'Poultry Feed', 'Unahco Chick Booster 25kg', '', 'PTR-008', '8888053', 'assets/uploads/products/prod_1777274747_81bbe4d3.jpg', 710.00, 550.00, 20, 'half sack', '2026-08-01', '2025-12-15', 1, 1, NULL, NULL, NULL, '2025-12-15 08:00:00', '2026-04-27 15:25:47', NULL, 'active'),
+(53, 3, 'Poultry Feed', 'Unahco Chick Booster 25kg', '', 'PTR-008', '8888053', 'assets/uploads/products/prod_1777274747_81bbe4d3.jpg', 426.00, 550.00, 18, 'half sack', '2026-08-01', '2025-12-15', 1, 1, NULL, NULL, NULL, '2025-12-15 08:00:00', '2026-05-01 00:27:19', NULL, 'active'),
 (54, 3, 'Poultry Feed', 'Poultry Mineral Premix 1kg', '', 'PTR-009', '8888054', 'assets/uploads/products/prod_1777274666_db7e0ad5.jpg', 180.00, 120.00, 45, 'per pack', '2026-11-15', '2026-02-10', 1, 1, NULL, NULL, NULL, '2026-02-10 08:00:00', '2026-04-27 15:24:26', NULL, 'active'),
 (55, 3, 'Poultry Feed', 'Golden Egg Layer Pellets 50kg', '', 'PTR-010', '8888055', 'assets/uploads/products/prod_1777274612_35ce4cda.jpg', 1280.00, 990.00, 18, 'whole sack', '2026-05-25', '2025-11-20', 1, 1, NULL, NULL, NULL, '2025-11-20 08:00:00', '2026-04-27 15:23:32', NULL, 'active'),
 (56, 3, 'Poultry Feed', 'Vitarich Finisher Crumbles 25kg', '', 'PTR-011', '8888056', 'assets/uploads/products/prod_1777274774_96b19468.jpg', 695.00, 540.00, 22, 'half sack', '2026-07-10', '2026-01-25', 1, 1, NULL, NULL, NULL, '2026-01-25 08:00:00', '2026-04-27 15:26:14', NULL, 'active'),
@@ -509,7 +661,7 @@ INSERT INTO `products` (`id`, `category_id`, `category`, `name`, `description`, 
 (66, 4, 'Pet Medications', 'Probiotic Paste for Pets 30g', '', 'MED-013', '8888066', 'assets/uploads/products/prod_1777273848_5faaf862.jpeg', 220.00, 155.00, 28, 'per tube', '2026-11-10', '2026-02-15', 1, 1, NULL, NULL, NULL, '2026-02-15 08:00:00', '2026-04-27 15:10:48', NULL, 'active'),
 (67, 5, 'Pet Accessories', 'Heavy Duty Dog Cage (L) 36in', '', 'ACC-004', '8888067', 'assets/uploads/products/prod_1777273440_d2400c23.jpg', 2800.00, 2000.00, 6, 'per piece', NULL, '2025-10-15', 1, 1, NULL, NULL, NULL, '2025-10-15 08:00:00', '2026-04-27 15:04:00', NULL, 'active'),
 (68, 5, 'Pet Accessories', 'Pet Cooling Mat (M) 50x40cm', '', 'ACC-005', '8888068', 'assets/uploads/products/prod_1777273476_a1e22883.webp', 350.00, 240.00, 20, 'per piece', NULL, '2026-01-20', 1, 1, NULL, NULL, NULL, '2026-01-20 08:00:00', '2026-04-27 15:04:36', NULL, 'active'),
-(69, 5, 'Pet Accessories', 'Cat Litter Scoop Stainless Steel', '', 'ACC-006', '8888069', 'assets/uploads/products/prod_1777273344_52647df7.jpg', 120.00, 75.00, 30, 'per piece', NULL, '2025-11-10', 1, 1, NULL, NULL, NULL, '2025-11-10 08:00:00', '2026-04-27 15:02:24', NULL, 'active'),
+(69, 5, 'Pet Accessories', 'Cat Litter Scoop Stainless Steel', '', 'ACC-006', '8888069', 'assets/uploads/products/prod_1777273344_52647df7.jpg', 90.00, 75.00, 30, 'per piece', NULL, '2025-11-10', 1, 1, NULL, NULL, NULL, '2025-11-10 08:00:00', '2026-07-14 11:48:39', NULL, 'active'),
 (70, 5, 'Pet Accessories', 'Reflective Dog Harness (M)', '', 'ACC-007', '8888070', 'assets/uploads/products/prod_1777273493_14ecf84b.jpg', 280.00, 190.00, 18, 'per piece', NULL, '2026-02-01', 1, 1, NULL, NULL, NULL, '2026-02-01 08:00:00', '2026-04-27 15:04:53', NULL, 'active'),
 (71, 5, 'Pet Accessories', 'Automatic Pet Water Dispenser 2L', '', 'ACC-008', '8888071', 'assets/uploads/products/prod_1777273330_7b15f0af.webp', 450.00, 310.00, 15, 'per piece', NULL, '2026-01-15', 1, 1, NULL, NULL, NULL, '2026-01-15 08:00:00', '2026-04-27 15:02:10', NULL, 'active'),
 (72, 5, 'Pet Accessories', 'Pet Grooming Brush Double-Sided', '', 'ACC-009', '8888072', 'assets/uploads/products/prod_1777273485_cd365740.jpg', 165.00, 105.00, 25, 'per piece', NULL, '2025-12-01', 1, 1, NULL, NULL, NULL, '2025-12-01 08:00:00', '2026-04-27 15:04:45', NULL, 'active'),
@@ -559,12 +711,12 @@ INSERT INTO `product_batches` (`id`, `product_id`, `batch_no`, `stock`, `date_ad
 (12, 12, 'B-INIT-12', 18, '2026-01-15', '2026-06-15', '2026-01-15 00:00:00', '2026-04-18 12:13:56', 'active'),
 (13, 13, 'B-INIT-13', 25, '2026-02-01', '2026-06-01', '2026-02-01 00:00:00', '2026-04-18 12:13:56', 'active'),
 (14, 14, 'B-INIT-14', 104, '2026-02-15', '2026-08-12', '2026-02-15 00:00:00', '2026-04-27 07:23:13', 'active'),
-(15, 15, 'B-INIT-15', 106, '2026-01-25', '2026-04-08', '2026-01-25 00:00:00', '2026-04-18 12:13:56', 'active'),
+(15, 15, 'B-INIT-15', 106, '2026-01-25', '2026-05-20', '2026-01-25 00:00:00', '2026-04-30 14:42:47', 'active'),
 (16, 16, 'B-INIT-16', 102, '2025-10-10', '2026-09-01', '2025-10-10 00:00:00', '2026-04-18 12:13:56', 'active'),
 (17, 17, 'B-INIT-17', 102, '2026-03-01', '2026-04-15', '2026-03-01 00:00:00', '2026-04-18 12:13:56', 'active'),
 (18, 18, 'B-INIT-18', 13, '2025-05-15', '2026-12-01', '2025-05-15 00:00:00', '2026-04-18 12:13:56', 'active'),
 (19, 19, 'B-INIT-19', 102, '2026-01-18', '2026-07-01', '2026-01-18 00:00:00', '2026-04-18 12:13:56', 'active'),
-(20, 20, 'B-INIT-20', 22, '2026-02-05', '2026-08-01', '2026-02-05 00:00:00', '2026-04-18 12:13:56', 'active'),
+(20, 20, 'B-INIT-20', 20, '2026-02-05', '2026-08-01', '2026-02-05 00:00:00', '2026-07-21 09:14:43', 'active'),
 (21, 21, 'B-INIT-21', 35, '2025-05-20', NULL, '2025-05-20 00:00:00', '2026-04-18 12:13:56', 'active'),
 (22, 22, 'B-INIT-22', 18, '2025-06-15', NULL, '2025-06-15 00:00:00', '2026-04-18 12:13:56', 'active'),
 (23, 23, 'B-INIT-23', 27, '2025-10-01', NULL, '2025-10-01 00:00:00', '2026-04-18 12:13:56', 'active'),
@@ -572,7 +724,7 @@ INSERT INTO `product_batches` (`id`, `product_id`, `batch_no`, `stock`, `date_ad
 (25, 25, 'B-INIT-25', 104, '2025-11-25', '2027-01-01', '2025-11-25 00:00:00', '2026-04-18 12:13:56', 'active'),
 (26, 28, 'B-INIT-28', 2323, '2026-04-13', '2222-02-22', '2026-04-13 04:55:22', '2026-04-18 12:13:56', 'active'),
 (27, 29, 'B-INIT-29', 40000, '2026-04-13', '2222-02-22', '2026-04-13 04:56:36', '2026-04-18 12:13:56', 'active'),
-(28, 30, 'B-INIT-30', 198, '2026-04-16', '2027-07-22', '2026-04-16 05:46:06', '2026-04-27 06:17:14', 'active'),
+(28, 30, 'B-INIT-30', 197, '2026-04-16', '2027-07-22', '2026-04-16 05:46:06', '2026-04-28 15:51:35', 'active'),
 (29, 30, 'B-1776514850-30-86', 20, '2026-04-18', '2027-08-18', '2026-04-18 12:20:50', '2026-04-18 12:20:50', 'active'),
 (31, 31, 'B-INIT-31', 60, '2026-01-10', '2026-12-15', '2026-01-09 16:00:00', '2026-01-09 16:00:00', 'active'),
 (32, 32, 'B-INIT-32', 120, '2026-02-05', '2026-09-30', '2026-02-04 16:00:00', '2026-02-04 16:00:00', 'active'),
@@ -581,8 +733,8 @@ INSERT INTO `product_batches` (`id`, `product_id`, `batch_no`, `stock`, `date_ad
 (35, 35, 'B-INIT-35', 55, '2026-02-10', '2026-10-01', '2026-02-09 16:00:00', '2026-02-09 16:00:00', 'active'),
 (36, 36, 'B-INIT-36', 45, '2025-11-20', '2026-08-20', '2025-11-19 16:00:00', '2025-11-19 16:00:00', 'active'),
 (37, 37, 'B-INIT-37', 30, '2026-03-01', '2026-11-15', '2026-02-28 16:00:00', '2026-02-28 16:00:00', 'active'),
-(38, 38, 'B-INIT-38', 90, '2026-01-25', '2027-01-10', '2026-01-24 16:00:00', '2026-01-24 16:00:00', 'active'),
-(39, 39, 'B-INIT-39', 25, '2026-02-15', '2026-10-30', '2026-02-14 16:00:00', '2026-02-14 16:00:00', 'active'),
+(38, 38, 'B-INIT-38', 89, '2026-01-25', '2027-01-10', '2026-01-24 16:00:00', '2026-07-24 04:35:54', 'active'),
+(39, 39, 'B-INIT-39', 22, '2026-02-15', '2026-10-30', '2026-02-14 16:00:00', '2026-07-20 16:28:28', 'active'),
 (40, 40, 'B-INIT-40', 50, '2025-12-20', '2026-09-15', '2025-12-19 16:00:00', '2025-12-19 16:00:00', 'active'),
 (41, 41, 'B-INIT-41', 35, '2026-01-05', '2026-10-20', '2026-01-04 16:00:00', '2026-01-04 16:00:00', 'active'),
 (42, 42, 'B-INIT-42', 150, '2026-02-01', '2026-08-15', '2026-01-31 16:00:00', '2026-01-31 16:00:00', 'active'),
@@ -593,10 +745,10 @@ INSERT INTO `product_batches` (`id`, `product_id`, `batch_no`, `stock`, `date_ad
 (47, 47, 'B-INIT-47', 20, '2025-11-15', NULL, '2025-11-14 16:00:00', '2025-11-14 16:00:00', 'active'),
 (48, 48, 'B-INIT-48', 8, '2026-03-01', NULL, '2026-02-28 16:00:00', '2026-02-28 16:00:00', 'active'),
 (49, 49, 'B-INIT-49', 70, '2026-01-30', '2026-10-15', '2026-01-29 16:00:00', '2026-01-29 16:00:00', 'active'),
-(50, 50, 'B-INIT-50', 55, '2025-12-15', '2026-08-30', '2025-12-14 16:00:00', '2025-12-14 16:00:00', 'active'),
+(50, 50, 'B-INIT-50', 54, '2025-12-15', '2026-08-30', '2025-12-14 16:00:00', '2026-04-30 16:05:53', 'active'),
 (51, 51, 'B-INIT-51', 30, '2026-01-10', '2026-07-15', '2026-01-09 16:00:00', '2026-01-09 16:00:00', 'active'),
 (52, 52, 'B-INIT-52', 25, '2026-02-01', '2026-06-20', '2026-01-31 16:00:00', '2026-01-31 16:00:00', 'active'),
-(53, 53, 'B-INIT-53', 20, '2025-12-15', '2026-08-01', '2025-12-14 16:00:00', '2025-12-14 16:00:00', 'active'),
+(53, 53, 'B-INIT-53', 18, '2025-12-15', '2026-08-01', '2025-12-14 16:00:00', '2026-04-30 16:27:19', 'active'),
 (54, 54, 'B-INIT-54', 45, '2026-02-10', '2026-11-15', '2026-02-09 16:00:00', '2026-02-09 16:00:00', 'active'),
 (55, 55, 'B-INIT-55', 18, '2025-11-20', '2026-05-25', '2025-11-19 16:00:00', '2025-11-19 16:00:00', 'active'),
 (56, 56, 'B-INIT-56', 22, '2026-01-25', '2026-07-10', '2026-01-24 16:00:00', '2026-01-24 16:00:00', 'active'),
@@ -2154,7 +2306,15 @@ INSERT INTO `sales` (`id`, `transaction_id`, `user_id`, `total`, `amount_paid`, 
 (2997, 1497, 4, 4320.00, 4420.00, 100.00, 'cash', 'Ana Lopez', 'employee', NULL, 'completed', '2026-02-13 18:18:40', NULL),
 (2998, 1498, 4, 9060.00, 9060.00, 0.00, 'cash', 'Ana Lopez', 'employee', NULL, 'completed', '2026-03-07 12:39:52', NULL),
 (2999, 1499, 1, 1720.00, 1720.00, 0.00, 'cash', 'John Anthony Espenida', 'owner', NULL, 'completed', '2025-12-01 13:21:25', NULL),
-(3000, 1500, 4, 2320.00, 2320.00, 0.00, 'gcash', 'Ana Lopez', 'employee', NULL, 'completed', '2025-12-28 01:24:52', '4555467593');
+(3000, 1500, 4, 2320.00, 2320.00, 0.00, 'gcash', 'Ana Lopez', 'employee', NULL, 'completed', '2025-12-28 01:24:52', '4555467593'),
+(3001, 1501, 1, 550.00, 550.00, 0.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-04-28 23:51:35', NULL),
+(3002, 1502, 1, 111.00, 111.00, 0.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-05-01 00:05:53', NULL),
+(3003, 1503, 1, 426.00, 426.00, 0.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-05-01 00:27:00', NULL),
+(3004, 1504, 1, 426.00, 426.00, 0.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-05-01 00:27:19', NULL),
+(3005, 1505, 1, 960.00, 1000.00, 40.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-07-21 00:28:07', NULL),
+(3006, 1506, 1, 480.00, 500.00, 20.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-07-21 00:28:28', NULL),
+(3007, 1507, 1, 120.00, 150.00, 30.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-07-21 17:14:43', NULL),
+(3008, 1508, 1, 65.00, 100.00, 35.00, 'cash', 'John Anthony Espenida', 'owner', '', 'completed', '2026-07-24 12:35:54', NULL);
 
 -- --------------------------------------------------------
 
@@ -2184,7 +2344,14 @@ CREATE TABLE `strategy_history` (
 
 INSERT INTO `strategy_history` (`id`, `product_id`, `strategy_id`, `discount_applied`, `original_price`, `discounted_price`, `status`, `started_at`, `ended_at`, `units_sold_during`, `revenue_during`, `outcome_notes`, `created_by`) VALUES
 (1, 9, 'emergency_clearance', 30.00, 310.00, 217.00, 'completed', '2026-03-28 10:00:00', '2026-03-31 10:00:00', 4, 868.00, 'Sold 4 of 6 units during 3-day flash sale', 1),
-(2, 14, 'emergency_clearance', 25.00, 590.00, 442.50, 'applied', '2026-03-30 09:00:00', NULL, 1, 442.50, 'In progress - 1 unit sold so far', 1);
+(2, 14, 'emergency_clearance', 25.00, 590.00, 442.50, 'cancelled', '2026-03-30 09:00:00', '2026-04-30 23:51:21', 1, 442.50, 'In progress - 1 unit sold so far', 1),
+(3, 9, 'emergency_clearance', 25.00, 310.00, 232.50, 'cancelled', '2026-04-30 23:37:27', '2026-04-30 23:51:51', 0, 0.00, '', NULL),
+(4, 50, 'buy_one_take_one', 40.00, 185.00, 111.00, 'cancelled', '2026-05-01 00:04:12', '2026-05-01 00:06:44', 0, 0.00, '', NULL),
+(5, 53, 'buy_one_take_one', 40.00, 710.00, 426.00, 'applied', '2026-05-01 00:26:08', '2026-05-04 00:26:08', 0, 0.00, '', NULL),
+(6, 51, 'emergency_clearance', 25.00, 1350.00, 1012.50, 'cancelled', '2026-07-14 11:46:30', '2026-07-14 11:47:01', 0, 0.00, '', NULL),
+(7, 8, 'buy_one_take_one', 50.00, 185.00, 92.50, 'applied', '2026-07-14 11:47:18', '2026-07-17 11:47:18', 0, 0.00, '', NULL),
+(8, 69, 'emergency_clearance', 25.00, 120.00, 90.00, 'applied', '2026-07-14 11:48:39', '2026-07-17 11:48:39', 0, 0.00, '', NULL),
+(9, 20, 'buy_one_take_one', 50.00, 120.00, 60.00, 'cancelled', '2026-07-21 17:13:53', '2026-07-21 17:14:50', 0, 0.00, '', NULL);
 
 -- --------------------------------------------------------
 
@@ -2217,7 +2384,7 @@ CREATE TABLE `strategy_templates` (
 
 INSERT INTO `strategy_templates` (`id`, `name`, `priority`, `discount_min`, `discount_max`, `duration_days`, `conditions`, `risk_levels`, `expected_impact_min`, `expected_impact_max`, `implementation_steps`, `description`, `why_it_works`, `is_active`, `created_at`, `updated_at`) VALUES
 ('bundle_deal', 'Bundle and Save Deal', 4, 10.00, 20.00, 7, '[\"slow_moving\", \"high_stock\"]', '[\"WARNING\"]', 25, 40, '[\"Bundle this product with a fast-moving complementary item\", \"Offer the bundle at the combined discounted price\", \"Place a Frequently Bought Together label near the display\", \"Train staff to suggest the bundle when customers buy either item\", \"Feature the bundle in your social media story this week\"]', 'Pair slow movers with popular items to increase movement through association.', 'Bundling leverages the popularity of fast-moving items to pull slower ones. Customers perceive greater value in bundles, increasing basket size.', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
-('buy_one_take_one', 'Buy 1 Take 1 Blowout', 3, 40.00, 50.00, 3, '[\"critical_expiry\"]', '[\"CRITICAL\"]', 90, 140, '[\"Set up a Buy 1 Take 1 display near the entrance\", \"Clearly label items with BOGO signage\", \"Limit offer to 3 days to maintain urgency\", \"Brief all staff to actively recommend the deal\", \"Post the offer on social media with a countdown timer\"]', 'BOGO deal creating perceived double value to accelerate critical stock clearance.', 'BOGO deals psychologically feel like a bigger win than a percentage discount. Customers perceive double the value, accelerating clearance.', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
+('buy_one_take_one', 'Buy 1 Take 1 Blowout', 3, 40.00, 50.00, 3, '[\"packaged\", \"critical_expiry\", \"slow_moving\"]', '[\"CRITICAL\", \"WARNING\"]', 90, 140, '[\"Set up a Buy 1 Take 1 display near the entrance\", \"Clearly label items with BOGO signage\", \"Limit offer to 3 days to maintain urgency\", \"Brief all staff to actively recommend the deal\", \"Post the offer on social media with a countdown timer\"]', 'BOGO deal creating perceived double value to accelerate critical stock clearance.', 'BOGO deals psychologically feel like a bigger win than a percentage discount. Customers perceive double the value, accelerating clearance.', 1, '2026-04-12 16:00:12', '2026-04-30 23:56:13'),
 ('cross_sell_pairing', 'Cross-Sell Pairing Discount', 6, 5.00, 12.00, 7, '[\"slow_moving\", \"complementary_products\"]', '[\"WARNING\"]', 15, 30, '[\"Identify the top-selling product in the same category\", \"Offer a modest discount when both items are purchased together\", \"Place a shelf tag: Pair with [fast-mover] and save!\", \"Train cashiers to suggest the pairing at checkout\", \"Run for 7 days and compare paired vs. standalone sales\"]', 'Pairing slow-movers with fast-sellers to nudge customers toward an unplanned purchase.', 'Pairing a slow-mover with a related fast-seller nudges customers toward an unplanned purchase. The small discount feels like a reward.', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
 ('deep_discount_liquidation', 'Deep Discount Liquidation', 2, 30.00, 50.00, 5, '[\"critical_expiry\", \"high_stock\"]', '[\"CRITICAL\"]', 80, 120, '[\"Apply the maximum safe discount to clear stock rapidly\", \"Create a dedicated clearance section in-store\", \"Offer bulk purchase incentives (e.g. extra 5% off for 3+ units)\", \"Alert loyal customers via text or social media about the deal\", \"Track daily sell-through rate to adjust pricing if needed\"]', 'Aggressive pricing to rapidly clear high-risk, high-stock inventory before total loss.', 'When stock levels are high and risk is critical, aggressive pricing is the fastest path to recovering capital before total loss.', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
 ('emergency_clearance', 'Emergency Clearance Flash Sale', 1, 25.00, 40.00, 3, '[\"critical_expiry\", \"slow_moving\"]', '[\"CRITICAL\"]', 70, 105, '[\"Set price at the recommended discounted amount\", \"Run promotion for 3 days only to create urgency\", \"Place item prominently at checkout or near entrance display\", \"Print a SALE signage with the original crossed-out price\", \"Announce to walk-in customers verbally at point of sale\"]', 'Time-limited deep discount for critical items that need to move immediately.', 'A time-limited discount creates urgency and recovers cash flow quickly. Items sitting too long lose value through spoilage risk and storage cost.', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
@@ -3753,7 +3920,15 @@ INSERT INTO `transactions` (`id`, `user_id`, `items`, `total_amount`, `payment_m
 (1497, 4, '[{\"id\": 59, \"name\": \"Pet Medications\", \"price\": 650.0, \"quantity\": 2}, {\"id\": 66, \"name\": \"Pet Medications\", \"price\": 220.0, \"quantity\": 2}, {\"id\": 57, \"name\": \"Poultry Feed\", \"price\": 95.0, \"quantity\": 4}, {\"id\": 47, \"name\": \"Cat Food &amp; Supplies\", \"price\": 550.0, \"quantity\": 4}]', 4320.00, 'cash', '2026-02-13 18:18:40'),
 (1498, 4, '[{\"id\": 11, \"name\": \"Poultry Feed\", \"price\": 1250.0, \"quantity\": 5}, {\"id\": 79, \"name\": \"Fish &amp; Aquatics\", \"price\": 850.0, \"quantity\": 2}, {\"id\": 58, \"name\": \"Poultry Feed\", \"price\": 780.0, \"quantity\": 1}, {\"id\": 72, \"name\": \"Pet Accessories\", \"price\": 165.0, \"quantity\": 2}]', 9060.00, 'cash', '2026-03-07 12:39:52'),
 (1499, 1, '[{\"id\": 76, \"name\": \"Fish &amp; Aquatics\", \"price\": 950.0, \"quantity\": 1}, {\"id\": 65, \"name\": \"Pet Medications\", \"price\": 185.0, \"quantity\": 1}, {\"id\": 18, \"name\": \"Pet Medications\", \"price\": 195.0, \"quantity\": 3}]', 1720.00, 'cash', '2025-12-01 13:21:25'),
-(1500, 4, '[{\"id\": 75, \"name\": \"Fish &amp; Aquatics\", \"price\": 380.0, \"quantity\": 2}, {\"id\": 58, \"name\": \"Poultry Feed\", \"price\": 780.0, \"quantity\": 2}]', 2320.00, 'gcash', '2025-12-28 01:24:52');
+(1500, 4, '[{\"id\": 75, \"name\": \"Fish &amp; Aquatics\", \"price\": 380.0, \"quantity\": 2}, {\"id\": 58, \"name\": \"Poultry Feed\", \"price\": 780.0, \"quantity\": 2}]', 2320.00, 'gcash', '2025-12-28 01:24:52'),
+(1501, 1, '[{\"id\":30,\"name\":\"Cat food\",\"price\":550,\"quantity\":1}]', 550.00, 'cash', '2026-04-28 23:51:31'),
+(1502, 1, '[{\"id\":50,\"name\":\"Me-O Tuna Adult Dry 1.2kg\",\"price\":111,\"quantity\":1}]', 111.00, 'cash', '2026-05-01 00:05:53'),
+(1503, 1, '[{\"id\":53,\"name\":\"Unahco Chick Booster 25kg\",\"price\":426,\"quantity\":1}]', 426.00, 'cash', '2026-05-01 00:26:58'),
+(1504, 1, '[{\"id\":53,\"name\":\"Unahco Chick Booster 25kg\",\"price\":426,\"quantity\":1}]', 426.00, 'cash', '2026-05-01 00:27:19'),
+(1505, 1, '[{\"id\":39,\"name\":\"Holistic Recipe Adult Salmon 1.5kg\",\"price\":480,\"quantity\":2}]', 960.00, 'cash', '2026-07-21 00:28:07'),
+(1506, 1, '[{\"id\":39,\"name\":\"Holistic Recipe Adult Salmon 1.5kg\",\"price\":480,\"quantity\":1}]', 480.00, 'cash', '2026-07-21 00:28:28'),
+(1507, 1, '[{\"id\":20,\"name\":\"Pet Electrolytes Powder 100g\",\"price\":60,\"quantity\":2}]', 120.00, 'cash', '2026-07-21 17:14:43'),
+(1508, 1, '[{\"id\":38,\"name\":\"Jerhigh Chicken Strip Snack 70g\",\"price\":65,\"quantity\":1}]', 65.00, 'cash', '2026-07-24 12:35:54');
 
 -- --------------------------------------------------------
 
@@ -7607,7 +7782,15 @@ INSERT INTO `transaction_items` (`id`, `transaction_id`, `product_id`, `quantity
 (6255, 499, 11, 2, 1250.00, '2026-01-20 01:47:23'),
 (6256, 500, 13, 5, 640.00, '2026-03-03 08:33:23'),
 (6257, 500, 4, 3, 180.00, '2026-03-03 08:33:23'),
-(6258, 500, 1, 1, 385.00, '2026-03-03 08:33:23');
+(6258, 500, 1, 1, 385.00, '2026-03-03 08:33:23'),
+(6259, 1501, 30, 1, 550.00, '2026-04-28 23:51:31'),
+(6260, 1502, 50, 1, 111.00, '2026-05-01 00:05:53'),
+(6261, 1503, 53, 1, 426.00, '2026-05-01 00:27:00'),
+(6262, 1504, 53, 1, 426.00, '2026-05-01 00:27:19'),
+(6263, 1505, 39, 2, 480.00, '2026-07-21 00:28:07'),
+(6264, 1506, 39, 1, 480.00, '2026-07-21 00:28:28'),
+(6265, 1507, 20, 2, 60.00, '2026-07-21 17:14:43'),
+(6266, 1508, 38, 1, 65.00, '2026-07-24 12:35:54');
 
 -- --------------------------------------------------------
 
@@ -7633,8 +7816,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `pin`, `role`, `position`, `is_active`, `created_at`, `updated_at`) VALUES
-(1, 'John Anthony', 'Espenida', 'owner@espenida.com', '1234', 'owner', 'Store Owner', 1, '2026-04-12 16:00:12', '2026-04-12 16:00:12'),
-(4, 'Ana', 'Lopez', 'ana@espenida.com', '4321', 'employee', 'Stock Clerk', 1, '2026-04-12 16:00:12', '2026-04-13 16:46:52');
+(1, 'John Anthony', 'Espenida', 'owner@espenida.com', '$2y$10$B9bQXFoInOIMd8qy2HBope8myWEp0Q7EnvzyytTk7F5N226wKJT2q', 'owner', 'Store Owner', 1, '2026-04-12 16:00:12', '2026-07-15 16:53:47'),
+(4, 'Ana', 'Lopez', 'ana@espenida.com', '$2y$10$rY42Wp2ctYOdQzBeKktjuuGkLuYMLwp5.DtdbeEvOlV9ESSmbM4JK', 'employee', 'Stock Clerk', 1, '2026-04-12 16:00:12', '2026-07-15 16:53:47');
 
 --
 -- Indexes for dumped tables
@@ -7748,25 +7931,25 @@ ALTER TABLE `categories`
 -- AUTO_INCREMENT for table `inventory_history`
 --
 ALTER TABLE `inventory_history`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=154;
 
 --
 -- AUTO_INCREMENT for table `login_sessions`
 --
 ALTER TABLE `login_sessions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=141;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=179;
 
 --
 -- AUTO_INCREMENT for table `ml_model_metrics`
 --
 ALTER TABLE `ml_model_metrics`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `ml_recommendation_logs`
 --
 ALTER TABLE `ml_recommendation_logs`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `products`
@@ -7784,25 +7967,25 @@ ALTER TABLE `product_batches`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3001;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3009;
 
 --
 -- AUTO_INCREMENT for table `strategy_history`
 --
 ALTER TABLE `strategy_history`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `transactions`
 --
 ALTER TABLE `transactions`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1501;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1509;
 
 --
 -- AUTO_INCREMENT for table `transaction_items`
 --
 ALTER TABLE `transaction_items`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6259;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6267;
 
 --
 -- AUTO_INCREMENT for table `users`

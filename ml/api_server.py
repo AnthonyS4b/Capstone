@@ -491,11 +491,18 @@ def _pick_strategies_from_db(
                 s["why_it_works"] = ""
 
     # ── Rule 1: Filter by risk level ──────────────────────────────────────────
+    compatible_risk_levels = {
+        "CRITICAL": {"CRITICAL", "WARNING"},
+        "WARNING": {"WARNING"},
+        "MONITOR": {"MONITOR"},
+        "LOW": {"MONITOR"},
+    }.get(risk_level, {risk_level})
+
     filtered_strategies = []
     for strategy in db_strategies:
         strategy_risk_levels = strategy.get("risk_levels", [])
         if strategy_risk_levels:
-            if risk_level in strategy_risk_levels:
+            if compatible_risk_levels.intersection(strategy_risk_levels):
                 filtered_strategies.append(strategy)
         else:
             filtered_strategies.append(strategy)
@@ -514,29 +521,41 @@ def _pick_strategies_from_db(
     strategies_to_score = fresh_strategies if not all_exhausted else filtered_strategies
 
     is_moderate_stock = not is_high_stock  # simplified
+    bogo_margin_safe = markup_pct >= 100
     recommended = []
     for strategy in strategies_to_score:
-        fit_score = 0.0
         conditions = strategy.get("conditions", [])
-        if "critical_expiry" in conditions and is_critical:
-            fit_score += 0.5
-        if "slow_moving" in conditions and is_slow:
-            fit_score += 0.5
-        if "high_stock" in conditions and is_high_stock:
-            fit_score += 0.3
-        if "moderate_stock" in conditions and is_moderate_stock:
-            fit_score += 0.2
-        if "complementary_products" in conditions:
-            fit_score += 0.1
-        if "low_priority" in conditions and risk_level == "MONITOR":
-            fit_score += 0.4
-        if "seasonal" in conditions:
-            fit_score += 0.1
-        if "packaged" in conditions:
-            if not is_packaged:
-                fit_score -= 1.0  # Disqualify: BOGO doesn't work for loose/bulk items
+        observable_matches = {
+            "critical_expiry": is_critical,
+            "slow_moving": is_slow,
+            "high_stock": is_high_stock,
+            "moderate_stock": is_moderate_stock,
+            "packaged": is_packaged,
+            "low_priority": risk_level in ("MONITOR", "LOW"),
+        }
+        required = [c for c in conditions if c in observable_matches]
 
-        if fit_score > 0:
+        # Do not award partial condition matches. This was why BOGO won for
+        # almost every packaged, slow-moving item regardless of expiry.
+        if any(not observable_matches[c] for c in required):
+            continue
+        if str(strategy.get("id")) == "buy_one_take_one" and not bogo_margin_safe:
+            continue
+
+        condition_weights = {
+            "critical_expiry": 0.35,
+            "high_stock": 0.25,
+            "moderate_stock": 0.20,
+            "slow_moving": 0.10,
+            "packaged": 0.05,
+            "low_priority": 0.10,
+        }
+        fit_score = 1.0 + sum(condition_weights.get(c, 0.05) for c in required)
+        fit_score += 0.05 * sum(
+            1 for c in conditions if c in ("complementary_products", "seasonal")
+        )
+
+        if required or conditions:
             d_range = strategy.get("discount_range", (0, 10))
             d_min, d_max = d_range if isinstance(d_range, (list, tuple)) else (0, 10)
             disc = min(d_max, max(d_min, markup_pct * 0.2))
@@ -577,8 +596,8 @@ def _pick_strategies_from_db(
     # refresh.  Template priority is the stable tie-breaker displayed in the UI.
     recommended.sort(key=lambda x: (-x["fit_score"], x["priority"], x["strategy_id"]))
 
-    # Limit to 2 strategies
-    result = recommended[:2]
+    # Return enough alternatives for the UI to offer meaningful choice.
+    result = recommended[:3]
 
     # ── Rule 3: Escalation when all fresh strategies are exhausted ────────────
     if all_exhausted:

@@ -1,12 +1,10 @@
 <?php
-session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_start_session();
 header('Content-Type: application/json');
 
-// Check if user is logged in and is owner
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'owner') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized access']);
-    exit();
-}
+security_require_role(['owner']);
+security_require_csrf();
 
 require_once '../config/database.php';
 
@@ -50,9 +48,7 @@ try {
     }
     
 } catch (PDOException $e) {
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database error: ' . $e->getMessage()
-    ]);
+    error_log('update_user_role.php: ' . $e->getMessage());
+    security_json_error('Unable to update the user role right now.', 500);
 }
 ?>

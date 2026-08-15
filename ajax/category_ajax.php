@@ -12,9 +12,7 @@ register_shutdown_function(function() {
         header('Content-Type: application/json');
         echo json_encode([
             'success' => false, 
-            'message' => 'Fatal error: ' . $error['message'],
-            'file' => $error['file'],
-            'line' => $error['line']
+            'message' => 'An internal server error occurred.'
         ]);
     }
 });
@@ -22,6 +20,10 @@ register_shutdown_function(function() {
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+require_once dirname(__DIR__) . '/includes/security.php';
+security_require_login();
+security_require_post_csrf();
 
 header('Content-Type: application/json');
 
@@ -34,6 +36,16 @@ try {
     if (empty($action)) {
         echo json_encode(['success' => false, 'message' => 'No action specified']);
         exit;
+    }
+
+    $ownerOnlyActions = [
+        'create_category', 'update_category', 'delete_category', 'archive_category',
+        'restore_category', 'update_category_status', 'create_product', 'update_product',
+        'update_stock', 'update_batch_expiry', 'archive_product', 'restore_product',
+        'permanent_delete', 'empty_archive'
+    ];
+    if (in_array($action, $ownerOnlyActions, true)) {
+        security_require_role(['owner']);
     }
 
     $categoryController = new CategoryController();
@@ -304,6 +316,6 @@ try {
 } catch (Exception $e) {
     error_log("Exception in category_ajax.php: " . $e->getMessage());
     error_log("Stack trace: " . $e->getTraceAsString());
-    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
+    security_json_error('An internal server error occurred.', 500);
 }
 ?>

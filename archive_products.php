@@ -1,6 +1,7 @@
 <?php
 // archive_products.php
 session_start();
+require_once __DIR__ . '/includes/security.php';
 require_once 'config/config.php';
 
 // Check if user is logged in
@@ -38,6 +39,8 @@ $ajax_url = 'ajax/category_ajax.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+    <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Archive Products · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -143,8 +146,8 @@ $ajax_url = 'ajax/category_ajax.php';
                     <i class="fa-solid fa-user"></i><span>System & Admin</span>
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-lock"></i> User Roles</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="fas fa-database"></i> Backup & Restore</a></li>
+                    <li><a class="dropdown-item" href="#roleManagementModal" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
+                    <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
                 </ul>
             </div>
         <?php endif; ?>
@@ -322,10 +325,13 @@ $ajax_url = 'ajax/category_ajax.php';
         </div>
     </div>
 
+    <?php include 'includes/user_roles_modal.php'; ?>
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="assets/js/archive.js"></script>
+    <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/notif.js"></script>
     <script src="assets/js/sidebar-nav.js"></script>
     <script>

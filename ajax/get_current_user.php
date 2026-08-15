@@ -1,5 +1,7 @@
 <?php
 session_start();
+require_once dirname(__DIR__) . '/includes/security.php';
+security_require_login();
 header('Content-Type: application/json');
 
 // Check if user is logged in

@@ -1,7 +1,10 @@
 <?php
     // ajax/user_ajax.php - PIN verification for owners
-    session_start();
+    require_once dirname(__DIR__) . '/includes/security.php';
+    security_start_session();
     header('Content-Type: application/json');
+    security_require_login();
+    security_require_post_csrf();
 
     require_once '../config/database.php';
 
@@ -16,6 +19,11 @@
             }
             
             $pin = $_POST['pin'] ?? '';
+            $limitKey = security_client_key('owner_pin', (string)$_SESSION['user_id']);
+            $limit = security_rate_limit($limitKey, 5, 300);
+            if (!$limit['allowed']) {
+                security_json_error('Too many incorrect attempts. Try again in a few minutes.', 429);
+            }
             
             // Validate PIN format
             if (!preg_match('/^\d{4}$/', $pin)) {
@@ -32,12 +40,14 @@
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
                 
                 if ($user && $user['role'] === 'owner' && password_verify($pin, $user['pin'])) {
+                    security_clear_failures($limitKey);
                     echo json_encode([
                         'success' => true,
                         'is_owner' => true,
                         'message' => 'PIN verified'
                     ]);
                 } else {
+                    security_record_failure($limitKey);
                     echo json_encode([
                         'success' => false,
                         'is_owner' => false,
@@ -47,7 +57,7 @@
             } catch (PDOException $e) {
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Database error: ' . $e->getMessage()
+                    'message' => 'Unable to verify the PIN right now.'
                 ]);
             }
             break;
@@ -81,7 +91,8 @@
                     echo json_encode(['success' => false, 'message' => 'User not found or PIN unchanged']);
                 }
             } catch (PDOException $e) {
-                echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+                error_log('reset_user_pin: ' . $e->getMessage());
+                echo json_encode(['success' => false, 'message' => 'Unable to reset the PIN right now.']);
             }
             break;
 
@@ -127,7 +138,8 @@
                     echo json_encode(['success' => false, 'message' => 'Failed to update PIN']);
                 }
             } catch (PDOException $e) {
-                echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+                error_log('change_own_pin: ' . $e->getMessage());
+                echo json_encode(['success' => false, 'message' => 'Unable to change the PIN right now.']);
             }
             break;
 
