@@ -2232,3 +2232,8 @@
 [24-Jul-2026 06:35:54 Europe/Berlin] Transaction data: User_ID=1, Total=65, Payment=100, Method=cash
 [24-Jul-2026 06:35:54 Europe/Berlin] Transaction inserted with ID: 1508
 [24-Jul-2026 06:35:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Aug-2026 08:49:09 Europe/Berlin] Found user_id in session: 1
+[24-Aug-2026 08:49:09 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Aug-2026 08:49:09 Europe/Berlin] Transaction data: User_ID=1, Total=55, Payment=55, Method=gcash
+[24-Aug-2026 08:49:09 Europe/Berlin] Transaction inserted with ID: 1509
+[24-Aug-2026 08:49:09 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===

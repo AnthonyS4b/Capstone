@@ -1,7 +1,3 @@
-// PosJS.js - Fixed version
-// LOGGED_CASHIER, LOGGED_ROLE, LOGGED_USER_ID are defined as const in PosUI_db.php
-// before this file loads — do NOT re-declare them here.
-
 let cart     = [];
 let products = [];
 let usedGcashReferences = new Set(); // Track used GCash reference numbers
