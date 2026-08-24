@@ -113,7 +113,7 @@ $csrf = security_csrf_token();
                 <p>Creates a complete SQL backup containing the database structure and current records.</p>
                 <div class="tool-option">
                     <div><strong>Full SQL backup</strong><small>Use this file to restore the complete POS database.</small></div>
-                    <?= download_form('database_backup', 'Download SQL', 'fa-download', $csrf) ?>
+                    <?= download_form('database_backup', 'Download Full-Backup', 'fa-download', $csrf) ?>
                 </div>
                 <div class="security-note"><i class="fas fa-shield-halved me-2"></i>The backup is streamed directly to you and is not stored in the public website folder.</div>
             </section>
