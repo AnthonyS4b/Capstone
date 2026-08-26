@@ -1,23 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// SERVER-SIDE REQUIREMENTS: category_ajax.php must handle two additional actions:
-//
-// 'check_category_transactions' — returns:
-//   { success: true, has_transactions: bool, transaction_count: int, product_count: int }
-//   SQL:
-//     SELECT COUNT(DISTINCT ti.transaction_id) AS tx_count,
-//            COUNT(DISTINCT p.id)              AS prod_count
-//     FROM products p
-//     JOIN transaction_items ti ON ti.product_id = p.id
-//     JOIN transactions t       ON t.id = ti.transaction_id
-//     LEFT JOIN sales s         ON s.transaction_id = t.id
-//     WHERE p.category_id = :id
-//       AND (s.status IS NULL OR s.status = 'completed');
-//
-// 'update_category_status' — receives id + status ('active'|'inactive'), returns:
-//   { success: true, message: '...' }
-//   SQL:  UPDATE categories SET status = :status WHERE id = :id;
-// ─────────────────────────────────────────────────────────────────────────────
-
 // Available icons - ONLY PET APPROPRIATE ICONS
 const availableIcons = [
     'fa-dog', 'fa-cat', 'fa-dove', 'fa-fish', 'fa-paw', 'fa-bone',
