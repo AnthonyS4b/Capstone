@@ -524,7 +524,7 @@ if ($toast_message) {
     <script src="assets/js/PosJS.js?v=<?php echo time(); ?>"></script>
     <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/notif.js"></script>
-    <script src="assets/js/active_strategies.js"></script>
+    <script src="assets/js/active_strategies.js?v=20260905-2"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>
 </html>

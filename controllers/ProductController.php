@@ -51,10 +51,12 @@ class ProductController {
     public function getActiveProducts() {
         try {
             $sql = "SELECT p.*, p.image, c.name as category_name, c.color as category_color,
-                           sh.discount_applied, sh.original_price, sh.strategy_id
+                           sh.discount_applied, sh.original_price, sh.strategy_id, sh.discounted_price,
+                           sh.paired_product_id, partner.name AS paired_product_name, sh.ended_at AS strategy_ended_at
                     FROM products p 
                     LEFT JOIN categories c ON p.category_id = c.id 
                     LEFT JOIN strategy_history sh ON p.id = sh.product_id AND sh.status = 'applied' AND (sh.ended_at IS NULL OR sh.ended_at > NOW())
+                    LEFT JOIN products partner ON partner.id = sh.paired_product_id
                     WHERE p.deleted_at IS NULL AND p.status = 'active' AND c.status = 'active'
                       AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())
                     ORDER BY p.category_id, p.name ASC";
@@ -276,10 +278,12 @@ class ProductController {
                         c.name as category_name,
                         sh.discount_applied,
                         sh.original_price,
-                        sh.strategy_id
+                        sh.strategy_id, sh.discounted_price, sh.paired_product_id,
+                        partner.name AS paired_product_name, sh.ended_at AS strategy_ended_at
                     FROM products p 
                     LEFT JOIN categories c ON p.category_id = c.id 
                     LEFT JOIN strategy_history sh ON p.id = sh.product_id AND sh.status = 'applied' AND (sh.ended_at IS NULL OR sh.ended_at > NOW())
+                    LEFT JOIN products partner ON partner.id = sh.paired_product_id
                     WHERE p.barcode = :barcode AND p.deleted_at IS NULL AND p.status = 'active' AND c.status = 'active'
                       AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())";
             

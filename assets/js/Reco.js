@@ -974,10 +974,15 @@ function openApplyModal(rec) {
                         <span>Duration: ${s.duration_days} days</span>
                         <span>Impact: ${s.expected_impact_min}–${s.expected_impact_max}%</span>
                     </div>
-                    ${s.recommended_discount > 0 || isBogo ? `<div class="strategy-option-price text-muted small mt-1">${isBogo ? 'Effective price/unit' : 'New price'}: ₱${optionPrice.toFixed(2)}</div>` : ''}
+                    ${s.recommended_discount > 0 || isBogo ? `<div class="strategy-option-price text-muted small mt-1">${s.strategy_id === 'cross_sell_pairing' ? 'Price when paired' : (isBogo ? 'Effective price/unit' : 'New price')}: ₱${optionPrice.toFixed(2)}</div>` : ''}
                 </div>
                 `;
             }).join('')}
+        </div>
+        <div id="pairingSetup" class="mt-3" hidden>
+            <label for="pairedProduct" class="form-label">Pair with a related product</label>
+            <select id="pairedProduct" class="form-select"><option value="">Loading products...</option></select>
+            <p class="small text-muted mt-2">Products are ranked by units sold in the last 30 days. Choose a complementary item. One discounted unit per partner unit in the same purchase; standalone units keep their regular price.</p>
         </div>
         <div class="mt-3">
             <label class="form-label">Notes (optional)</label>
@@ -999,20 +1004,44 @@ function openApplyModal(rec) {
                 selected.dataset.strategy,
                 selected.dataset.discount,
                 document.getElementById('strategyNotes')?.value || '',
-                confirmBtn
+                confirmBtn,
+                document.getElementById('pairedProduct')?.value || ''
             );
         };
     }
 
+    const pairingSetup = document.getElementById('pairingSetup');
+    pairingSetup.hidden = strategies[0]?.strategy_id !== 'cross_sell_pairing';
+    if (strategies.some(s => s.strategy_id === 'cross_sell_pairing')) {
+        const select = document.getElementById('pairedProduct');
+        $.ajax({
+            url: API_URL, method: 'GET', dataType: 'json',
+            data: { action: 'get_pairing_products', product_id: rec.product_id },
+            success(res) {
+                const options = res.products || [];
+                select.innerHTML = '<option value="">Choose a paired product</option>' + options.map(p =>
+                    `<option value="${Number(p.id)}">${esc(p.name)} — ${Number(p.monthly_sales)} sold / 30 days</option>`
+                ).join('');
+                if (!options.length) select.innerHTML = '<option value="">No available products in this category</option>';
+            },
+            error() { select.innerHTML = '<option value="">Could not load partners. Reopen this dialog to retry.</option>'; }
+        });
+    }
     modal.show();
 }
 
 function selectStrategy(el) {
     document.querySelectorAll('.strategy-option').forEach(o => o.classList.remove('selected'));
     el.classList.add('selected');
+    const setup = document.getElementById('pairingSetup');
+    if (setup) setup.hidden = el.dataset.strategy !== 'cross_sell_pairing';
 }
 
-function applyStrategy(productId, strategyId, discount, notes, btn) {
+function applyStrategy(productId, strategyId, discount, notes, btn, pairedProductId = '') {
+    if (strategyId === 'cross_sell_pairing' && !pairedProductId) {
+        showToast('warning', 'Choose a partner', 'Select a paired product before applying this strategy.');
+        return;
+    }
     // Show loading state
     if (btn) {
         btn.disabled = true;
@@ -1027,6 +1056,7 @@ function applyStrategy(productId, strategyId, discount, notes, btn) {
             product_id: productId,
             strategy_id: strategyId,
             discount_percentage: discount,
+            paired_product_id: pairedProductId,
             notes: notes,
         },
         dataType: 'json',
@@ -1042,7 +1072,10 @@ function applyStrategy(productId, strategyId, discount, notes, btn) {
                 showToast('error', 'Error', res.error || res.message || 'Failed to apply strategy');
             }
         },
-        error() { showToast('error', 'Error', 'Failed to apply strategy. Check API connection.'); },
+        error(xhr) {
+            const response = xhr.responseJSON || {};
+            showToast('error', 'Error', response.error || response.message || 'Failed to apply strategy. Check API connection.');
+        },
         complete() {
             if (btn) {
                 btn.disabled = false;

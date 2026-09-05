@@ -2250,3 +2250,16 @@
 [26-Aug-2026 16:02:13 Europe/Berlin] Transaction data: User_ID=4, Total=55, Payment=100, Method=cash
 [26-Aug-2026 16:02:13 Europe/Berlin] Transaction inserted with ID: 1511
 [26-Aug-2026 16:02:13 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[05-Sep-2026 08:49:46 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:49:57 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:49:58 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:49:59 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:50:01 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:50:02 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:50:03 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 08:50:03 Europe/Berlin] Error in getActiveProducts: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sh.paired_product_id' in 'field list'
+[05-Sep-2026 09:00:49 Europe/Berlin] Found user_id in session: 1
+[05-Sep-2026 09:00:49 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[05-Sep-2026 09:00:49 Europe/Berlin] Transaction data: User_ID=1, Total=220, Payment=500, Method=cash
+[05-Sep-2026 09:00:49 Europe/Berlin] Transaction inserted with ID: 0
+[05-Sep-2026 09:00:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===

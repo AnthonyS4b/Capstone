@@ -8,6 +8,7 @@ is not yet trained.
 """
 
 import logging
+import math
 import os
 import sys
 from datetime import datetime, timedelta
@@ -377,6 +378,7 @@ def _get_recent_strategy_ids(product_id: int, lookback_days: int = NO_REPEAT_LOO
             """SELECT DISTINCT strategy_id
                FROM strategy_history
                WHERE product_id = %s
+                 AND NOT (strategy_id = 'cross_sell_pairing' AND paired_product_id IS NULL)
                  AND started_at >= DATE_SUB(NOW(), INTERVAL %s DAY)""",
             (product_id, lookback_days),
         )
@@ -780,69 +782,134 @@ def model_info() -> Tuple[Any, int]:
 # ============================================================================
 
 
+@app.route("/api/pairing-products", methods=["GET"])
+def get_pairing_products() -> Tuple[Any, int]:
+    """Related, available products ranked by completed sales in the last month."""
+    product_id = request.args.get("product_id", type=int)
+    if not product_id:
+        return jsonify({"error": "product_id required"}), 400
+    try:
+        products = DatabaseConnector.execute_query(
+            """SELECT p.id, p.name, p.price,
+                      (SELECT COALESCE(SUM(ti.quantity), 0) FROM transaction_items ti
+                       JOIN sales s ON s.transaction_id = ti.transaction_id
+                       WHERE ti.product_id = p.id AND s.status = 'completed'
+                         AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) AS monthly_sales
+               FROM products p JOIN products target ON target.id = %s
+               JOIN categories c ON c.id = p.category_id AND c.status = 'active'
+               WHERE p.category_id = target.category_id AND p.id <> target.id
+                 AND p.deleted_at IS NULL AND p.status = 'active' AND p.stock > 0
+                 AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())
+               ORDER BY monthly_sales DESC, p.name""", (product_id,)
+        )
+        return jsonify({"success": True, "products": products}), 200
+    except Exception as e:
+        logger.exception("Error loading pairing products")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/save-recommendation", methods=["POST"])
 def save_recommendation() -> Tuple[Any, int]:
-    """Apply a strategy: update product price, log to strategy_history and ml_recommendation_logs."""
+    """Apply a price promotion or a conditional pairing, with atomic history and logs."""
     try:
         data = request.json
         product_id = data.get("product_id")
         strategy_id = data.get("strategy_id")
         discount = float(data.get("discount_percentage", 0))
         notes = data.get("notes", "")
+        paired_product_id = data.get("paired_product_id") if strategy_id == "cross_sell_pairing" else None
 
         if not product_id or not strategy_id:
             return jsonify({"error": "product_id and strategy_id required"}), 400
+        if not math.isfinite(discount) or not 0 <= discount <= 100:
+            return jsonify({"error": "Discount must be between 0 and 100 percent."}), 400
+        if strategy_id == "cross_sell_pairing" and not paired_product_id:
+            return jsonify({"error": "Choose a paired product before applying Cross-Sell Pairing."}), 400
 
-        # 1. Get current product price
-        product = DatabaseConnector.execute_query(
-            "SELECT id, price, name FROM products WHERE id = %s AND deleted_at IS NULL",
-            (product_id,), fetch_one=True
-        )
-        if not product:
-            return jsonify({"error": "Product not found"}), 404
+        # Keep the price, history and log consistent if any write fails.
+        with DatabaseConnector.get_connection() as conn:
+            try:
+                with conn.cursor() as cursor:
+                    # 1. Get current product price
+                    cursor.execute(
+                        "SELECT id, price, name, category_id FROM products WHERE id = %s AND deleted_at IS NULL FOR UPDATE",
+                        (product_id,)
+                    )
+                    product = cursor.fetchone()
+                    if not product:
+                        return jsonify({"error": "Product not found"}), 404
 
-        original_price = float(product["price"])
-        discounted_price = round(original_price * (1 - discount / 100), 2)
+                    if paired_product_id:
+                        cursor.execute(
+                            """SELECT p.id FROM products p
+                               JOIN categories c ON c.id = p.category_id AND c.status = 'active'
+                               WHERE p.id = %s AND p.id <> %s AND p.category_id = %s
+                                 AND p.deleted_at IS NULL AND p.status = 'active' AND p.stock > 0
+                                 AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())""",
+                            (paired_product_id, product_id, product["category_id"])
+                        )
+                        if not cursor.fetchone():
+                            return jsonify({"error": "Choose a different, available product in the same category."}), 400
 
-        # 2. Get strategy template details for duration
-        strategy_tmpl = DatabaseConnector.execute_query(
-            "SELECT duration_days FROM strategy_templates WHERE id = %s",
-            (strategy_id,), fetch_one=True
-        )
-        duration_days = int(strategy_tmpl["duration_days"]) if strategy_tmpl else 7
+                    cursor.execute(
+                        "SELECT id FROM strategy_history WHERE product_id = %s AND status = 'applied' "
+                        "AND (ended_at IS NULL OR ended_at > NOW()) LIMIT 1",
+                        (product_id,)
+                    )
+                    if cursor.fetchone():
+                        return jsonify({"error": "This product already has an active strategy. Cancel it before applying another."}), 409
 
-        # 3. Insert into strategy_history
-        DatabaseConnector.execute_insert_update(
-            """INSERT INTO strategy_history
-               (product_id, strategy_id, discount_applied, original_price,
-                discounted_price, status, started_at, ended_at, outcome_notes, created_by)
-               VALUES (%s, %s, %s, %s, %s, 'applied', NOW(),
-                       DATE_ADD(NOW(), INTERVAL %s DAY), %s, %s)""",
-            (product_id, strategy_id, discount, original_price,
-             discounted_price, duration_days, notes, data.get("user_id"))
-        )
+                    original_price = float(product["price"])
+                    discounted_price = round(original_price * (1 - discount / 100), 2)
 
-        # 4. Update product selling price to discounted price
-        if discount > 0:
-            DatabaseConnector.execute_insert_update(
-                "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
-                (discounted_price, product_id)
-            )
+                    # 2. Get strategy template details for duration
+                    cursor.execute(
+                        "SELECT duration_days FROM strategy_templates WHERE id = %s",
+                        (strategy_id,)
+                    )
+                    strategy_tmpl = cursor.fetchone()
+                    duration_days = int(strategy_tmpl["duration_days"]) if strategy_tmpl else 7
 
-        # 5. Log to ml_recommendation_logs
-        DatabaseConnector.execute_insert_update(
-            """INSERT INTO ml_recommendation_logs
-               (product_id, strategy_id, discount_percentage, status, notes, created_at)
-               VALUES (%s, %s, %s, 'applied', %s, NOW())""",
-            (product_id, strategy_id, discount, notes)
-        )
+                    # 3. Insert into strategy_history
+                    cursor.execute(
+                        """INSERT INTO strategy_history
+                           (product_id, strategy_id, discount_applied, original_price,
+                            discounted_price, status, started_at, ended_at, outcome_notes, created_by, paired_product_id)
+                           VALUES (%s, %s, %s, %s, %s, 'applied', NOW(),
+                                   DATE_ADD(NOW(), INTERVAL %s DAY), %s, %s, %s)""",
+                        (product_id, strategy_id, discount, original_price,
+                         discounted_price, duration_days, notes, data.get("user_id"), paired_product_id)
+                    )
+
+                    # 4. Update product selling price to discounted price
+                    if discount > 0 and strategy_id != "cross_sell_pairing":
+                        cursor.execute(
+                            "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
+                            (discounted_price, product_id)
+                        )
+
+                    # 5. Log to ml_recommendation_logs
+                    cursor.execute(
+                        """INSERT INTO ml_recommendation_logs
+                           (product_id, strategy_id, discount_percentage, status, notes, created_at)
+                           VALUES (%s, %s, %s, 'applied', %s, NOW())""",
+                        (product_id, strategy_id, discount, notes)
+                    )
+
+                conn.commit()
+            except Exception:
+                conn.rollback()
+                raise
 
         logger.info(f"Strategy '{strategy_id}' applied to product #{product_id}: "
-                     f"₱{original_price} → ₱{discounted_price} ({discount}% off, {duration_days} days)")
+                    f"promotional price ₱{discounted_price} ({discount}% off, {duration_days} days), "
+                    f"required partner: {paired_product_id}")
 
         return jsonify({
             "status": "saved",
-            "message": f"Strategy applied! Price updated from ₱{original_price:.2f} to ₱{discounted_price:.2f}",
+            "message": ("Cross-Sell Pairing activated. The discount applies at checkout, once per matching pair."
+                        if paired_product_id else
+                        f"Strategy applied! Price updated from ₱{original_price:.2f} to ₱{discounted_price:.2f}"),
             "original_price": original_price,
             "discounted_price": discounted_price,
             "duration_days": duration_days
@@ -860,10 +927,11 @@ def get_active_strategies() -> Tuple[Any, int]:
         query = """
             SELECT sh.id, sh.product_id, p.name as product_name, sh.strategy_id, st.name as strategy_name,
                    sh.discount_applied, sh.original_price, sh.discounted_price, 
-                   sh.started_at, sh.ended_at
+                   sh.started_at, sh.ended_at, sh.paired_product_id, partner.name AS paired_product_name
             FROM strategy_history sh
             JOIN products p ON sh.product_id = p.id
             LEFT JOIN strategy_templates st ON sh.strategy_id = st.id
+            LEFT JOIN products partner ON partner.id = sh.paired_product_id
             WHERE sh.status = 'applied'
                AND (sh.ended_at IS NULL OR sh.ended_at > NOW())
             ORDER BY sh.started_at DESC
@@ -897,7 +965,7 @@ def cancel_strategy() -> Tuple[Any, int]:
 
         # Get the strategy from history first
         strategy = DatabaseConnector.execute_query(
-            "SELECT product_id, original_price FROM strategy_history WHERE id = %s AND status = 'applied'",
+            "SELECT product_id, original_price, strategy_id FROM strategy_history WHERE id = %s AND status = 'applied'",
             (history_id,), fetch_one=True
         )
         
@@ -914,17 +982,20 @@ def cancel_strategy() -> Tuple[Any, int]:
         )
 
         # Revert the product price
-        DatabaseConnector.execute_insert_update(
-            "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
-            (original_price, product_id)
-        )
+        if strategy["strategy_id"] != "cross_sell_pairing":
+            DatabaseConnector.execute_insert_update(
+                "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
+                (original_price, product_id)
+            )
         
         # Log it implicitly via strategy_history update, no ml logs needed for stop action
-        logger.info(f"Strategy ID {history_id} cancelled. Reverted product #{product_id} to ₱{original_price}")
+        logger.info(f"Strategy ID {history_id} cancelled for product #{product_id}")
 
         return jsonify({
             "success": True,
-            "message": f"Strategy cancelled successfully. Price reverted to ₱{original_price:.2f}"
+            "message": ("Cross-Sell Pairing cancelled. The regular product price is unchanged."
+                        if strategy["strategy_id"] == "cross_sell_pairing" else
+                        f"Strategy cancelled successfully. Price reverted to ₱{original_price:.2f}")
         }), 200
 
     except Exception as e:

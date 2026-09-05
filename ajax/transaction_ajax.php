@@ -21,6 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json');
 
 require_once dirname(__DIR__) . '/includes/security.php';
+require_once dirname(__DIR__) . '/includes/promotion_pricing.php';
 security_require_login();
 security_require_post_csrf();
 
@@ -143,22 +144,38 @@ try {
                 $productStmt = $pdo->prepare("
                     SELECT
                         p.id, p.name, p.price, p.stock,
-                        COALESCE((
-                            SELECT sh.discounted_price
-                            FROM strategy_history sh
-                            WHERE sh.product_id = p.id
-                              AND sh.status = 'applied'
-                              AND (sh.ended_at IS NULL OR sh.ended_at > NOW())
-                            ORDER BY sh.id DESC
-                            LIMIT 1
-                        ), p.price) AS effective_price
+                        sh.strategy_id, sh.paired_product_id, sh.discounted_price,
+                        CASE WHEN sh.strategy_id = 'cross_sell_pairing' THEN p.price
+                             ELSE COALESCE(sh.discounted_price, p.price) END AS effective_price
                     FROM products p
+                    LEFT JOIN strategy_history sh ON sh.id = (
+                        SELECT latest.id FROM strategy_history latest
+                        WHERE latest.product_id = p.id AND latest.status = 'applied'
+                          AND (latest.ended_at IS NULL OR latest.ended_at > NOW())
+                        ORDER BY latest.id DESC LIMIT 1
+                    )
                     WHERE p.id = ?
                       AND p.deleted_at IS NULL
                       AND p.status = 'active'
                       AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())
                     FOR UPDATE
                 ");
+
+                // Combine duplicate product lines before checking stock or pairing quantities.
+                $cartQuantities = [];
+                foreach ($items as $submittedItem) {
+                    $id = filter_var($submittedItem['id'] ?? null, FILTER_VALIDATE_INT);
+                    $qty = filter_var($submittedItem['quantity'] ?? null, FILTER_VALIDATE_INT);
+                    if (!$id || $id <= 0 || !$qty || $qty <= 0) {
+                        throw new Exception('Invalid product or quantity in the cart');
+                    }
+                    $cartQuantities[$id] = ($cartQuantities[$id] ?? 0) + $qty;
+                }
+                ksort($cartQuantities);
+                $items = [];
+                foreach ($cartQuantities as $id => $qty) {
+                    $items[] = ['id' => $id, 'quantity' => $qty];
+                }
 
                 $validatedItems = [];
                 $calculatedTotal = 0.0;
@@ -188,11 +205,17 @@ try {
                         'name' => $product['name'],
                         'price' => $unitPrice,
                         'quantity' => $quantity,
+                        'strategy_id' => $product['strategy_id'],
+                        'paired_product_id' => $product['paired_product_id'],
+                        'discounted_price' => $product['discounted_price'],
                     ];
                     $calculatedTotal += $unitPrice * $quantity;
                 }
 
-                $items = $validatedItems;
+                $items = price_promotion_items($validatedItems);
+                $calculatedTotal = array_sum(array_map(function ($item) {
+                    return $item['price'] * $item['quantity'];
+                }, $items));
                 $total = round($calculatedTotal, 2);
                 if ($total <= 0) {
                     throw new Exception('Transaction total must be greater than zero');

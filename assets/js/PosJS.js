@@ -200,7 +200,15 @@ function loadProducts() {
         success: function(response) {
             if (response.success) { 
                 products = response.data || []; 
-                displayProducts(products); 
+                cart.forEach(item => {
+                    const fresh = products.find(p => Number(p.id) === item.id);
+                    if (fresh) {
+                        item.price = Number(fresh.price);
+                        item.promotion = fresh;
+                    }
+                });
+                displayProducts(products);
+                updateCartDisplay();
             } else { 
                 showToast('error', 'Error', response.message || 'Failed to load products'); 
                 productsGrid.innerHTML = '<div class="text-center py-5 text-danger">Failed to load products</div>'; 
@@ -245,9 +253,10 @@ function displayProducts(productsToShow) {
             ? `<div class="product-image"><img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" loading="lazy"></div>`
             : `<div class="product-icon"><i class="fas ${icon}"></i></div>`;
             
-        const isDiscounted = discountApplied > 0;
+        const isPairing = product.strategy_id === 'cross_sell_pairing';
+        const isDiscounted = discountApplied > 0 && !isPairing;
         const discountedClass = isDiscounted ? 'discounted' : '';
-        const discountBadge = isDiscounted ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">-${discountApplied}% OFF</span>` : '';
+        const discountBadge = isPairing ? `<span class="product-badge discount-badge" style="background:#2c5530; left:8px; right:auto;">Pair &amp; save</span>` : isDiscounted ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">-${discountApplied}% OFF</span>` : '';
         const priceHtml = isDiscounted 
             ? `<div class="product-price"><span style="text-decoration: line-through; color: #94a3b8; font-size: 0.85em; margin-right: 5px;">₱${originalPrice.toFixed(2)}</span><span style="color:#e74c3c">₱${price.toFixed(2)}</span></div>` 
             : `<div class="product-price">₱${price.toFixed(2)}</div>`;
@@ -271,6 +280,7 @@ function displayProducts(productsToShow) {
                     <h3>${escapeHtml(product.name)}</h3>
                     <div class="product-category">${escapeHtml(product.category_name || 'Uncategorized')}</div>
                     ${priceHtml}
+                    ${isPairing ? `<div class="small text-success">₱${Number(product.discounted_price).toFixed(2)} when bought with ${escapeHtml(product.paired_product_name || 'the paired product')} (one per pair)</div>` : ''}
                     <div class="product-stock ${stockClass}"><i class="fas fa-box"></i> Stock: ${stock}</div>
                 </div>
             </div>`;
@@ -365,7 +375,7 @@ function findProductByBarcode(barcode) {
                 if (!id || !name) {
                     showToast('error', 'Not Found', 'Product data is incomplete');
                 } else if (stock > 0) { 
-                    addToCart(id, name, price, stock, p.image || '', p.strategy_id || ''); 
+                    addToCart(id, name, price, stock, p.image || '', p.strategy_id || '', p);
                     showToast('success', 'Product Found', `Added "${name}" to cart`); 
                 } else {
                     showToast('error', 'Out of Stock', `"${name}" is out of stock`);
@@ -385,7 +395,8 @@ function findProductByBarcode(barcode) {
 }
 
 // Cart Functions
-function addToCart(productId, productName, productPrice, productStock, productImage, strategyId) {
+function addToCart(productId, productName, productPrice, productStock, productImage, strategyId, promotion) {
+    promotion = promotion || products.find(p => Number(p.id) === productId) || {};
     const qtyToAdd = (strategyId === 'buy_one_take_one') ? 2 : 1;
 
     if (productStock < qtyToAdd) { 
@@ -397,6 +408,8 @@ function addToCart(productId, productName, productPrice, productStock, productIm
     
     if (existing) {
         if (existing.quantity + qtyToAdd <= productStock) { 
+            existing.price = productPrice;
+            existing.promotion = promotion;
             existing.quantity += qtyToAdd; 
             showToast('success', 'Quantity Updated', `${productName} quantity increased by ${qtyToAdd}`); 
         } else { 
@@ -411,11 +424,28 @@ function addToCart(productId, productName, productPrice, productStock, productIm
             quantity: qtyToAdd, 
             stock: productStock,
             image: productImage || '',
-            strategy_id: strategyId || ''
+            strategy_id: strategyId || '',
+            promotion: promotion
         });
         showToast('success', 'Added to Cart', `${productName} has been added ${qtyToAdd > 1 ? '(Buy 1 Take 1 applied)' : ''}`);
     }
     updateCartDisplay();
+}
+
+function getPairingQuantity(item) {
+    const promo = item.promotion || {};
+    if (promo.strategy_id !== 'cross_sell_pairing' || !promo.paired_product_id ||
+        Number(promo.paired_product_id) === Number(item.id) || promo.discounted_price == null) return 0;
+    if (promo.strategy_ended_at && new Date(promo.strategy_ended_at.replace(' ', 'T')) <= new Date()) return 0;
+    const partner = cart.find(p => Number(p.id) === Number(promo.paired_product_id));
+    return Math.min(item.quantity, partner?.quantity || 0);
+}
+
+function getCartLineTotal(item) {
+    const paired = getPairingQuantity(item);
+    const normalCents = Math.round(item.price * 100);
+    const pairedCents = Math.round(Number(item.promotion?.discounted_price || 0) * 100);
+    return ((item.quantity - paired) * normalCents + paired * pairedCents) / 100;
 }
 
 function updateCartDisplay() {
@@ -441,7 +471,8 @@ function updateCartDisplay() {
                 ${cartVisual}
                 <div class="cart-item-details">
                     <div class="cart-item-title">${escapeHtml(item.name)}</div>
-                    <div class="cart-item-price">₱${item.price.toFixed(2)}</div>
+                    <div class="cart-item-price">₱${item.price.toFixed(2)} each</div>
+                    ${item.promotion?.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">${getPairingQuantity(item)} paired at ₱${Number(item.promotion.discounted_price).toFixed(2)} each. Pair with ${escapeHtml(item.promotion.paired_product_name || 'the selected partner')}.</div>` : ''}
                     <div class="cart-item-quantity">
                         <button class="qty-btn" onclick="updateQuantity(${index},'decrease')" title="Decrease">
                             <i class="fas fa-minus"></i>
@@ -528,7 +559,7 @@ function clearCart() {
 }
 
 function updateSummary() {
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => sum + getCartLineTotal(item), 0);
     if (subtotalSpan) subtotalSpan.textContent = '₱' + total.toFixed(2);
     if (totalSpan) totalSpan.textContent = '₱' + total.toFixed(2);
     if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
@@ -537,7 +568,7 @@ function updateSummary() {
 
 function calculateChange() {
     const payment = parseFloat(paymentInput?.value) || 0;
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => sum + getCartLineTotal(item), 0);
     
     if (!changeSpan) return;
     
@@ -589,7 +620,7 @@ function filterProducts() {
 // Checkout Functions
 function processCheckout() {
     const payment = parseFloat(paymentInput?.value) || 0;
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = cart.reduce((sum, item) => sum + getCartLineTotal(item), 0);
     
     if (cart.length === 0) { 
         showToast('error', 'Empty Cart', 'Please add items to cart first'); 
@@ -617,7 +648,7 @@ function showPaymentConfirmation(total, paymentAmount) {
         confirmItems.innerHTML = cart.map(item =>
             `<div class="d-flex justify-content-between small border-bottom py-1">
                 <span>${escapeHtml(item.name)} x${item.quantity}</span>
-                <span>₱${(item.price * item.quantity).toFixed(2)}</span>
+                <span>₱${getCartLineTotal(item).toFixed(2)}</span>
             </div>`
         ).join('');
     }

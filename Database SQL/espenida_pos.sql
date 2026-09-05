@@ -2335,7 +2335,8 @@ CREATE TABLE `strategy_history` (
   `units_sold_during` int(11) DEFAULT 0,
   `revenue_during` decimal(12,2) DEFAULT 0.00,
   `outcome_notes` text DEFAULT NULL,
-  `created_by` int(10) UNSIGNED DEFAULT NULL
+  `created_by` int(10) UNSIGNED DEFAULT NULL,
+  `paired_product_id` int(10) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

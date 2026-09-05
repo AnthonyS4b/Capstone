@@ -334,8 +334,8 @@ if ($toast_message) unset($_SESSION['toast_message']);
 
     <?php include 'includes/user_roles_modal.php'; ?>
 
-    <script src="assets/js/Reco.js?v=20260814-3"></script>
-    <script src="assets/js/active_strategies.js"></script>
+    <script src="assets/js/Reco.js?v=20260905-2"></script>
+    <script src="assets/js/active_strategies.js?v=20260905-2"></script>
     <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>

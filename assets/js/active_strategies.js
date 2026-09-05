@@ -67,10 +67,11 @@ function renderActiveStrategies(strategies) {
                 <td class="align-middle">
                     <div class="fw-semibold" style="color:#2c5530;">${escapeHtmlStr(s.strategy_name || s.strategy_id)}</div>
                     <small class="text-muted">${Number(s.discount_applied)}% discount</small>
+                    ${s.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">With ${escapeHtmlStr(s.paired_product_name || 'a paired product')} — one discounted unit per pair</div>` : ''}
                 </td>
                 <td class="align-middle">
-                    <div class="text-decoration-line-through text-muted small">₱${Number(s.original_price).toFixed(2)}</div>
-                    <div class="fw-bold text-danger">₱${Number(s.discounted_price).toFixed(2)}</div>
+                    <div class="${s.strategy_id === 'cross_sell_pairing' ? '' : 'text-decoration-line-through '}text-muted small">₱${Number(s.original_price).toFixed(2)}${s.strategy_id === 'cross_sell_pairing' ? ' regular' : ''}</div>
+                    <div class="fw-bold text-danger">₱${Number(s.discounted_price).toFixed(2)}${s.strategy_id === 'cross_sell_pairing' ? ' when paired' : ''}</div>
                 </td>
                 <td class="align-middle">${timeInfo}</td>
                 <td class="align-middle text-end">
@@ -86,7 +87,7 @@ function renderActiveStrategies(strategies) {
 }
 
 function cancelActiveStrategy(historyId, productName, btnElement) {
-    if (!confirm(`Are you sure you want to cancel the active strategy for ${productName}? The price will immediately revert to normal.`)) {
+    if (!confirm(`Are you sure you want to cancel the active strategy for ${productName}? Its promotional pricing will end immediately.`)) {
         return;
     }
 
@@ -128,8 +129,9 @@ function cancelActiveStrategy(historyId, productName, btnElement) {
                 btnElement.innerHTML = oHtml;
             }
         },
-        error: function() {
-            alert('Server error occurred while cancelling strategy.');
+        error: function(xhr) {
+            const response = xhr.responseJSON || {};
+            alert(response.error || response.message || 'Server error occurred while cancelling strategy.');
             btnElement.disabled = false;
             btnElement.innerHTML = oHtml;
         }

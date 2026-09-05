@@ -178,6 +178,14 @@ if (isset($_POST['action']) && $_POST['action'] === 'train_model') {
     exit;
 }
 
+if (($_GET['action'] ?? '') === 'get_pairing_products') {
+    $productId = intval($_GET['product_id'] ?? 0);
+    $result = call_ml_api('/api/pairing-products?product_id=' . $productId);
+    http_response_code($result['success'] ? 200 : ($result['http_code'] ?: 503));
+    echo json_encode($result);
+    exit;
+}
+
 /**
  * Save applied recommendation
  */
@@ -203,13 +211,15 @@ if (isset($_POST['action']) && $_POST['action'] === 'save_recommendation') {
         'product_id' => $product_id,
         'strategy_id' => $strategy_id,
         'discount_percentage' => $discount,
-        'notes' => $notes
+        'notes' => $notes,
+        'paired_product_id' => intval($_POST['paired_product_id'] ?? 0),
+        'user_id' => $_SESSION['user_id']
     ]);
     
     if ($result['success']) {
         echo json_encode([
             'success' => true,
-            'message' => 'Recommendation saved successfully'
+            'message' => $result['message'] ?? 'Recommendation saved successfully'
         ]);
     } else {
         http_response_code(500);
