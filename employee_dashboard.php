@@ -586,18 +586,33 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
     const phpToastMessage = <?php echo $toast_message ? json_encode($toast_message) : 'null'; ?>;
     // ── Notification seed data (employee) ──────────────────────────────────────
     const phpNotifications = <?php
-        $notifs = [];
-        // Welcome note on shift start
-        $notifs[] = [
-            'id'    => 'shift-start',
-            'type'  => 'info',
-            'icon'  => 'fa-clock',
-            'title' => 'Shift Started',
-            'body'  => 'Good ' . (date('H') < 12 ? 'morning' : (date('H') < 17 ? 'afternoon' : 'evening')) . ', ' . htmlspecialchars($first_name) . '! Have a great shift.',
-            'time'  => date('h:i A'),
-            'read'  => false,
-        ];
-        // Sales milestone nudge
+        $notifs       = [];  // priority items — shown at TOP
+        $notif_alerts = [];  // inventory warnings — shown below
+
+        // ── 1. Today's Activity (TOP) ──
+        try {
+            $todayEmpStmt = $pdo->query("
+                SELECT COUNT(*) AS cnt
+                FROM transactions t
+                JOIN sales s ON s.transaction_id = t.id
+                WHERE DATE(t.created_at) = CURDATE()
+                  AND s.status = 'completed'
+            ");
+            $todayEmpCount = (int)($todayEmpStmt->fetchColumn() ?: 0);
+            if ($todayEmpCount > 0) {
+                $notifs[] = [
+                    'id'    => 'today-activity-' . date('Ymd') . '-' . $todayEmpCount,
+                    'type'  => 'success',
+                    'icon'  => 'fa-chart-line',
+                    'title' => "Today's Activity",
+                    'body'  => $todayEmpCount . ' completed transaction' . ($todayEmpCount !== 1 ? 's' : '') . ' today.',
+                    'time'  => date('h:i A'),
+                    'read'  => false,
+                ];
+            }
+        } catch (PDOException $e) { /* skip */ }
+
+        // ── 2. Sales milestone nudge ──
         if ($orders_today >= 5) {
             $notifs[] = [
                 'id'    => 'sales-milestone',
@@ -610,7 +625,18 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
             ];
         }
 
-        // ── Low-stock alerts (stock < 10) ──
+        // ── 3. Shift start greeting ──
+        $notifs[] = [
+            'id'    => 'shift-start',
+            'type'  => 'info',
+            'icon'  => 'fa-clock',
+            'title' => 'Shift Started',
+            'body'  => 'Good ' . (date('H') < 12 ? 'morning' : (date('H') < 17 ? 'afternoon' : 'evening')) . ', ' . htmlspecialchars($first_name) . '! Have a great shift.',
+            'time'  => date('h:i A'),
+            'read'  => false,
+        ];
+
+        // ── 4. Low-stock alerts (below priority items) ──
         try {
             $lowStockStmt = $pdo->query("
                 SELECT p.name AS product, p.stock,
@@ -621,7 +647,7 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
             ");
             foreach ($lowStockStmt->fetchAll(PDO::FETCH_ASSOC) as $a) {
                 $lvl = $a['status'] === 'critical' ? 'critical' : 'warning';
-                $notifs[] = [
+                $notif_alerts[] = [
                     'id'   => 'stock-' . preg_replace('/\W/', '-', strtolower($a['product'])),
                     'type' => $lvl,
                     'icon' => $lvl === 'critical' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle',
@@ -633,30 +659,8 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
             }
         } catch (PDOException $e) { /* skip */ }
 
-        // ── Latest transaction ──
-        try {
-            $latTxStmt = $pdo->query("
-                SELECT CONCAT('#TRX-', LPAD(t.id, 5, '0')) AS trx_id,
-                       COALESCE(s.cashier_name, 'N/A') AS cashier,
-                       t.total_amount AS amount
-                FROM transactions t LEFT JOIN sales s ON s.transaction_id = t.id
-                ORDER BY t.created_at DESC LIMIT 1
-            ");
-            $lt = $latTxStmt->fetch(PDO::FETCH_ASSOC);
-            if ($lt) {
-                $notifs[] = [
-                    'id'    => 'trx-latest',
-                    'type'  => 'info',
-                    'icon'  => 'fa-receipt',
-                    'title' => 'New Transaction',
-                    'body'  => 'Transaction ' . $lt['trx_id'] . ' processed by ' . $lt['cashier'],
-                    'time'  => 'Today',
-                    'read'  => false,
-                ];
-            }
-        } catch (PDOException $e) { /* skip */ }
-
-        echo json_encode($notifs);
+        // Merge: priority first, then alerts
+        echo json_encode(array_merge($notifs, $notif_alerts));
     ?>;
     </script>
     <script src="assets/js/emp.js"></script>

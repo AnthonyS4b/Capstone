@@ -1,199 +1,452 @@
-/* Light mode (default) */
+/* ================================================
+   CSS Variables — Espenida's Brand Colors
+   ================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+
+:root {
+    --green-dark: #1a3d2b;
+    --green-mid: #2e5d3c;
+    --green-light: #4a7c5f;
+    --gold: #c9a227;
+    --gold-light: #e0bc55;
+    --gold-pale: #f5e9be;
+    --bg-light: #f4f7f4;
+    --white: #ffffff;
+    --text-dark: #1a2e1e;
+    --text-muted: #6b7c6e;
+    --border-color: #d8e6db;
+    --shadow-sm: 0 2px 8px rgba(26, 61, 43, 0.08);
+    --shadow-md: 0 8px 24px rgba(26, 61, 43, 0.12);
+    --shadow-lg: 0 20px 50px rgba(26, 61, 43, 0.16);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================================================
+   Base
+   ================================================ */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
-    background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.98));
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-light);
     min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle background radial highlights */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 20% 10%, rgba(46, 93, 60, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 90%, rgba(201, 162, 39, 0.07) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ================================================
+   Brand Logo Watermark
+   ================================================ */
+.brand-logo-overlay {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.04;
+    z-index: 0;
+    pointer-events: none;
+    max-width: 70%;
+    max-height: 70%;
+    filter: grayscale(100%);
+}
+
+/* ================================================
+   Main Wrapper
+   ================================================ */
+.login-page-wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1000px;
+    padding: 20px;
+}
+
+/* ===== HEADER ===== */
+.login-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 20px;
+    padding: 18px 24px;
+    background: #fff;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.login-logo-img {
+    height: 72px;
+    width: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.login-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.login-store-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a3d2b;
+    line-height: 1.2;
+}
+
+.login-header-sub {
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #999;
+}
+
+/* ================================================
+   Login Card
+   ================================================ */
+.login-container {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
     position: relative;
 }
 
-.login-container {
-    background-color: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
+/* Top accent bar */
+.login-container::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, var(--green-dark), var(--green-mid), var(--gold));
 }
 
-.brand-header {
-    text-align: center;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 2px solid #f0f0f0;
+.login-body {
+    padding: 32px 36px 28px;
 }
 
-.brand-name {
-    font-family: 'Arial Black', sans-serif;
-    font-size: 2.5rem;
-    color: #2c3e50;
+/* ================================================
+   Section Labels
+   ================================================ */
+.section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
     letter-spacing: 2px;
-    margin-bottom: 5px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-.brand-tagline {
-    font-family: 'Arial', sans-serif;
-    font-size: 1.2rem;
-    color: #7f8c8d;
-    letter-spacing: 5px;
     text-transform: uppercase;
-    font-weight: bold;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.text-muted {
-    color: #6c757d !important;
+.section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+}
+
+/* ================================================
+   Account Cards
+   ================================================ */
+.account-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.account-cards-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.account-cards-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
 }
 
 .account-card {
+    display: flex;
+    align-items: center;
+    background: var(--bg-light);
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
-    border: 1px solid transparent;
+    transition: all var(--transition), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, border-color;
 }
 
 .account-card:hover:not(.selected) {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    transform: translateY(-2px);
+    border-color: var(--green-light);
+    box-shadow: var(--shadow-sm);
+    background: var(--white);
 }
 
 .account-card.selected {
-    border: 2px solid #3498db;
-    background-color: rgba(52, 152, 219, 0.05);
+    border-color: var(--green-dark);
+    background: rgba(26, 61, 43, 0.04);
+    box-shadow: 0 0 0 3px rgba(26, 61, 43, 0.08);
 }
 
-.avatar.bg-primary {
-    background-color: #3498db !important;
-    color: white !important;
+.account-card .ms-3 {
+    flex: 1;
 }
 
-.avatar.bg-info {
-    background-color: #17a2b8 !important;
-    color: white !important;
-}
-
+/* ================================================
+   Avatars
+   ================================================ */
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
+.avatar.bg-primary {
+    background: linear-gradient(135deg, var(--green-mid), var(--green-dark)) !important;
+    color: var(--white) !important;
+}
+
+.avatar.bg-info {
+    background: linear-gradient(135deg, var(--gold-light), var(--gold)) !important;
+    color: var(--white) !important;
+}
+
+/* ================================================
+   Account Tags
+   ================================================ */
 .account-tag {
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-left: auto;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .account-tag.employee {
-    background-color: #3498db;
-    color: white;
+    background: rgba(46, 93, 60, 0.12);
+    color: var(--green-mid);
+    border: 1px solid rgba(46, 93, 60, 0.2);
 }
 
 .account-tag.owner {
-    background-color: #2ecc71;
-    color: white;
+    background: rgba(201, 162, 39, 0.12);
+    color: #9a7a10;
+    border: 1px solid rgba(201, 162, 39, 0.25);
+}
+
+/* ================================================
+   Column Divider
+   ================================================ */
+.col-divider {
+    width: 1px;
+    background: var(--border-color);
+    margin: 0 4px;
+    align-self: stretch;
+}
+
+/* ================================================
+   PIN Section
+   ================================================ */
+.pin-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-left: 28px;
+}
+
+#selectedAccountInfo {
+    background: var(--bg-light) !important;
+    border-radius: var(--radius-sm);
+    padding: 10px 16px;
+    border: 1px solid var(--border-color);
+    width: 100%;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+#selectedName {
+    color: var(--text-dark);
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+#selectedRole {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+#pinPrompt {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* ================================================
+   PIN Dots
+   ================================================ */
+.pin-dots-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin: 16px 0 20px;
+}
+
+.pin-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--border-color);
+    border: 2px solid var(--border-color);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pin-dot.active {
+    background: var(--green-mid);
+    border-color: var(--green-dark);
+    transform: scale(1.3);
+    box-shadow: 0 0 0 4px rgba(46, 93, 60, 0.15);
+}
+
+/* ================================================
+   Keypad
+   ================================================ */
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 78px);
+    gap: 10px;
+    justify-content: center;
 }
 
 .keypad-btn {
-    width: 75px;
-    height: 75px;
-    border-radius: 15px;
-    font-size: 1.5rem;
+    width: 78px;
+    height: 78px;
+    border-radius: var(--radius-md);
+    font-size: 1.4rem;
     font-weight: 600;
+    font-family: 'Inter', sans-serif;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    border: 1.5px solid var(--border-color);
+    background: var(--white);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all var(--transition), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform;
+    box-shadow: var(--shadow-sm);
 }
 
-.keypad-btn:hover {
-    background-color: #f8f9fa !important;
-    transform: translateY(-2px);
+.keypad-btn.key:hover:not(:disabled) {
+    background: var(--green-dark);
+    color: var(--white);
+    border-color: var(--green-dark);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+.keypad-btn.key:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
+}
+
+#backspace {
+    background: var(--green-dark);
+    color: var(--white);
+    border-color: var(--green-dark);
+}
+
+#backspace:hover:not(:disabled) {
+    background: var(--green-mid);
+    border-color: var(--green-mid);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: var(--shadow-md);
 }
 
 .keypad-btn:disabled {
-    opacity: 0.5 !important;
+    opacity: 0.35 !important;
     cursor: not-allowed !important;
     pointer-events: none !important;
 }
 
 .keypad-btn:disabled:hover {
     transform: none !important;
-    background-color: inherit !important;
+    background: var(--white) !important;
 }
 
-.btn-dark {
-    background-color: #343a40 !important;
-    border-color: #343a40 !important;
-    color: white !important;
-}
-
-.btn-dark:hover {
-    background-color: #23272b !important;
-    border-color: #1d2124 !important;
-}
-
-.pin-dot {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background-color: #ecf0f1;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
-}
-
-.pin-dot.active {
-    background-color: #3498db;
-    transform: scale(1.2);
-}
-
-#selectedAccountInfo {
-    background-color: #f8f9fa !important;
-}
-
+/* ================================================
+   System Footer
+   ================================================ */
 .system-footer {
     text-align: center;
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-    color: #6c757d;
-    font-size: 0.9rem;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.3px;
 }
 
+.system-footer strong {
+    color: var(--green-mid);
+}
+
+/* ================================================
+   Mode Badge
+   ================================================ */
 .mode-badge {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background-color: #ffc107;
-    color: #000;
+    top: 18px;
+    right: 18px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffc107, #e6a800);
+    color: #3a2800;
+    letter-spacing: 0.5px;
+    box-shadow: var(--shadow-sm);
 }
 
-.alert-warning {
-    background-color: #fff3cd;
-    border-color: #ffecb5;
-    color: #856404;
-}
-
-.brand-logo-overlay {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 0.03;
-    z-index: -1;
-    pointer-events: none;
-    max-width: 80%;
-    max-height: 80%;
-}
-
-/* Toast Notification Styles */
+/* ================================================
+   Toast Notifications
+   ================================================ */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -204,13 +457,15 @@ body {
 .toast {
     animation: slideIn 0.3s ease-in-out;
     min-width: 300px;
+    border-radius: var(--radius-sm) !important;
 }
 
 @keyframes slideIn {
     from {
-        transform: translateX(100%);
+        transform: translateX(110%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -222,23 +477,27 @@ body {
     bottom: 0;
     left: 0;
     height: 3px;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255, 255, 255, 0.4);
     animation: timer 1s linear forwards;
 }
 
 @keyframes timer {
-    from { width: 100%; }
-    to { width: 0%; }
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
 }
 
-/* Loading Animation */
+/* ================================================
+   Loading Animation
+   ================================================ */
 #loading-animation {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
+    inset: 0;
+    background: var(--white);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -252,49 +511,63 @@ body {
     visibility: hidden;
 }
 
+/* Actual logo image on loading screen */
+.logo-loading-img {
+    width: 280px;
+    height: auto;
+    object-fit: contain;
+    margin-bottom: 30px;
+    animation: fadeInLogo 0.6s ease forwards;
+}
+
+@keyframes fadeInLogo {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Legacy SVG animation (kept for compatibility) */
 .logo-container {
     position: relative;
-    width: 400px;
-    height: 200px;
-    margin-bottom: 30px;
+    width: 380px;
+    height: 140px;
+    margin-bottom: 24px;
 }
 
-.logo-outline {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-}
-
-.logo-outline svg {
-    width: 100%;
-    height: 100%;
-    filter: grayscale(100%) brightness(2);
-}
-
-.logo-outline svg text {
-    fill: #333;
-}
-
+.logo-outline,
 .logo-fill {
     position: absolute;
     width: 100%;
     height: 100%;
     top: 0;
     left: 0;
+}
+
+.logo-outline svg,
+.logo-fill svg {
+    width: 100%;
+    height: 100%;
+}
+
+.logo-fill {
     clip-path: polygon(0 0, 0% 0, 0% 100%, 0 100%);
     transition: clip-path 3.5s ease-out;
 }
 
 .progress-container {
-    width: 400px;
-    margin-top: 20px;
+    width: 360px;
+    margin-top: 10px;
 }
 
 .progress {
-    height: 8px;
-    background-color: #eee;
+    height: 5px;
+    background: #e8f0ea;
     border-radius: 10px;
     overflow: hidden;
 }
@@ -302,7 +575,7 @@ body {
 .progress-bar {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, #3498db, #2ecc71);
+    background: linear-gradient(90deg, var(--green-dark), var(--green-mid), var(--gold));
     border-radius: 10px;
     transition: width 0.3s ease;
 }
@@ -310,31 +583,76 @@ body {
 .percentage {
     margin-top: 10px;
     text-align: center;
-    color: #666;
+    color: var(--text-muted);
     font-weight: 500;
-    font-size: 1.1rem;
+    font-size: 0.85rem;
 }
 
 .loading-text {
-    font-size: 1.2rem;
-    color: #3498db;
-    margin-top: 10px;
-    font-weight: 500;
+    font-size: 0.75rem;
+    color: var(--green-mid);
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
 }
 
+/* ================================================
+   Responsive
+   ================================================ */
 @media (max-width: 768px) {
-    .logo-container {
-        width: 300px;
-        height: 150px;
+    .login-page-wrapper {
+        padding: 16px;
     }
-    
+
+    .login-body {
+        padding: 24px 20px 20px;
+    }
+
+    .col-divider {
+        display: none;
+    }
+
+    .pin-section {
+        padding-left: 0;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .logo-container,
     .progress-container {
-        width: 300px;
+        width: 280px;
+    }
+
+    .logo-container {
+        height: 100px;
+    }
+
+    .keypad-grid {
+        grid-template-columns: repeat(3, 70px);
+        gap: 8px;
+    }
+
+    .keypad-btn {
+        width: 70px;
+        height: 70px;
+    }
+
+    .login-logo-img {
+        height: 70px;
     }
 }
 
-/* Timer animation */
-@keyframes timer {
-    from { width: 100%; }
-    to { width: 0%; }
+@media (max-width: 480px) {
+    .keypad-grid {
+        grid-template-columns: repeat(3, 62px);
+        gap: 7px;
+    }
+
+    .keypad-btn {
+        width: 62px;
+        height: 62px;
+        font-size: 1.2rem;
+    }
 }

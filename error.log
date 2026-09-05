@@ -2237,3 +2237,16 @@
 [24-Aug-2026 08:49:09 Europe/Berlin] Transaction data: User_ID=1, Total=55, Payment=55, Method=gcash
 [24-Aug-2026 08:49:09 Europe/Berlin] Transaction inserted with ID: 1509
 [24-Aug-2026 08:49:09 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[26-Aug-2026 09:59:32 Europe/Berlin] Found user_id in session: 4
+[26-Aug-2026 09:59:32 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[26-Aug-2026 09:59:32 Europe/Berlin] Transaction data: User_ID=4, Total=535, Payment=535, Method=gcash
+[26-Aug-2026 09:59:48 Europe/Berlin] Found user_id in session: 4
+[26-Aug-2026 09:59:48 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[26-Aug-2026 09:59:48 Europe/Berlin] Transaction data: User_ID=4, Total=535, Payment=1000, Method=cash
+[26-Aug-2026 09:59:48 Europe/Berlin] Transaction inserted with ID: 1510
+[26-Aug-2026 09:59:48 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[26-Aug-2026 16:02:13 Europe/Berlin] Found user_id in session: 4
+[26-Aug-2026 16:02:13 Europe/Berlin] Validated user: Ana Lopez (ID: 4, Role: employee)
+[26-Aug-2026 16:02:13 Europe/Berlin] Transaction data: User_ID=4, Total=55, Payment=100, Method=cash
+[26-Aug-2026 16:02:13 Europe/Berlin] Transaction inserted with ID: 1511
+[26-Aug-2026 16:02:13 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
