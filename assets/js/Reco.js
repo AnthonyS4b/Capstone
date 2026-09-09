@@ -8,6 +8,7 @@ let allRecommendations = [];
 let currentFilter = 'all';
 let currentView = 'list';
 let forecastChart = null;
+let _currentSelectedStrategyId = null;
 
 // One source of truth for strategy priority labels.  These ranges correspond
 // to strategy_templates.priority and are used everywhere a strategy is shown
@@ -84,7 +85,7 @@ function wireEvents() {
         if (_currentApplyRec) {
             // Close forecast modal first, then open apply modal
             bootstrap.Modal.getInstance(document.getElementById('forecastModal'))?.hide();
-            setTimeout(() => openApplyModal(_currentApplyRec), 300);
+            setTimeout(() => openApplyModal(_currentApplyRec, _currentSelectedStrategyId), 300);
         }
     });
 }
@@ -386,6 +387,7 @@ function showEmptyState(title, msg) {
 
 function openForecastModal(rec) {
     _currentApplyRec = rec; // Store for the Apply Strategy footer button
+    _currentSelectedStrategyId = rec.strategies?.[0]?.strategy_id || null;
     const modal = new bootstrap.Modal(document.getElementById('forecastModal'));
     const content = document.getElementById('forecastContent');
     if (!content) return;
@@ -402,14 +404,8 @@ function openForecastModal(rec) {
     const confidence = rec.confidence || 0.65;
 
     // Forecast calculations — use predicted_monthly_sales if available
-    const baseSales = rec.predicted_monthly_sales || monthly || Math.max(0.5, stock * 0.1);
-    const uplift = strategy.expected_impact_min ? (strategy.expected_impact_min + strategy.expected_impact_max) / 200 : 0.2;
-    const m1 = Math.max(1, Math.round(baseSales * (1 + uplift)));
-    const m2 = Math.max(1, Math.round(baseSales * (1 + uplift * 0.7)));
-    const m3 = Math.max(1, Math.round(baseSales * (1 + uplift * 0.4)));
-    const m1_no = Math.max(0, Math.round(monthly));
-    const m2_no = Math.max(0, Math.round(monthly * 0.95));
-    const m3_no = Math.max(0, Math.round(monthly * 0.9));
+    const initialProjection = calculateStrategyProjection(rec, strategy);
+    const { m1, m2, m3, m1_no, m2_no, m3_no } = initialProjection;
 
     // Month labels
     const now = new Date();
@@ -448,9 +444,9 @@ function openForecastModal(rec) {
                     const noS = [m1_no, m2_no, m3_no][i];
                     const change = noS > 0 ? Math.round(((withS - noS) / noS) * 100) : (withS > 0 ? 100 : 0);
                     return `
-                    <div class="month-box">
+                    <div class="month-box" data-month-index="${i}">
                         <div class="month-label">${months[i]}</div>
-                        <div class="month-value">${withS} units</div>
+                        <div class="month-value">${formatProjectedUnits(withS)} units</div>
                         <div class="month-change positive">+${change}% vs no action</div>
                     </div>`;
                 }).join('')}
@@ -459,12 +455,12 @@ function openForecastModal(rec) {
 
         <!-- TAB 2: Marketing Strategy -->
         <div class="forecast-tab-content" id="tab-strategy">
-            ${buildStrategyTab(rec)}
+            ${buildStrategyTab(rec, 0)}
         </div>
 
         <!-- TAB 3: Profit Analysis -->
         <div class="forecast-tab-content" id="tab-profit">
-            ${buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months)}
+            ${buildProfitTab(rec, strategy, initialProjection, months)}
         </div>
 
         <!-- TAB 4: Prediction Details -->
@@ -484,15 +480,142 @@ function openForecastModal(rec) {
         });
     });
 
+    content.querySelectorAll('.strategy-plan-card[data-strategy-index]').forEach(card => {
+        card.addEventListener('click', function () {
+            selectForecastStrategy(rec, Number(this.dataset.strategyIndex), months, content);
+        });
+        card.addEventListener('keydown', function (event) {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            selectForecastStrategy(rec, Number(this.dataset.strategyIndex), months, content);
+        });
+    });
+
     modal.show();
 
     // Render chart after modal is visible
     setTimeout(() => renderForecastChart(months, [m1, m2, m3], [m1_no, m2_no, m3_no]), 300);
 }
 
+function calculateStrategyProjection(rec, strategy = {}) {
+    const stock = Number(rec.current_stock) || 0;
+    const monthly = Number(rec.monthly_sales) || 0;
+    const predicted = Number(rec.predicted_monthly_sales);
+    const baseSales = Number.isFinite(predicted) && predicted > 0 ? predicted : Math.max(0, monthly);
+    const minImpact = Number(strategy.expected_impact_min) || 0;
+    const maxImpact = Number(strategy.expected_impact_max) || 0;
+    const uplift = minImpact || maxImpact ? Math.max(0, (minImpact + maxImpact) / 200) : 0;
+    const durationDays = Math.max(0, Number(strategy.duration_days) || 0);
+    const monthFactors = [1, 0.95, 0.9];
+    const coverage = monthFactors.map((_, index) => {
+        const daysRemaining = durationDays - (index * 30);
+        return Math.max(0, Math.min(1, daysRemaining / 30));
+    });
+
+    const noActionDemand = monthFactors.map(factor => baseSales * factor);
+    const strategyDemand = noActionDemand.map((demand, index) => (
+        demand * (1 + uplift * coverage[index])
+    ));
+    const noActionUnits = allocateProjectedStock(noActionDemand, stock);
+    const strategyUnits = allocateProjectedStock(strategyDemand, stock);
+    const withStrategy = strategyUnits.map((units, index) => {
+        const rawDemand = strategyDemand[index];
+        const promotionalDemand = noActionDemand[index] * coverage[index] * (1 + uplift);
+        const promotionalShare = rawDemand > 0 ? Math.min(1, promotionalDemand / rawDemand) : 0;
+        const promotionalUnits = units * promotionalShare;
+
+        return {
+            units,
+            promotionalUnits,
+            regularUnits: Math.max(0, units - promotionalUnits),
+            campaignCoverage: coverage[index],
+        };
+    });
+
+    return {
+        m1: strategyUnits[0],
+        m2: strategyUnits[1],
+        m3: strategyUnits[2],
+        m1_no: noActionUnits[0],
+        m2_no: noActionUnits[1],
+        m3_no: noActionUnits[2],
+        baseSales,
+        withStrategy,
+        noAction: noActionUnits.map(units => ({ units })),
+    };
+}
+
+function allocateProjectedStock(monthlyDemand, stock) {
+    let remainingStock = Math.max(0, Number(stock) || 0);
+    return monthlyDemand.map(value => {
+        const demand = Math.max(0, Number(value) || 0);
+        const units = Math.min(demand, remainingStock);
+        remainingStock = Math.max(0, remainingStock - units);
+        return units;
+    });
+}
+
+function formatProjectedUnits(value) {
+    const units = Math.max(0, Number(value) || 0);
+    return units.toLocaleString('en-PH', { maximumFractionDigits: 2 });
+}
+
+function selectForecastStrategy(rec, strategyIndex, months, content) {
+    const strategy = rec.strategies?.[strategyIndex];
+    if (!strategy) return;
+
+    _currentSelectedStrategyId = strategy.strategy_id;
+    content.querySelectorAll('.strategy-plan-card[data-strategy-index]').forEach((card, index) => {
+        const selected = index === strategyIndex;
+        card.classList.toggle('selected', selected);
+        card.setAttribute('aria-checked', selected ? 'true' : 'false');
+        const label = card.querySelector('.strategy-selected-label');
+        if (label) label.hidden = !selected;
+    });
+
+    const projection = calculateStrategyProjection(rec, strategy);
+    const profitTab = content.querySelector('#tab-profit');
+    if (profitTab) {
+        profitTab.innerHTML = buildProfitTab(rec, strategy, projection, months);
+    }
+
+    updateForecastProjection(content, projection, months);
+}
+
+function updateForecastProjection(content, projection, months) {
+    const withStrategy = [projection.m1, projection.m2, projection.m3];
+    const noAction = [projection.m1_no, projection.m2_no, projection.m3_no];
+
+    content.querySelectorAll('.month-box[data-month-index]').forEach(box => {
+        const index = Number(box.dataset.monthIndex);
+        const withUnits = withStrategy[index] || 0;
+        const noActionUnits = noAction[index] || 0;
+        const change = noActionUnits > 0
+            ? Math.round(((withUnits - noActionUnits) / noActionUnits) * 100)
+            : 0;
+        const value = box.querySelector('.month-value');
+        const changeLabel = box.querySelector('.month-change');
+        if (value) value.textContent = `${formatProjectedUnits(withUnits)} units`;
+        if (changeLabel) {
+            changeLabel.textContent = `${change >= 0 ? '+' : ''}${change}% vs no action`;
+            changeLabel.classList.toggle('positive', change >= 0);
+            changeLabel.classList.toggle('negative', change < 0);
+        }
+    });
+
+    if (forecastChart) {
+        forecastChart.data.labels = months;
+        forecastChart.data.datasets[0].data = withStrategy;
+        forecastChart.data.datasets[1].data = noAction;
+        forecastChart.update();
+    } else {
+        renderForecastChart(months, withStrategy, noAction);
+    }
+}
+
 // ═══════════ TAB 2: MARKETING STRATEGY ═══════════
 
-function buildStrategyTab(rec) {
+function buildStrategyTab(rec, selectedStrategyIndex = 0) {
     const strategies = rec.strategies || [];
     const isMonitor = rec.risk_level === 'MONITOR';
     const daysInStock = rec.days_in_stock || 0;
@@ -507,10 +630,10 @@ function buildStrategyTab(rec) {
     if (isEscalation) {
         return `
         <div class="detail-card" style="border-left:4px solid #ef4444;">
-            <h6 style="color:#ef4444;font-weight:700;">&#x26A0; Strategies Exhausted — Escalate &amp; Re-evaluate</h6>
+            <h6 style="color:#ef4444;font-weight:700;">${esc(firstStrategy.strategy_name || 'Business Review Required')}</h6>
             <p class="text-muted small">${esc(firstStrategy.why_it_works || '')}</p>
             <div class="strategy-steps">
-                <div class="steps-title">Recommended Business Review Actions:</div>
+                <div class="steps-title">Recommended Actions:</div>
                 <ol class="steps-list">
                     ${(firstStrategy.implementation_steps || []).map(step => `<li>${esc(step)}</li>`).join('')}
                 </ol>
@@ -560,13 +683,17 @@ function buildStrategyTab(rec) {
             : (s.recommended_discount > 0 ? `<div class="strategy-discount-tag">${Math.round(s.recommended_discount)}% discount · ${s.duration_days} days</div>` : `<div class="strategy-discount-tag">${s.duration_days} day campaign</div>`);
 
         html += `
-        <div class="strategy-plan-card ${idx === 0 ? 'primary' : ''}">
+        <div class="strategy-plan-card ${idx === selectedStrategyIndex ? 'selected' : ''}"
+             data-strategy-index="${idx}" role="radio" tabindex="0"
+             aria-checked="${idx === selectedStrategyIndex ? 'true' : 'false'}"
+             aria-label="Analyze strategy option ${idx + 1}">
             <div class="strategy-plan-top">
                 <div class="strategy-plan-rank">${idx + 1}</div>
                 <div class="strategy-plan-info">
                     <div class="strategy-plan-name">
                         ${esc(s.strategy_name)}
                         <span class="priority-badge priority-${priority.className}">${priority.label}</span>
+                        <span class="strategy-selected-label" ${idx === selectedStrategyIndex ? '' : 'hidden'}>Selected for analysis</span>
                     </div>
                     ${discountTagHTML}
                 </div>
@@ -597,16 +724,20 @@ function buildStrategyTab(rec) {
 
 // ═══════════ TAB 3: PROFIT ANALYSIS ═══════════
 
-function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
+function buildProfitTab(rec, strategy, projection, months) {
     const price = rec.current_price || 0;
-    const costPrice = rec.cost_price || (price * 0.6); // estimate 60% if not on record
-    const costIsEstimated = !rec.cost_price || rec.cost_price === 0;
+    const suppliedCost = Number(rec.cost_price) || 0;
+    const costPrice = suppliedCost > 0 ? suppliedCost : (price * 0.7);
+    const costIsEstimated = Boolean(rec.cost_is_estimated) || suppliedCost <= 0;
     const stock = rec.current_stock || 0;
-    const strategy = rec.strategies?.[0] || {};
+    strategy = strategy || {};
     const discount = Math.round(strategy.recommended_discount || 0);
     const isBogo = strategy.strategy_id === 'buy_one_take_one' || (strategy.strategy_name || '').toLowerCase().includes('buy 1 take 1');
     const effectiveDiscount = isBogo ? 50 : discount;
     const discountedPrice = price * (1 - effectiveDiscount / 100);
+    const durationDays = Math.max(0, Math.round(Number(strategy.duration_days) || 0));
+    const impactMin = Math.round(Number(strategy.expected_impact_min) || 0);
+    const impactMax = Math.round(Number(strategy.expected_impact_max) || 0);
 
     // Margins
     const currentMargin = price - costPrice;
@@ -616,20 +747,17 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
     const profitPerUnitAtDiscount = discountedPrice - costPrice;
 
     // Profitability verdict
-    let verdictClass, verdictIcon, verdictTitle, verdictText;
+    let verdictClass, verdictTitle, verdictText;
     if (profitPerUnitAtDiscount <= 0) {
         verdictClass = 'not-profitable';
-        verdictIcon = '🚫';
         verdictTitle = 'NOT PROFITABLE — Reconsider Discount';
         verdictText = `At ₱${discountedPrice.toFixed(2)}, each unit sold loses ₱${Math.abs(profitPerUnitAtDiscount).toFixed(2)}. Consider reducing the discount or bundling instead.`;
     } else if (discountMarginPct < 15) {
         verdictClass = 'marginally-profitable';
-        verdictIcon = '📊';
         verdictTitle = 'MARGINALLY PROFITABLE — Proceed with Care';
         verdictText = `The discount reduces unit profit from ₱${currentMargin.toFixed(2)} to ₱${profitPerUnitAtDiscount.toFixed(2)}, but increased volume could compensate. Monitor closely and adjust if needed.`;
     } else {
         verdictClass = 'profitable';
-        verdictIcon = '✅';
         verdictTitle = 'PROFITABLE — Good to Apply';
         verdictText = isBogo 
             ? `Even with a Buy 1 Take 1 deal, each unit earns ₱${profitPerUnitAtDiscount.toFixed(2)} profit. The deal should drive healthy volume.`
@@ -637,22 +765,48 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
     }
 
     // Month-by-month scenarios
-    const scenarioLabel = isBogo ? 'Buy 1 Take 1' : `${discount}% Discount`;
-    const scenarios = [
-        { label: 'No Action (Current)', units: Math.max(1, Math.round(rec.monthly_sales || 1)), unitPrice: price, cost: costPrice, isBaseline: true },
-        { label: `${scenarioLabel} — Month 1`, units: m1, unitPrice: discountedPrice, cost: costPrice },
-        { label: `${scenarioLabel} — Month 2`, units: m2, unitPrice: discountedPrice, cost: costPrice },
-        { label: `${scenarioLabel} — Month 3`, units: m3, unitPrice: discountedPrice, cost: costPrice },
-    ];
+    const scenarioLabel = strategy.strategy_name || (isBogo ? 'Buy 1 Take 1' : `${discount}% Discount`);
+    const scenarios = [];
+    (projection.noAction || []).forEach((month, index) => {
+        const strategyMonth = projection.withStrategy?.[index] || {
+            units: 0,
+            regularUnits: 0,
+            promotionalUnits: 0,
+        };
+        const monthLabel = months[index] || `Month ${index + 1}`;
+        const baselineProfit = month.units * (price - costPrice);
+        scenarios.push({
+            label: `No Action — ${monthLabel}`,
+            units: month.units,
+            revenue: month.units * price,
+            cost: month.units * costPrice,
+            isBaseline: true,
+        });
+        scenarios.push({
+            label: `${scenarioLabel} — ${monthLabel}`,
+            units: strategyMonth.units,
+            revenue: (strategyMonth.regularUnits * price) + (strategyMonth.promotionalUnits * discountedPrice),
+            cost: strategyMonth.units * costPrice,
+            isBaseline: false,
+            comparisonProfit: baselineProfit,
+        });
+    });
 
     // Stock value impact
     const currentValue = stock * price;
     const discountedValue = stock * discountedPrice;
     const valueConceded = currentValue - discountedValue;
-    const holdingCostMonthly = currentValue * 0.02; // ~2% of inventory value
-    const breakEvenUnits = profitPerUnitAtDiscount > 0 ? Math.ceil(costPrice / profitPerUnitAtDiscount) : 0;
+    const inventoryCostBasis = stock * costPrice;
+    const holdingCostMonthly = inventoryCostBasis * 0.02; // ~2% of inventory cost basis
+    const maxNonLossDiscount = price > 0 && price > costPrice
+        ? ((price - costPrice) / price) * 100
+        : 0;
 
     return `
+        <div class="profit-strategy-context">
+            Analyzing: <strong>${esc(strategy.strategy_name || 'Selected strategy')}</strong>
+            <span>${isBogo ? 'Buy 1 Take 1' : `${discount}% discount`} · ${durationDays} days · ${impactMin}–${impactMax}% expected uplift</span>
+        </div>
         <div class="price-boxes">
             <div class="price-box">
                 <div class="price-box-label">CURRENT PRICE</div>
@@ -665,21 +819,20 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
                 <div class="price-box-sub">Margin: ${discountMarginPct}%</div>
             </div>
             <div class="price-box cost-box">
-                <div class="price-box-label">ESTIMATED UNIT COST</div>
+                <div class="price-box-label">${costIsEstimated ? 'ESTIMATED UNIT COST' : 'UNIT COST'}</div>
                 <div class="price-box-value">₱${costPrice.toFixed(2)}</div>
                 <div class="price-box-sub">Profit/unit at discount: ₱${profitPerUnitAtDiscount.toFixed(2)}</div>
             </div>
         </div>
 
         <div class="profitability-banner ${verdictClass}">
-            <div class="verdict-icon">${verdictIcon}</div>
             <div class="verdict-body">
                 <strong>${verdictTitle}</strong>
                 <div class="verdict-text">${verdictText}</div>
             </div>
         </div>
 
-        <h6 class="section-subtitle">📅 Month-by-Month Profit Projection</h6>
+        <h6 class="section-subtitle">Month-by-Month Profit Projection</h6>
         <div class="table-responsive">
             <table class="profit-table">
                 <thead>
@@ -688,23 +841,29 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
                         <th>UNITS SOLD</th>
                         <th>REVENUE</th>
                         <th>TOTAL COST</th>
-                        <th>NET PROFIT</th>
+                        <th>GROSS PROFIT</th>
                         <th>VERDICT</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${scenarios.map(s => {
-                        const rev = s.units * s.unitPrice;
-                        const tc = s.units * s.cost;
+                        const rev = s.revenue;
+                        const tc = s.cost;
                         const net = rev - tc;
                         const isProfit = net > 0;
-                        const verdictLabel = isProfit ? 'OK' : 'Loss';
-                        const verdictBadge = isProfit
-                            ? `<span class="verdict-good">✅ ${s.isBaseline ? 'Profitable' : verdictLabel}</span>`
-                            : `<span class="verdict-bad">❌ ${verdictLabel}</span>`;
+                        let verdictBadge;
+                        if (s.isBaseline) {
+                            verdictBadge = '<span class="verdict-neutral">Baseline</span>';
+                        } else if (!isProfit) {
+                            verdictBadge = '<span class="verdict-bad">Loss</span>';
+                        } else if (net >= s.comparisonProfit) {
+                            verdictBadge = '<span class="verdict-good">Higher</span>';
+                        } else {
+                            verdictBadge = '<span class="verdict-bad">Lower</span>';
+                        }
                         return `<tr${s.isBaseline ? ' class="baseline-row"' : ''}>
-                            <td>${s.label}</td>
-                            <td>${s.units}</td>
+                            <td>${esc(s.label)}</td>
+                            <td>${formatProjectedUnits(s.units)}</td>
                             <td>₱${rev.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                             <td>₱${tc.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                             <td class="${isProfit ? 'text-profit' : 'text-loss'}">₱${net.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
@@ -715,7 +874,7 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
             </table>
         </div>
 
-        <h6 class="section-subtitle">📦 Stock Value Impact</h6>
+        <h6 class="section-subtitle">Stock Value Impact</h6>
         <div class="table-responsive">
             <table class="profit-table stock-impact-table">
                 <thead>
@@ -727,37 +886,44 @@ function buildProfitTab(rec, m1, m2, m3, m1_no, m2_no, m3_no, months) {
                 </thead>
                 <tbody>
                     <tr>
-                        <td>Current Stock Value (at full price)</td>
+                        <td>Potential Retail Value</td>
                         <td class="text-profit">₱${currentValue.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>${stock} units × ₱${price.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                     </tr>
                     <tr>
-                        <td>Stock Value at Discounted Price</td>
+                        <td>Potential Promotional Revenue (all stock)</td>
                         <td class="text-profit">₱${discountedValue.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>${stock} units × ₱${discountedPrice.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                     </tr>
                     <tr>
-                        <td>Value Conceded by Discount</td>
+                        <td>Inventory Cost Basis</td>
+                        <td>₱${inventoryCostBasis.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>${stock} units × ₱${costPrice.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                    </tr>
+                    <tr>
+                        <td>Maximum Value Conceded by Discount</td>
                         <td class="text-loss">-₱${valueConceded.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                        <td>This is the "cost" of the discount to clear stock</td>
+                        <td>Maximum reduction if every unit is sold at the promotional price</td>
                     </tr>
                     <tr>
                         <td>Cost of Holding Stock (monthly, est.)</td>
                         <td class="text-loss">-₱${holdingCostMonthly.toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                        <td>~2% of inventory value (storage + opportunity cost)</td>
+                        <td>~2% of inventory cost basis (storage + opportunity cost)</td>
                     </tr>
-                    ${breakEvenUnits > 0 ? `<tr>
-                        <td>Break-even Units at Discounted Price</td>
-                        <td style="color:#3b82f6;font-weight:700;">${breakEvenUnits} units</td>
-                        <td>Minimum units to sell to recover unit cost</td>
-                    </tr>` : ''}
+                    <tr>
+                        <td>Maximum Discount Before Unit Loss</td>
+                        <td style="color:#3b82f6;font-weight:700;">${maxNonLossDiscount.toFixed(1)}%</td>
+                        <td>${maxNonLossDiscount > 0 ? 'A higher discount makes the selling price lower than unit cost' : 'The current price does not cover unit cost'}</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="profit-note">
-            <strong>ℹ Note:</strong> Cost is estimated at 60% of selling price if not on record. For exact calculations, update the <u>cost</u> field in your products table.
-            Holding cost is estimated at 2%/month of inventory value (covers storage, capital lock-up, and spoilage risk).
+            <strong>Calculation assumptions:</strong> ${costIsEstimated ? 'Unit cost is estimated at 70% of selling price because no cost is recorded. ' : ''}
+            No-action demand starts from the model forecast and uses a 5% monthly decline. Expected uplift comes from the selected strategy template and is applied only during its campaign period. Projections are limited by current stock and assume no restocking.
+            Gross profit excludes operating and campaign expenses. Holding cost is estimated at 2% per month of inventory cost basis.
+            ${strategy.strategy_id === 'cross_sell_pairing' || strategy.strategy_id === 'bundle_deal' ? 'Partner-product revenue and cost are excluded until a partner product is selected.' : ''}
         </div>
     `;
 }
@@ -855,11 +1021,11 @@ function renderForecastChart(labels, withStrategy, noAction) {
     forecastChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['Current', ...labels],
+            labels,
             datasets: [
                 {
                     label: 'With Strategy',
-                    data: [withStrategy[0] * 0.85, ...withStrategy],
+                    data: withStrategy,
                     borderColor: '#2c5530',
                     backgroundColor: 'rgba(44,85,48,0.08)',
                     borderWidth: 3,
@@ -870,7 +1036,7 @@ function renderForecastChart(labels, withStrategy, noAction) {
                 },
                 {
                     label: 'No Action',
-                    data: [noAction[0], ...noAction],
+                    data: noAction,
                     borderColor: '#94a3b8',
                     borderDash: [6, 4],
                     borderWidth: 2,
@@ -910,22 +1076,23 @@ function renderForecastChart(labels, withStrategy, noAction) {
 
 let _currentApplyRec = null; // Store current rec for forecast modal button
 
-function openApplyModal(rec) {
+function openApplyModal(rec, preferredStrategyId = null) {
     _currentApplyRec = rec;
     const modal = new bootstrap.Modal(document.getElementById('applyModal'));
     const content = document.getElementById('applyContent');
     if (!content) return;
 
     const strategies = rec.strategies || [];
+    const preferredIndex = strategies.findIndex(s => s.strategy_id === preferredStrategyId);
+    const selectedStrategyIndex = preferredIndex >= 0 ? preferredIndex : 0;
     const firstStrategy = strategies[0] || {};
     const isEscalation = firstStrategy.strategy_id === 'escalate_reevaluate' || firstStrategy.is_escalation;
 
     if (isEscalation) {
         content.innerHTML = `
             <div class="text-center py-3">
-                <div style="font-size:2.5rem;margin-bottom:8px;">&#x26A0;&#xFE0F;</div>
-                <h6 style="color:#ef4444;font-weight:700;">Strategies Exhausted</h6>
-                <p class="text-muted small mb-3">All standard promotional strategies have been tried recently for <strong>${esc(rec.product_name)}</strong>. A deeper business review is needed.</p>
+                <h6 style="color:#ef4444;font-weight:700;">${esc(firstStrategy.strategy_name || 'Business Review Required')}</h6>
+                <p class="text-muted small mb-3">${esc(firstStrategy.why_it_works || `A business review is needed for ${rec.product_name}.`)}</p>
             </div>
             <div class="escalation-steps" style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:16px;">
                 <div style="font-weight:600;margin-bottom:10px;color:#ef4444;">Recommended Actions:</div>
@@ -964,7 +1131,7 @@ function openApplyModal(rec) {
                 const optionPrice = isBogo ? ((rec.current_price || 0) * 0.5) : ((rec.current_price || 0) * (1 - s.recommended_discount / 100));
 
                 return `
-                <div class="strategy-option ${i === 0 ? 'selected' : ''}" data-strategy="${s.strategy_id}" data-discount="${effectiveDiscount}" data-name="${esc(s.strategy_name)}" onclick="selectStrategy(this)">
+                <div class="strategy-option ${i === selectedStrategyIndex ? 'selected' : ''}" data-strategy="${s.strategy_id}" data-discount="${effectiveDiscount}" data-name="${esc(s.strategy_name)}" onclick="selectStrategy(this)">
                     <div class="strategy-option-header">
                         <strong>${esc(s.strategy_name)}</strong>
                         <span class="priority-badge priority-${priority.className}">${priority.label}</span>
@@ -1011,7 +1178,7 @@ function openApplyModal(rec) {
     }
 
     const pairingSetup = document.getElementById('pairingSetup');
-    pairingSetup.hidden = strategies[0]?.strategy_id !== 'cross_sell_pairing';
+    pairingSetup.hidden = strategies[selectedStrategyIndex]?.strategy_id !== 'cross_sell_pairing';
     if (strategies.some(s => s.strategy_id === 'cross_sell_pairing')) {
         const select = document.getElementById('pairedProduct');
         $.ajax({

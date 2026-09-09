@@ -50,7 +50,7 @@ if ($toast_message) unset($_SESSION['toast_message']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/dashboardCSS.css">
     <link rel="stylesheet" href="assets/css/PosCSS.css">
-    <link rel="stylesheet" href="assets/css/reco.css?v=20260814-3">
+    <link rel="stylesheet" href="assets/css/reco.css?v=20260906-2">
     <link href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
@@ -334,7 +334,7 @@ if ($toast_message) unset($_SESSION['toast_message']);
 
     <?php include 'includes/user_roles_modal.php'; ?>
 
-    <script src="assets/js/Reco.js?v=20260905-2"></script>
+    <script src="assets/js/Reco.js?v=20260906-4"></script>
     <script src="assets/js/active_strategies.js?v=20260905-2"></script>
     <script src="assets/js/userManagement.js?v=20260814-1"></script>
     <script src="assets/js/sidebar-nav.js"></script>

@@ -227,6 +227,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
     for row in rows:
         price = float(row.get("price") or 0)
         cost = float(row.get("cost_price") or 0)
+        cost_is_estimated = cost <= 0
         # Fix: use price * 0.7 estimate when cost_price is 0, not 1
         if cost <= 0:
             cost = price * 0.7 if price > 0 else 1.0
@@ -238,7 +239,8 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         days_expiry = int(days_expiry) if days_expiry is not None else 999
         days_in_stock = int(row.get("days_in_stock") or 0)
 
-        is_critical = days_expiry <= THRESHOLDS["critical_stock_days"] and days_expiry >= 0
+        is_expired = days_expiry < 0
+        is_critical = days_expiry <= THRESHOLDS["critical_stock_days"]
         is_slow = velocity < RECOMMENDATION_POLICY["monthly_sales_below"]
 
         # Compute simple risk score
@@ -255,9 +257,14 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         recent_strategy_ids = _get_recent_strategy_ids(int(row["id"]))
 
         # Pick strategies from DB — filtered by risk_level, excluding recently-used ones
-        strategies = _pick_strategies_from_db(
-            is_critical, is_slow, stock > 20, markup_pct, risk_level, is_packaged,
-            used_strategy_ids=recent_strategy_ids,
+        strategies = (
+            [_EXPIRED_STOCK_ADVISORY.copy()]
+            if is_expired
+            else _pick_strategies_from_db(
+                is_critical, is_slow, stock > 20, markup_pct, risk_level, is_packaged,
+                price=price, cost=cost, current_stock=stock,
+                used_strategy_ids=recent_strategy_ids,
+            )
         )
 
         # Count historical strategies
@@ -280,6 +287,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             "product_name": row["name"],
             "current_price": price,
             "cost_price": cost,
+            "cost_is_estimated": cost_is_estimated,
             "current_stock": stock,
             "category": row.get("category_name") or "General",
             "days_until_expiry": days_expiry,
@@ -297,6 +305,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             "potential_revenue": round(max(velocity, predicted_monthly_sales) * price, 2),
             "strategies": strategies,
             "is_critical_expiry": is_critical,
+            "is_expired": is_expired,
             "is_slow_moving": is_slow,
             "history_count": history_count,
             "date_added": date_added,
@@ -340,7 +349,7 @@ def _determine_risk_level(risk_score: float, days_in_stock: int = 0, days_until_
     3. MONITOR: days_in_stock < 50
     """
     # 1. CRITICAL: 90+ days or near expiry
-    if days_in_stock >= THRESHOLDS["days_in_stock_critical"] or (0 <= days_until_expiry <= THRESHOLDS["critical_stock_days"]):
+    if days_in_stock >= THRESHOLDS["days_in_stock_critical"] or days_until_expiry <= THRESHOLDS["critical_stock_days"]:
         return "CRITICAL"
     
     # 2. WARNING: 50-89 days
@@ -460,6 +469,49 @@ _ESCALATION_ADVISORY = {
     "is_escalation": True,
 }
 
+_MARGIN_REVIEW_ADVISORY = {
+    "strategy_id": "price_cost_review",
+    "strategy_name": "Price and Cost Review Required",
+    "priority": 0,
+    "fit_score": 2.0,
+    "recommended_discount": 0,
+    "duration_days": 1,
+    "expected_impact_min": 0,
+    "expected_impact_max": 0,
+    "implementation_steps": [
+        "Verify that the recorded selling price and unit cost are correct.",
+        "Do not apply another discount while the selling price is at or below cost.",
+        "Review supplier cost, target margin, and a sustainable regular price.",
+        "If the item must be liquidated, record the expected loss and obtain owner approval.",
+    ],
+    "why_it_works": (
+        "The current margin cannot support the minimum discount in the available strategies. "
+        "Correcting the price or cost first prevents a promotion from increasing the loss."
+    ),
+    "risk_level_target": "ALL",
+    "is_escalation": True,
+}
+
+_EXPIRED_STOCK_ADVISORY = {
+    "strategy_id": "expired_stock_removal",
+    "strategy_name": "Expired Stock Removal Required",
+    "priority": 0,
+    "fit_score": 3.0,
+    "recommended_discount": 0,
+    "duration_days": 1,
+    "expected_impact_min": 0,
+    "expected_impact_max": 0,
+    "implementation_steps": [
+        "Remove the expired batch from sale immediately.",
+        "Verify the affected quantity using the product batch records.",
+        "Record the stock adjustment and disposal according to store policy.",
+        "Review replenishment quantities to reduce future expiry losses.",
+    ],
+    "why_it_works": "Expired inventory must not be promoted or included in sales forecasts.",
+    "risk_level_target": "CRITICAL",
+    "is_escalation": True,
+}
+
 
 def _pick_strategies_from_db(
     is_critical: bool,
@@ -468,6 +520,9 @@ def _pick_strategies_from_db(
     markup_pct: float,
     risk_level: str = "WARNING",
     is_packaged: bool = True,
+    price: float = 0,
+    cost: float = 0,
+    current_stock: int = 0,
     used_strategy_ids: Optional[List[str]] = None,
 ) -> List[Dict[str, Any]]:
     """
@@ -522,8 +577,10 @@ def _pick_strategies_from_db(
     all_exhausted = len(fresh_strategies) == 0
     strategies_to_score = fresh_strategies if not all_exhausted else filtered_strategies
 
-    is_moderate_stock = not is_high_stock  # simplified
+    is_moderate_stock = 5 <= current_stock <= 20
     bogo_margin_safe = markup_pct >= 100
+    max_non_loss_discount = ((price - cost) / price) * 100 if price > cost and price > 0 else 0
+    unsafe_discount_skipped = False
     recommended = []
     for strategy in strategies_to_score:
         conditions = strategy.get("conditions", [])
@@ -560,7 +617,12 @@ def _pick_strategies_from_db(
         if required or conditions:
             d_range = strategy.get("discount_range", (0, 10))
             d_min, d_max = d_range if isinstance(d_range, (list, tuple)) else (0, 10)
+            if not is_critical and d_min > max_non_loss_discount:
+                unsafe_discount_skipped = True
+                continue
             disc = min(d_max, max(d_min, markup_pct * 0.2))
+            if not is_critical:
+                disc = min(disc, max_non_loss_discount)
 
             exp_impact = strategy.get("expected_impact", (0, 0))
             if isinstance(exp_impact, (list, tuple)):
@@ -600,6 +662,9 @@ def _pick_strategies_from_db(
 
     # Return enough alternatives for the UI to offer meaningful choice.
     result = recommended[:3]
+
+    if not result and unsafe_discount_skipped and not is_critical:
+        return [_MARGIN_REVIEW_ADVISORY.copy()]
 
     # ── Rule 3: Escalation when all fresh strategies are exhausted ────────────
     if all_exhausted:
@@ -1071,6 +1136,7 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
 
         # Fix cost_price: use price * 0.7 when cost_price is 0
         cost_price = float(product.get("cost_price") or 0)
+        cost_is_estimated = cost_price <= 0
         if cost_price <= 0:
             cost_price = float(product["price"]) * 0.7
 
@@ -1091,6 +1157,7 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             "product_name": product["name"],
             "current_price": float(product["price"]),
             "cost_price": cost_price,
+            "cost_is_estimated": cost_is_estimated,
             "current_stock": int(product["stock"]),
             "category": product.get("category_name") or "General",
             "days_until_expiry": features["days_until_expiry"],
@@ -1109,6 +1176,7 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             "strategies": strategies,
             "is_critical_expiry": bool(is_critical),
             "is_slow_moving": bool(is_slow),
+            "is_expired": bool(features.get("is_expired")),
             "history_count": history_count,
             "date_added": date_added,
         }

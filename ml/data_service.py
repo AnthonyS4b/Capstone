@@ -409,9 +409,7 @@ class DataProcessor:
             return {
                 "days_until_expiry": max(0, days_remaining),
                 "is_expired": days_remaining < 0,
-                "is_critical_expiry": (
-                    0 <= days_remaining <= THRESHOLDS["critical_stock_days"]
-                ),
+                "is_critical_expiry": days_remaining <= THRESHOLDS["critical_stock_days"],
                 "shelf_life_days": days_remaining,
             }
         except Exception:
@@ -461,8 +459,9 @@ class DataProcessor:
                 except Exception:
                     days_in_stock = 0
 
-            cost = float(product_data.get("cost_price", 0)) or 1.0  # avoid div/0
             price = float(product_data.get("price", 0))
+            recorded_cost = float(product_data.get("cost_price", 0) or 0)
+            cost = recorded_cost if recorded_cost > 0 else (price * 0.7 if price > 0 else 1.0)
 
             features = {
                 "product_id": product_id,

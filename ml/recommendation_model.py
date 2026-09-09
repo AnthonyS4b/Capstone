@@ -43,6 +43,49 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+_MARGIN_REVIEW_ADVISORY = {
+    "strategy_id": "price_cost_review",
+    "strategy_name": "Price and Cost Review Required",
+    "priority": 0,
+    "fit_score": 2.0,
+    "recommended_discount": 0,
+    "duration_days": 1,
+    "expected_impact_min": 0,
+    "expected_impact_max": 0,
+    "implementation_steps": [
+        "Verify that the recorded selling price and unit cost are correct.",
+        "Do not apply another discount while the selling price is at or below cost.",
+        "Review supplier cost, target margin, and a sustainable regular price.",
+        "If the item must be liquidated, record the expected loss and obtain owner approval.",
+    ],
+    "why_it_works": (
+        "The current margin cannot support the minimum discount in the available strategies. "
+        "Correcting the price or cost first prevents a promotion from increasing the loss."
+    ),
+    "risk_level_target": "ALL",
+    "is_escalation": True,
+}
+
+_EXPIRED_STOCK_ADVISORY = {
+    "strategy_id": "expired_stock_removal",
+    "strategy_name": "Expired Stock Removal Required",
+    "priority": 0,
+    "fit_score": 3.0,
+    "recommended_discount": 0,
+    "duration_days": 1,
+    "expected_impact_min": 0,
+    "expected_impact_max": 0,
+    "implementation_steps": [
+        "Remove the expired batch from sale immediately.",
+        "Verify the affected quantity using the product batch records.",
+        "Record the stock adjustment and disposal according to store policy.",
+        "Review replenishment quantities to reduce future expiry losses.",
+    ],
+    "why_it_works": "Expired inventory must not be promoted or included in sales forecasts.",
+    "risk_level_target": "CRITICAL",
+    "is_escalation": True,
+}
+
 
 class RecommendationModel:
     """Machine Learning model for product sales forecasting and recommendations."""
@@ -352,6 +395,9 @@ class RecommendationModel:
         if used_strategy_ids is None:
             used_strategy_ids = []
 
+        if features.get("is_expired"):
+            return [_EXPIRED_STOCK_ADVISORY.copy()]
+
         _ESCALATION_ADVISORY = {
             "strategy_id": "escalate_reevaluate",
             "strategy_name": "Escalate & Re-evaluate",
@@ -393,6 +439,14 @@ class RecommendationModel:
             is_high_stock = features["current_stock"] > 20
             is_moderate_stock = 5 <= features["current_stock"] <= 20
             bogo_margin_safe = features["markup_percentage"] >= 100
+            unit_price = float(features.get("unit_price", 0) or 0)
+            unit_cost = float(features.get("cost_price", 0) or 0)
+            max_non_loss_discount = (
+                ((unit_price - unit_cost) / unit_price) * 100
+                if unit_price > unit_cost and unit_price > 0
+                else 0
+            )
+            unsafe_discount_skipped = False
 
             unit_str = str(product_data.get("unit") or "packaged").lower()
             is_packaged = not ("kilo" in unit_str or "gram" in unit_str)
@@ -469,10 +523,16 @@ class RecommendationModel:
                         discount_min = float(strategy.get("discount_min", 0))
                         discount_max = float(strategy.get("discount_max", 10))
 
+                    if not is_expiring_soon and discount_min > max_non_loss_discount:
+                        unsafe_discount_skipped = True
+                        continue
+
                     margin = features["markup_percentage"]
                     recommended_discount = min(
                         discount_max, max(discount_min, margin * 0.2)
                     )
+                    if not is_expiring_soon:
+                        recommended_discount = min(recommended_discount, max_non_loss_discount)
 
                     exp_impact = strategy.get("expected_impact", (0, 0))
                     if isinstance(exp_impact, (list, tuple)):
@@ -503,6 +563,9 @@ class RecommendationModel:
             # configured priority consistent across refreshes.
             recommended.sort(key=lambda x: (-x["fit_score"], x["priority"], x["strategy_id"]))
             result = recommended[:3]
+
+            if not result and unsafe_discount_skipped and not is_expiring_soon:
+                return [_MARGIN_REVIEW_ADVISORY.copy()]
 
             # ── Rule 3: Escalation when all fresh strategies are exhausted ────────
             if all_exhausted:
