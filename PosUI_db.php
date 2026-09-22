@@ -66,65 +66,46 @@ if ($toast_message) {
     <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>POS System · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/dashboardCSS.css">
     <link rel="stylesheet" href="assets/css/PosCSS.css?v=20260814-1">
 <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/transitions.css">
     <link rel="stylesheet" href="assets/css/notif.css">
     <style>
-        /* Scanner status bar */
+        /* Page-specific only. Product card, badge and stock colours live in
+           PosCSS.css; duplicating them here silently overrode that file. */
         .scanner-status-text {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
-            color: #64748b;
-            font-style: italic;
+            font-size: 12px;
+            color: var(--ink-muted);
         }
+
         .scanner-dot {
-            width: 9px;
-            height: 9px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            background: #10b981;
+            background: var(--positive);
             display: inline-block;
-            animation: scannerPulse 2s infinite;
             flex-shrink: 0;
+            animation: scannerPulse 2.4s ease-in-out infinite;
         }
+
         .scanner-dot.scanning {
-            background: #f59e0b;
+            background: var(--warning);
             animation: none;
         }
+
         @keyframes scannerPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.35; }
         }
-        
-        /* Product out of stock styling */
-        .product-card.out-of-stock {
-            opacity: 0.6;
-            filter: grayscale(0.3);
-            cursor: not-allowed;
+
+        @media (prefers-reduced-motion: reduce) {
+            .scanner-dot { animation: none; }
         }
-        .product-card.out-of-stock:hover {
-            transform: none;
-            box-shadow: none;
-        }
-        .product-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #e74c3c;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 600;
-            z-index: 1;
-        }
-        .product-stock-low { color: #e67e22; }
-        .product-stock-medium { color: #f39c12; }
-        .product-stock-high { color: #27ae60; }
     </style>
     <link rel="stylesheet" href="assets/css/responsive.css">
     <script src="assets/js/responsive.js"></script>
@@ -253,7 +234,7 @@ if ($toast_message) {
                         </div>
                     </div>
                     <div class="date-time" id="currentDateTime"></div>
-                    <button class="btn header-btn me-2" onclick="openActiveStrategiesModal()" style="background: linear-gradient(135deg, #2c5530, #8B4513); color: white; font-weight: 600; border: none; box-shadow: 0 4px 6px -1px rgba(44, 85, 48, 0.2); padding: 8px 16px; border-radius: 6px;">
+                    <button class="header-btn" onclick="openActiveStrategiesModal()">
                         <i class="fas fa-tags me-1"></i> Active Promos
                     </button>
                     <button class="refresh-btn" onclick="loadProducts()"><i class="fas fa-sync-alt"></i> Refresh</button>
@@ -291,7 +272,7 @@ if ($toast_message) {
                         </div>
                     </div>
                     
-                    <div class="products-grid" id="productsGrid" style="grid-auto-rows: auto; align-items: start;">
+                    <div class="products-grid" id="productsGrid">
                         <div class="text-center py-5">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading products...</span>
@@ -346,7 +327,7 @@ if ($toast_message) {
     <div class="modal fade" id="paymentConfirmModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #2c5530 0%, #4a6fa5 100%); color: white; padding: 10px 15px;">
+                <div class="modal-header" style="padding: 10px 15px;">
                     <h6 class="modal-title"><i class="fas fa-credit-card me-1"></i>Confirm Payment</h6>
                     <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal"></button>
                 </div>
@@ -467,7 +448,7 @@ if ($toast_message) {
     <div class="modal fade" id="activeStrategiesModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header" style="background: linear-gradient(135deg, #2c5530, #8B4513); color: white;">
+                <div class="modal-header">
                     <h5 class="modal-title"><i class="fas fa-tags me-2"></i>Active Promotional Strategies</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>

@@ -2,32 +2,25 @@
 .barcode-scanner {
     position: relative;
     margin-bottom: 12px;
-    /* Reduced from 15px */
 }
 
 .barcode-scanner input {
     width: 100%;
     padding: 10px 20px 10px 40px;
-    /* Reduced padding */
     border: 2px solid #e2e8f0;
     border-radius: 10px;
-    /* Slightly smaller radius */
     font-size: 13px;
-    /* Reduced from 14px */
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     background: #fff;
 }
 
 .barcode-scanner i {
     position: absolute;
     left: 12px;
-    /* Adjusted */
     top: 50%;
     transform: translateY(-50%);
-    color: #4a6fa5;
+    color: var(--brand);
     font-size: 14px;
-    /* Smaller icon */
 }
 
 .barcode-scanner input:focus {
@@ -44,92 +37,73 @@
 .quick-actions {
     display: flex;
     gap: 8px;
-    /* Reduced from 10px */
     margin-top: 12px;
-    /* Reduced from 15px */
     padding-top: 12px;
-    /* Reduced from 15px */
     border-top: 1px solid #e2e8f0;
 }
 
 .quick-action-btn {
     flex: 1;
     padding: 6px;
-    /* Reduced from 8px */
     border: 1px solid #e2e8f0;
     border-radius: 6px;
-    /* Smaller radius */
     background: white;
     color: #475569;
     font-size: 11px;
-    /* Reduced from 12px */
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .quick-action-btn:hover {
     background: #f1f5f9;
-    border-color: #4a6fa5;
+    border-color: var(--brand);
 }
 
 .quick-action-btn i {
     margin-right: 4px;
-    /* Reduced from 5px */
-    color: #4a6fa5;
+    color: var(--brand);
     font-size: 11px;
 }
 
 /* CRUD Modal Styles */
 .crud-form .form-group {
     margin-bottom: 12px;
-    /* Reduced from 15px */
 }
 
 .crud-form label {
     font-weight: 500;
     color: #1e293b;
     margin-bottom: 4px;
-    /* Reduced from 5px */
     display: block;
     font-size: 13px;
-    /* Smaller font */
 }
 
 .crud-form input,
 .crud-form select {
     width: 100%;
     padding: 8px;
-    /* Reduced from 10px */
     border: 2px solid #e2e8f0;
     border-radius: 6px;
-    /* Smaller radius */
     font-size: 13px;
-    /* Smaller font */
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .crud-form input:focus,
 .crud-form select:focus {
     outline: none;
-    border-color: #4a6fa5;
+    border-color: var(--brand);
 }
 
 /* Transaction History */
 .transaction-history {
     max-height: 350px;
-    /* Slightly reduced */
     overflow-y: auto;
 }
 
 .transaction-item {
     padding: 12px;
-    /* Reduced from 15px */
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    /* Smaller radius */
     margin-bottom: 8px;
-    /* Reduced from 10px */
     background: white;
 }
 
@@ -141,22 +115,18 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    /* Reduced from 10px */
     padding-bottom: 8px;
-    /* Reduced from 10px */
     border-bottom: 1px dashed #e2e8f0;
 }
 
 .transaction-id {
     font-weight: 600;
-    color: #4a6fa5;
+    color: var(--brand);
     font-size: 13px;
-    /* Smaller font */
 }
 
 .transaction-date {
     font-size: 11px;
-    /* Reduced from 12px */
     color: #64748b;
 }
 
@@ -168,7 +138,6 @@
 
 .transaction-items {
     font-size: 12px;
-    /* Reduced from 13px */
     color: #475569;
 }
 
@@ -176,15 +145,12 @@
     font-weight: 700;
     color: #2c5530;
     font-size: 14px;
-    /* Reduced from 16px */
 }
 
 .transaction-status {
     padding: 3px 6px;
-    /* Smaller padding */
     border-radius: 20px;
     font-size: 10px;
-    /* Reduced from 11px */
     font-weight: 600;
 }
 
@@ -202,12 +168,9 @@
 .stock-indicator {
     display: inline-block;
     width: 8px;
-    /* Reduced from 10px */
     height: 8px;
-    /* Reduced from 10px */
     border-radius: 50%;
     margin-right: 4px;
-    /* Reduced from 5px */
 }
 
 .stock-high {
@@ -252,8 +215,7 @@ body {
     padding: 1.2rem 0.8rem;
     box-shadow: 2px 0 20px rgba(0, 0, 0, 0.03);
     border-right: 1px solid #e2e8f0;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     overflow-y: auto;
     overflow-x: hidden;
     display: flex;
@@ -278,47 +240,86 @@ body {
 }
 
 .pos-header {
-    background: white;
-    padding: 12px 20px;
-    /* Reduced from 15px 25px */
+    background: var(--surface);
+    padding: 10px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
 }
 
 .pos-header h1 {
-    font-size: 22px;
-    /* Reduced from 24px */
-    color: #1e293b;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
     display: flex;
     align-items: center;
     gap: 8px;
-    /* Reduced from 10px */
+    margin: 0;
 }
 
 .pos-header h1 i {
-    color: #4a6fa5;
-    font-size: 20px;
-    /* Smaller icon */
+    color: var(--ink-subtle);
+    font-size: 14px;
 }
 
 .header-actions {
     display: flex;
-    gap: 12px;
-    /* Reduced from 15px */
+    gap: 8px;
     align-items: center;
 }
 
 .date-time {
-    background: #f1f5f9;
+    background: var(--canvas);
+    border: 1px solid var(--line);
     padding: 6px 12px;
-    /* Reduced from 8px 15px */
-    border-radius: 40px;
-    font-size: 13px;
-    /* Reduced from 14px */
-    color: #475569;
+    border-radius: var(--r-sm);
+    font-size: 12px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* One button shape for the whole header row. The three buttons previously
+   had three different sizes, radii and fills. */
+.pos-header .header-btn,
+.pos-header .refresh-btn,
+.pos-header .category-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.2;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.pos-header .header-btn:hover,
+.pos-header .refresh-btn:hover,
+.pos-header .category-btn:hover {
+    background: var(--canvas);
+    border-color: var(--line-strong);
+}
+
+/* Starting a new sale is the primary action up here */
+.pos-header .category-btn:last-child {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.pos-header .category-btn:last-child:hover {
+    background: var(--brand-strong);
+    border-color: var(--brand-strong);
 }
 
 /* POS Content - Split Layout */
@@ -327,9 +328,7 @@ body {
     flex: 1;
     overflow: hidden;
     padding: 15px;
-    /* Reduced from 20px */
     gap: 15px;
-    /* Reduced from 20px */
 }
 
 /* Products Section */
@@ -337,87 +336,81 @@ body {
     flex: 1.5;
     display: flex;
     flex-direction: column;
-    background: white;
-    border-radius: 16px;
-    /* Reduced from 20px */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
 }
 
 .products-header {
     padding: 15px;
-    /* Reduced from 20px */
     border-bottom: 1px solid #e2e8f0;
     background: white;
 }
 
 .search-box {
     position: relative;
-    margin-bottom: 12px;
-    /* Reduced from 15px */
+    margin-bottom: 10px;
 }
 
 .search-box i {
     position: absolute;
     left: 12px;
-    /* Reduced from 15px */
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 14px;
-    /* Smaller icon */
+    color: var(--ink-subtle);
+    font-size: 13px;
 }
 
 .search-box input {
     width: 100%;
-    padding: 10px 20px 10px 40px;
-    /* Reduced padding */
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    /* Reduced from 12px */
+    padding: 9px 14px 9px 34px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
     font-size: 13px;
-    /* Reduced from 14px */
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    color: var(--ink);
+    background: var(--surface);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-box input::placeholder {
+    color: var(--ink-subtle);
 }
 
 .search-box input:focus {
     outline: none;
-    border-color: #4a6fa5;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
 }
 
 .category-filters {
     display: flex;
-    gap: 8px;
-    /* Reduced from 10px */
+    gap: 6px;
     flex-wrap: wrap;
 }
 
-.category-btn {
-    padding: 6px 14px;
-    /* Reduced from 8px 16px */
-    border: 1px solid #e2e8f0;
-    border-radius: 30px;
-    background: white;
+.category-filters .category-btn {
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
     font-size: 12px;
-    /* Reduced from 13px */
     font-weight: 500;
-    color: #475569;
+    color: var(--ink-muted);
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.category-btn:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+.category-filters .category-btn:hover {
+    border-color: var(--line-strong);
+    color: var(--ink);
 }
 
-.category-btn.active {
-    background: #2c5530;
-    color: white;
-    border-color: #2c5530;
+.category-filters .category-btn.active {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
 }
 
 .products-grid {
@@ -425,165 +418,200 @@ body {
     padding: 12px;
     overflow-y: auto;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    grid-auto-rows: auto !important;
-    align-content: start !important;
-    align-items: start !important;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    /* Natural row height. 1fr divides the scroll container's height between
+       rows, which squeezed the cards and clipped the price. Cards still line
+       up because align-items defaults to stretch within each row. */
+    /* max-content, not auto: with auto the tracks were stretching to divide
+       the scroll container's height between them, which squeezed the cards
+       and clipped the price and stock lines. */
+    grid-auto-rows: max-content;
+    align-content: start;
     gap: 10px;
-    background: #f8fafc;
+    background: var(--canvas);
 }
 
-.product-card {
-    background: white;
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e2e8f0;
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+/* Scoped under .products-grid so these win over reco.css, which loads after
+   this file and restyles .product-card for the recommendations page. */
+.products-grid .product-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    padding: 10px;
+    box-shadow: none;
     cursor: pointer;
     position: relative;
-    display: flex !important;
-    flex-direction: column !important;
-    align-self: start !important;
-    height: auto !important;
-    min-height: unset !important;
-    max-height: none !important;
-    overflow: visible !important;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+    /* No lift on hover: cards are clicked repeatedly and in quick
+       succession, and moving targets make that harder. */
+    transform: none;
+    transition: border-color 0.12s ease, background-color 0.12s ease;
 }
 
-.product-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    border-color: #8B4513;
+.products-grid .product-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--brand);
+    background: #fbfcfb;
 }
 
-.product-card.out-of-stock {
-    opacity: 0.5;
+.products-grid .product-card:active {
+    background: var(--brand-tint);
+}
+
+/* reco.css gives .product-card a 480px floor and a gradient bar across the
+   top for the recommendations page. Neither belongs on the till. */
+.products-grid .product-card {
+    min-height: 0;
+    height: auto;
+}
+
+.products-grid .product-card::before {
+    display: none;
+}
+
+.products-grid .product-card.out-of-stock {
+    opacity: 0.55;
     cursor: not-allowed;
 }
 
-.product-card.out-of-stock:hover {
-    transform: none;
-    border-color: #e2e8f0;
+.products-grid .product-card.out-of-stock:hover {
+    border-color: var(--line);
+    background: var(--surface);
 }
 
+/* Badges: low stock is a warning, out of stock is a blocker. They were
+   previously the same red. */
 .product-badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
-    background: #e74c3c;
-    color: white;
+    top: 6px;
+    right: 6px;
+    z-index: 2;
+    background: var(--warning-tint);
+    color: var(--warning);
     font-size: 9px;
-    font-weight: 600;
-    padding: 2px 7px;
-    border-radius: 20px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.product-card.out-of-stock .product-badge {
+    background: var(--negative-tint);
+    color: var(--negative);
 }
 
 .product-icon {
-    width: 42px;
-    height: 42px;
-    min-width: 42px;
-    background: #8B4513;
-    border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    background: var(--accent-tint);
+    color: var(--accent);
+    border-radius: var(--r-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 8px;
-    color: white;
-    font-size: 19px;
+    font-size: 15px;
 }
 
-/* Product Image in POS Card */
-.product-image {
+/* A short band rather than a full square. When a product has no photo this
+   is a thin strip instead of a large empty box. */
+.products-grid .product-image {
     width: 100%;
-    aspect-ratio: 1 / 1;
-    border-radius: 10px;
+    height: 84px;
+    border-radius: var(--r-sm);
     overflow: hidden;
-    margin-bottom: 8px;
-    background: #f1f5f9;
-    position: relative;
+    background: var(--canvas);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--line-strong);
+    font-size: 18px;
+    flex-shrink: 0;
 }
 
-.product-image img {
+.products-grid .product-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 10px;
-    transition: transform 0.3s ease, opacity 0.4s ease;
     opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
-.product-image img[src] {
+.products-grid .product-image img[src] {
     opacity: 1;
 }
 
-.product-card:hover .product-image img {
-    transform: scale(1.05);
-}
-
 .product-info {
-    flex: 1;
+    /* flex-basis must stay auto. With `flex: 1` the basis is 0, so this block
+       contributed nothing to the card's intrinsic height and the price and
+       stock lines were clipped by the card's overflow. */
+    flex: 1 1 auto;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
-.product-name {
+.products-grid .product-info h3 {
     font-size: 12px;
     font-weight: 600;
-    color: #1e293b;
+    color: var(--ink);
+    margin: 0;
     line-height: 1.3;
-    margin-bottom: 2px;
+    /* Two lines, then ellipsis, so cards in a row stay the same height */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.product-info h3 {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 2px;
-    line-height: 1.3;
-}
-
-.product-category {
+/* Plain text, not the pill reco.css gives it: the price is what should
+   stand out on this screen. */
+.products-grid .product-category {
     display: block;
+    background: none;
+    padding: 0;
+    border-radius: 0;
     font-size: 10px;
-    color: #94a3b8;
-    margin-bottom: 4px;
+    font-weight: 400;
+    color: var(--ink-subtle);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.product-price {
-    font-size: 14px;
-    font-weight: 700;
-    color: #2c5530;
-    margin-bottom: 3px;
+.products-grid .product-price {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: auto;
+    padding-top: 4px;
+    font-variant-numeric: tabular-nums;
 }
 
 .product-stock {
     font-size: 10px;
-    color: #64748b;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
 }
 
 .product-stock i {
-    color: #10b981;
+    color: var(--ink-subtle);
     margin-right: 3px;
-    font-size: 10px;
+    font-size: 9px;
 }
 
-.product-stock-low {
-    color: #dc2626;
-    font-weight: 600;
-}
+.product-stock-low    { color: var(--negative); font-weight: 600; }
+.product-stock-medium { color: var(--warning);  font-weight: 600; }
+.product-stock-high   { color: var(--ink-muted); }
 
-.product-stock-medium {
-    color: #f59e0b;
-    font-weight: 600;
-}
-
-.product-stock-high {
-    color: #10b981;
-    font-weight: 600;
-}
+.product-stock-low i    { color: var(--negative); }
+.product-stock-medium i { color: var(--warning); }
 
 .product-sku {
     display: none;
@@ -592,19 +620,18 @@ body {
 /* Cart Section */
 .cart-section {
     flex: 0.9;
-    background: white;
-    border-radius: 16px;
-    /* Reduced from 20px */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--line);
 }
 
 .cart-header {
     padding: 15px;
-    /* Reduced from 20px */
     border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
@@ -612,35 +639,31 @@ body {
 }
 
 .cart-header h2 {
-    font-size: 18px;
-    /* Reduced from 20px */
-    color: #1e293b;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
     display: flex;
     align-items: center;
     gap: 8px;
-    /* Reduced from 10px */
+    margin: 0;
 }
 
 .cart-header h2 i {
-    color: #8B4513;
-    font-size: 16px;
-    /* Smaller icon */
+    color: var(--ink-subtle);
+    font-size: 13px;
 }
 
 .clear-cart {
     padding: 4px 10px;
-    /* Reduced from 6px 12px */
     background: #fee2e2;
     color: #991b1b;
     border: none;
     border-radius: 6px;
-    /* Smaller radius */
     font-size: 12px;
-    /* Reduced from 13px */
     font-weight: 500;
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .clear-cart:hover {
@@ -650,7 +673,6 @@ body {
 .cart-items {
     flex: 1;
     padding: 15px;
-    /* Reduced from 20px */
     overflow-y: auto;
     background: #f8fafc;
 }
@@ -658,32 +680,24 @@ body {
 .cart-item {
     background: white;
     border-radius: 10px;
-    /* Reduced from 12px */
     padding: 10px;
-    /* Reduced from 12px */
     margin-bottom: 8px;
-    /* Reduced from 10px */
     border: 1px solid #e2e8f0;
     display: flex;
     gap: 10px;
-    /* Reduced from 12px */
     position: relative;
 }
 
 .cart-item-icon {
     width: 35px;
-    /* Reduced from 40px */
     height: 35px;
-    /* Reduced from 40px */
     background: #8B4513;
     border-radius: 8px;
-    /* Smaller radius */
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-size: 18px;
-    /* Reduced from 20px */
 }
 
 .cart-item-thumb {
@@ -707,47 +721,36 @@ body {
     font-weight: 600;
     color: #1e293b;
     margin-bottom: 2px;
-    /* Reduced from 3px */
     font-size: 13px;
-    /* Reduced from 14px */
     line-height: 1.3;
 }
 
 .cart-item-price {
     font-size: 14px;
-    /* Reduced from 16px */
     font-weight: 700;
     color: #2c5530;
     margin-bottom: 3px;
-    /* Reduced from 5px */
 }
 
 .cart-item-quantity {
     display: flex;
     align-items: center;
     gap: 6px;
-    /* Reduced from 8px */
     margin-top: 3px;
-    /* Reduced from 5px */
 }
 
 .qty-btn {
     width: 22px;
-    /* Reduced from 24px */
     height: 22px;
-    /* Reduced from 24px */
     border: 1px solid #e2e8f0;
     background: white;
     border-radius: 4px;
-    /* Smaller radius */
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     font-size: 10px;
-    /* Smaller font */
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .qty-btn:hover {
@@ -759,22 +762,17 @@ body {
 .qty-value {
     font-weight: 600;
     min-width: 20px;
-    /* Reduced from 25px */
     text-align: center;
     font-size: 13px;
-    /* Smaller font */
 }
 
 .remove-item {
     position: absolute;
     top: 6px;
-    /* Reduced from 8px */
     right: 6px;
-    /* Reduced from 8px */
     color: #94a3b8;
     cursor: pointer;
     font-size: 11px;
-    /* Reduced from 12px */
     padding: 2px;
 }
 
@@ -784,7 +782,6 @@ body {
 
 .cart-summary {
     padding: 15px;
-    /* Reduced from 20px */
     border-top: 1px solid #e2e8f0;
     background: white;
 }
@@ -793,60 +790,53 @@ body {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8px;
-    /* Reduced from 12px */
     font-size: 13px;
-    /* Reduced from 14px */
     color: #475569;
 }
 
 .summary-row.total {
-    font-size: 18px;
-    /* Reduced from 20px */
-    font-weight: 700;
-    color: #1e293b;
-    margin-top: 12px;
-    /* Reduced from 15px */
-    padding-top: 12px;
-    /* Reduced from 15px */
-    border-top: 2px dashed #e2e8f0;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
 }
 
 .payment-section {
     margin-top: 12px;
-    /* Reduced from 15px */
 }
 
 .payment-input {
     display: flex;
     align-items: center;
     gap: 8px;
-    /* Reduced from 10px */
     margin-bottom: 12px;
-    /* Reduced from 15px */
 }
 
 .payment-input span {
     font-weight: 600;
     color: #1e293b;
     font-size: 13px;
-    /* Smaller font */
 }
 
 .payment-input input {
     flex: 1;
-    padding: 8px 10px;
-    /* Reduced from 10px 12px */
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    /* Smaller radius */
+    padding: 9px 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
     font-size: 14px;
-    /* Reduced from 16px */
     font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .payment-input input:focus {
     outline: none;
-    border-color: #4a6fa5;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
 }
 
 .quick-cash-wrap {
@@ -870,16 +860,17 @@ body {
 }
 
 .quick-cash-btn {
-    padding: 7px 4px;
-    border: 1px solid #cbd5e1;
-    border-radius: 7px;
-    background: #fff;
-    color: #2c5530;
+    padding: 9px 4px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--ink);
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     line-height: 1.1;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    font-variant-numeric: tabular-nums;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .quick-cash-btn:hover,
@@ -900,45 +891,37 @@ body {
 }
 
 .change-amount {
-    background: #f1f5f9;
-    padding: 10px;
-    /* Reduced from 12px */
-    border-radius: 8px;
-    /* Smaller radius */
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    padding: 9px;
+    border-radius: var(--r-sm);
     text-align: center;
-    font-size: 16px;
-    /* Reduced from 18px */
-    font-weight: 700;
-    color: #1e293b;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
     margin-bottom: 12px;
-    /* Reduced from 15px */
+    font-variant-numeric: tabular-nums;
 }
 
 .checkout-btn {
     width: 100%;
-    padding: 12px;
-    /* Reduced from 15px */
-    background: linear-gradient(135deg, #2c5530 0%, #3e7343 100%);
-    color: white;
+    padding: 13px;
+    background: var(--brand);
+    color: #fff;
     border: none;
-    border-radius: 10px;
-    /* Reduced from 12px */
+    border-radius: var(--r-sm);
     font-weight: 600;
     font-size: 14px;
-    /* Reduced from 16px */
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    /* Reduced from 10px */
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease;
 }
 
-.checkout-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(44, 85, 48, 0.3);
+.checkout-btn:hover:not(:disabled) {
+    background: var(--brand-strong);
 }
 
 .checkout-btn:disabled {
@@ -957,9 +940,7 @@ body {
 .toast {
     animation: slideIn 0.3s ease-in-out;
     min-width: 280px;
-    /* Slightly smaller */
     font-size: 13px;
-    /* Smaller font */
 }
 
 @keyframes slideIn {
@@ -997,51 +978,42 @@ body {
 .empty-cart {
     text-align: center;
     padding: 30px 15px;
-    /* Reduced from 40px 20px */
     color: #94a3b8;
 }
 
 .empty-cart i {
     font-size: 40px;
-    /* Reduced from 48px */
     margin-bottom: 10px;
-    /* Reduced from 15px */
 }
 
 .empty-cart h4 {
     font-size: 16px;
-    /* Smaller */
     margin-bottom: 5px;
 }
 
 .empty-cart p {
     font-size: 12px;
-    /* Smaller */
 }
 
 /* Modal Styles */
 .modal-content {
     border-radius: 16px;
-    /* Reduced from 20px */
     border: none;
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #2c5530 0%, #8B4513 100%);
+    background: var(--brand);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 15px;
-    /* Reduced from 20px */
 }
 
 .modal-header h5 {
     font-size: 18px;
-    /* Smaller */
 }
 
 .modal-body {
     padding: 20px;
-    /* Reduced from 25px */
 }
 
 /* RECEIPT STYLES - CLEAN AND SIMPLE */
@@ -1055,7 +1027,6 @@ body {
     border-radius: 0 !important;
     line-height: 1.4;
     font-size: 13px;
-    /* Smaller font */
 }
 
 .receipt-details div {
@@ -1068,41 +1039,36 @@ body {
 }
 
 /* Dashboard link - matches sidebar button style */
+/* A link to another page, so it reads as a nav item. It was a solid brown
+   block, which made it look like the page you are already on. */
 .dashboard-link {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    /* Reduced from 0.85rem */
     padding: 0.6rem 1rem;
-    /* Reduced padding */
     margin: 0.2rem 0.4rem;
-    /* Reduced margin */
-    background: #8B4513;
-    color: white;
+    background: transparent;
+    color: var(--ink);
     border: none;
-    border-radius: 12px;
-    /* Smaller radius */
+    border-radius: var(--r-md);
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, color 0.15s ease;
     width: calc(100% - 0.8rem);
     font-weight: 500;
     text-decoration: none;
     font-size: 0.9rem;
-    /* Smaller font */
 }
 
 .dashboard-link:hover {
-    background: #2c5530;
-    color: white;
+    background: var(--canvas);
+    color: var(--ink);
 }
 
 .dashboard-link i {
     width: 20px;
-    /* Reduced from 24px */
     text-align: center;
     font-size: 1.1rem;
-    /* Reduced from 1.2rem */
+    color: var(--ink-subtle);
 }
 
 /* Sidebar collapsed state for dashboard link */
@@ -1113,13 +1079,11 @@ body {
 .sidebar.collapsed .dashboard-link {
     justify-content: center;
     padding: 0.6rem 0;
-    /* Reduced padding */
 }
 
 .sidebar.collapsed .dashboard-link i {
     margin: 0;
     font-size: 1.3rem;
-    /* Reduced from 1.5rem */
 }
 
 /* User info in sidebar - matches dashboard style */
@@ -1127,20 +1091,15 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    /* Reduced from 12px */
     padding: 0.6rem 1rem;
-    /* Reduced padding */
     margin: 0.4rem 0.4rem 0.8rem 0.4rem;
-    /* Reduced margins */
     background: #f1f5f9;
     border-radius: 12px;
-    /* Smaller radius */
 }
 
 .sidebar.collapsed .sidebar-user-info {
     justify-content: center;
     padding: 0.6rem;
-    /* Reduced padding */
 }
 
 .sidebar.collapsed .user-details-small {
@@ -1149,47 +1108,37 @@ body {
 
 .user-avatar-small {
     width: 35px;
-    /* Reduced from 40px */
     height: 35px;
-    /* Reduced from 40px */
     background: #8B4513;
     border-radius: 8px;
-    /* Smaller radius */
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: 600;
     font-size: 14px;
-    /* Reduced from 16px */
 }
 
 .user-details-small h4 {
     font-size: 13px;
-    /* Reduced from 14px */
     margin: 0;
     font-weight: 600;
 }
 
 .user-details-small span {
     font-size: 11px;
-    /* Reduced from 12px */
     opacity: 0.7;
 }
 
 .refresh-btn {
     margin-left: 8px;
-    /* Reduced from 10px */
     padding: 4px 8px;
-    /* Reduced from 5px 10px */
     background: #8B4513;
     color: white;
     border: none;
     border-radius: 4px;
-    /* Smaller radius */
     cursor: pointer;
     font-size: 12px;
-    /* Smaller font */
 }
 
 .refresh-btn:hover {
@@ -1262,7 +1211,6 @@ body {
     border: none !important;
     line-height: 1.4 !important;
     font-size: 13px !important;
-    /* Smaller font */
 }
 
 #receiptDetails div {
@@ -1308,8 +1256,7 @@ body {
     border: 2px solid #e2e8f0;
     color: #1e293b;
     background: white;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 #paymentConfirmModal .btn-outline-success:hover,
@@ -1323,8 +1270,7 @@ body {
     border: 2px solid #e2e8f0;
     color: #1e293b;
     background: white;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 #paymentConfirmModal .btn-outline-primary:hover,
@@ -1341,7 +1287,7 @@ body {
 }
 
 #paymentConfirmModal .form-control:focus {
-    border-color: #4a6fa5;
+    border-color: var(--brand);
     box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
 }
 
@@ -1413,8 +1359,7 @@ body {
     border-radius: 12px;
     background: #f8fafc;
     padding: 10px;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 #qrCodeContainer:hover {
@@ -1427,7 +1372,7 @@ body {
     height: 3rem;
     border-width: 0.25rem;
     border-color: #e2e8f0;
-    border-top-color: #4a6fa5;
+    border-top-color: var(--brand);
     animation: spin 1s linear infinite;
 }
 

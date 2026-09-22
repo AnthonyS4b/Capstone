@@ -36,17 +36,26 @@ $pdo = getDBConnection();
 // ── Employee-scoped stats (today only, tied to this cashier) ──────────────────
 
 // Daily sales by this cashier
+// Joining `sales` and `transaction_items` here would repeat each
+// transaction once per line item and once per sale row, multiplying the
+// totals. Filter with EXISTS and total the line items in a subquery instead.
 $dailyStmt = $pdo->prepare("
     SELECT
-        COALESCE(SUM(t.total_amount), 0)           AS daily_sales,
-        COUNT(DISTINCT t.id)                        AS orders_today,
-        COALESCE(SUM(ti.quantity), 0)               AS items_sold
+        COALESCE(SUM(t.total_amount), 0) AS daily_sales,
+        COUNT(*)                         AS orders_today,
+        COALESCE(SUM((
+            SELECT COALESCE(SUM(ti.quantity), 0)
+            FROM transaction_items ti
+            WHERE ti.transaction_id = t.id
+        )), 0)                           AS items_sold
     FROM transactions t
-    JOIN sales s          ON s.transaction_id = t.id
-    JOIN transaction_items ti ON ti.transaction_id = t.id
     WHERE DATE(t.created_at) = CURDATE()
-      AND s.cashier_name = :name
-      AND s.status = 'completed'
+      AND EXISTS (
+          SELECT 1 FROM sales s
+          WHERE s.transaction_id = t.id
+            AND s.cashier_name = :name
+            AND s.status = 'completed'
+      )
 ");
 $dailyStmt->execute([':name' => $first_name . ' ' . $last_name]);
 $dailyRow   = $dailyStmt->fetch(PDO::FETCH_ASSOC);
@@ -85,7 +94,7 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
     <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Dashboard · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="assets/css/dashboardCSS.css">
     <link rel="stylesheet" href="assets/css/usermod.css">
@@ -161,19 +170,16 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="main-content">
 
         <!-- Welcome Banner -->
-        <div class="welcome-banner" style="position:relative;background-color:#2c5530;overflow:visible;">
-            <img src="assets/images/brand-logos.svg" alt="" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:.15;pointer-events:none;">
-            <div style="position:relative;z-index:2;width:100%;display:flex;justify-content:space-between;align-items:center;">
+        <div class="welcome-banner dashboard-banner">
+            <img src="assets/images/brand-logos.svg" alt="" aria-hidden="true" class="welcome-banner-art">
+            <div class="welcome-banner-inner">
                 <div class="welcome-text">
-                    <h1 style="font-size:22px!important;margin-bottom:3px;">
-                        <i class="fas fa-paw"></i>
-                        Welcome back, <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>!
-                    </h1>
-                    <p style="font-size:13px!important;opacity:.9;">
+                    <h1>Welcome back, <?php echo htmlspecialchars($first_name); ?></h1>
+                    <p>
                         <?php echo date('l, F j, Y'); ?> · <?php echo htmlspecialchars($position ?: ucfirst($role)); ?>
                     </p>
                 </div>
-                <div class="d-flex align-items-center gap-3">
+                <div class="welcome-banner-actions">
                     <!-- Notification Bell -->
                     <div class="notif-bell-wrap" id="notifBellWrap">
                         <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notifications">
@@ -196,8 +202,8 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
-                    <div class="date-display" style="font-size:14px!important;padding:8px 16px;">
-                        <i class="fas fa-calendar-alt me-2"></i><?php echo date('M d, Y'); ?>
+                    <div class="date-display">
+                        <i class="fas fa-calendar-alt"></i><?php echo date('M d, Y'); ?>
                     </div>
                 </div>
             </div>
@@ -236,41 +242,23 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
 
         <!-- Stats (employee-scoped: today only) -->
         <div class="stats-grid">
+            <?php
+            $emp_cards = [
+                ['tone' => 'revenue',   'icon' => 'fa-peso-sign',    'label' => 'My Sales Today',   'value' => '₱' . number_format($daily_sales),      'note' => date('M d, Y')],
+                ['tone' => 'customers', 'icon' => 'fa-users',        'label' => 'Customers Today',  'value' => number_format($customers_today),         'note' => 'Transactions served'],
+                ['tone' => 'average',   'icon' => 'fa-boxes-stacked','label' => 'Items Sold Today', 'value' => number_format($items_sold),              'note' => 'Units processed'],
+                ['tone' => 'orders',    'icon' => 'fa-receipt',      'label' => 'Orders Today',     'value' => number_format($orders_today),            'note' => 'Completed transactions'],
+            ];
+            foreach ($emp_cards as $card): ?>
             <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-peso-sign"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">My Sales Today</div>
-                    <div class="stat-value">₱<?php echo number_format($daily_sales); ?></div>
-                    <div class="stat-change"><i class="fas fa-calendar-day"></i> <?php echo date('M d, Y'); ?></div>
+                <div class="stat-head">
+                    <span class="stat-label"><?php echo $card['label']; ?></span>
+                    <span class="stat-icon <?php echo $card['tone']; ?>"><i class="fa-solid <?php echo $card['icon']; ?>"></i></span>
                 </div>
+                <div class="stat-value"><?php echo $card['value']; ?></div>
+                <div class="stat-change"><span><?php echo htmlspecialchars($card['note']); ?></span></div>
             </div>
-
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-users"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Customers Today</div>
-                    <div class="stat-value"><?php echo number_format($customers_today); ?></div>
-                    <div class="stat-change"><i class="fas fa-receipt"></i> Transactions served</div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-boxes-stacked"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Items Sold Today</div>
-                    <div class="stat-value"><?php echo number_format($items_sold); ?></div>
-                    <div class="stat-change"><i class="fas fa-box"></i> Units processed</div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-shopping-cart"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Orders Today</div>
-                    <div class="stat-value"><?php echo number_format($orders_today); ?></div>
-                    <div class="stat-change"><i class="fas fa-check-circle"></i> Completed transactions</div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
 
         <!-- My Transactions Table -->

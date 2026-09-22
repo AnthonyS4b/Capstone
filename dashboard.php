@@ -37,73 +37,94 @@ $is_owner = ($role === 'owner');
 
 $pdo = getDBConnection();
 
-// Sales summary
+// ─── FIGURES ──────────────────────────────────────────────────────────────
+// A transaction counts unless it has a voided sale against it. This is
+// written as NOT EXISTS rather than a JOIN on `sales` on purpose: several
+// transactions share id = 0 (the table has no primary key), and a join would
+// multiply those rows into every SUM.
+$notVoided = "NOT EXISTS (SELECT 1 FROM sales s WHERE s.transaction_id = t.id AND s.status = 'voided')";
+
 $salesStmt = $pdo->query("
     SELECT
-        COALESCE(SUM(CASE WHEN DATE(t.created_at) = CURDATE() THEN t.total_amount END), 0)                       AS today,
-        COALESCE(SUM(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN t.total_amount END), 0)      AS week,
-        COALESCE(SUM(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN t.total_amount END), 0)     AS month,
-        COALESCE(SUM(CASE WHEN YEAR(t.created_at) = YEAR(NOW()) THEN t.total_amount END), 0)                     AS year,
-        COUNT(DISTINCT CASE WHEN DATE(t.created_at) = CURDATE() THEN t.id END)                                   AS orders_today,
-        COALESCE(AVG(t.total_amount), 0)                                                                         AS avg_order
+        COALESCE(SUM(CASE WHEN DATE(t.created_at) = CURDATE() THEN t.total_amount END), 0)                   AS today,
+        COALESCE(SUM(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)  THEN t.total_amount END), 0) AS week,
+        COALESCE(SUM(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN t.total_amount END), 0) AS month,
+        COALESCE(SUM(CASE WHEN YEAR(t.created_at) = YEAR(NOW())                 THEN t.total_amount END), 0) AS year,
+
+        -- Count rows, not DISTINCT ids: duplicate ids are real, separate sales
+        SUM(CASE WHEN DATE(t.created_at) = CURDATE() THEN 1 ELSE 0 END)                                      AS orders_today,
+        SUM(CASE WHEN DATE(t.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) THEN 1 ELSE 0 END)            AS orders_yesterday,
+        COUNT(*)                                                                                             AS total_transactions,
+        SUM(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END)                      AS transactions_week,
+
+        COALESCE(SUM(CASE WHEN DATE(t.created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)
+                     THEN t.total_amount END), 0)                                                            AS sales_yesterday,
+
+        -- Average order value over a stated window, so the figure and the
+        -- trend beneath it describe the same thing
+        COALESCE(AVG(CASE WHEN t.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+                     THEN t.total_amount END), 0)                                                            AS avg_order_30d,
+        COALESCE(AVG(CASE WHEN t.created_at <  DATE_SUB(NOW(), INTERVAL 30 DAY)
+                           AND t.created_at >= DATE_SUB(NOW(), INTERVAL 60 DAY)
+                     THEN t.total_amount END), 0)                                                            AS avg_order_prev30
     FROM transactions t
-    LEFT JOIN sales s ON s.transaction_id = t.id
-    WHERE s.status IS NULL OR s.status != 'voided'
+    WHERE $notVoided
 ");
-$salesRow = $salesStmt->fetch(PDO::FETCH_ASSOC);
-// Total customers = distinct transactions (walk-in POS)
-$custStmt = $pdo->query("
-    SELECT COUNT(DISTINCT t.id) AS total_customers
-    FROM transactions t
-    LEFT JOIN sales s ON s.transaction_id = t.id
-    WHERE s.status IS NULL OR s.status != 'voided'
-");
-$custRow = $custStmt->fetch(PDO::FETCH_ASSOC);
+$salesRow = $salesStmt->fetch(PDO::FETCH_ASSOC) ?: [];
 
 $sales_data = [
-    'today'        => (float)$salesRow['today'],
-    'week'         => (float)$salesRow['week'],
-    'month'        => (float)$salesRow['month'],
-    'year'         => (float)$salesRow['year'],
-    'orders_today' => (int)$salesRow['orders_today'],
-    'customers'    => (int)$custRow['total_customers'],
-    'avg_order'    => (float)$salesRow['avg_order'],
+    'today'        => (float)($salesRow['today'] ?? 0),
+    'week'         => (float)($salesRow['week'] ?? 0),
+    'month'        => (float)($salesRow['month'] ?? 0),
+    'year'         => (float)($salesRow['year'] ?? 0),
+    'orders_today' => (int)($salesRow['orders_today'] ?? 0),
+    'transactions' => (int)($salesRow['total_transactions'] ?? 0),
+    'avg_order'    => (float)($salesRow['avg_order_30d'] ?? 0),
 ];
 
-// Top 5 selling products (last 30 days)
-$topStmt = $pdo->query("
-    SELECT
-        p.name,
-        c.name  AS category,
-        SUM(ti.quantity)        AS sales,
-        SUM(ti.quantity * ti.price) AS revenue
-    FROM transaction_items ti
-    JOIN products      p ON p.id = ti.product_id
-    LEFT JOIN categories c ON c.id = p.category_id
-    JOIN transactions  t ON t.id = ti.transaction_id
-    JOIN sales         s ON s.transaction_id = t.id
-    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-      AND s.status = 'completed'
-    GROUP BY p.id
-    ORDER BY sales DESC
-    LIMIT 5
-");
-$top_products = $topStmt->fetchAll(PDO::FETCH_ASSOC);
+/**
+ * Compare a current figure against a baseline and describe the movement.
+ * When there is no baseline the card says so rather than inventing a number,
+ * which is what the hard-coded "+12% from yesterday" strings used to do.
+ *
+ * $label is the comparison window, e.g. "vs yesterday".
+ */
+function trend_percent($current, $baseline, $label) {
+    $baseline = (float)$baseline;
+    $current  = (float)$current;
 
-// 5 most recent transactions
-$recentStmt = $pdo->query("
-    SELECT
-        CONCAT('#TRX-', LPAD(t.id, 5, '0'))    AS id,
-        COALESCE(s.cashier_name, 'N/A')        AS customer,
-        t.total_amount                          AS amount,
-        COALESCE(s.status, 'completed')        AS status,
-        DATE(t.created_at)                      AS date
-    FROM transactions t
-    LEFT JOIN sales s ON s.transaction_id = t.id
-    ORDER BY t.created_at DESC
-    LIMIT 5
-");
-$recent_orders = $recentStmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($baseline <= 0) {
+        return ['dir' => 'flat', 'text' => 'No prior data to compare'];
+    }
+
+    $change = (($current - $baseline) / $baseline) * 100;
+    $dir    = $change >= 0.05 ? 'up' : ($change <= -0.05 ? 'down' : 'flat');
+
+    if ($dir === 'flat') {
+        return ['dir' => 'flat', 'text' => 'Unchanged ' . $label];
+    }
+
+    $sign = $change > 0 ? '+' : '\u2212';
+    return ['dir' => $dir, 'text' => $sign . number_format(abs($change), 1) . '% ' . $label];
+}
+
+/**
+ * Describe a plain count over a window, e.g. transactions in the last 7 days.
+ */
+function trend_count($count, $label) {
+    $count = (int)$count;
+    if ($count === 0) {
+        return ['dir' => 'flat', 'text' => 'None ' . $label];
+    }
+    return ['dir' => 'up', 'text' => '+' . number_format($count) . ' ' . $label];
+}
+
+$trends = [
+    'sales'     => trend_percent($sales_data['today'], $salesRow['sales_yesterday'] ?? 0, 'vs yesterday'),
+    'orders'    => trend_percent($sales_data['orders_today'], $salesRow['orders_yesterday'] ?? 0, 'vs yesterday'),
+    'customers' => trend_count($salesRow['transactions_week'] ?? 0, 'in the last 7 days'),
+    'avg_order' => trend_percent($salesRow['avg_order_30d'] ?? 0, $salesRow['avg_order_prev30'] ?? 0, 'vs prior 30 days'),
+];
 
 // Low-stock alerts (stock < 10)
 $alertStmt = $pdo->query("
@@ -121,18 +142,22 @@ $alertStmt = $pdo->query("
 ");
 $inventory_alerts = $alertStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Category sales breakdown (last 30 days)
+// Category sales breakdown (last 30 days).
+// Line items carry their own created_at, so there is no need to join
+// transactions or sales here - joining them multiplied the revenue of every
+// transaction that shares id = 0, inflating this panel roughly fiftyfold.
 $catStmt = $pdo->query("
     SELECT
-        COALESCE(c.name, 'Uncategorised') AS category,
+        COALESCE(c.name, 'Uncategorised')        AS category,
         COALESCE(SUM(ti.quantity * ti.price), 0) AS revenue
     FROM transaction_items ti
-    JOIN products p     ON p.id = ti.product_id
+    JOIN products p        ON p.id = ti.product_id
     LEFT JOIN categories c ON c.id = p.category_id
-    JOIN transactions t    ON t.id = ti.transaction_id
-    JOIN sales s           ON s.transaction_id = t.id
-    WHERE s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-      AND s.status = 'completed'
+    WHERE ti.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      AND NOT EXISTS (
+          SELECT 1 FROM sales s
+          WHERE s.transaction_id = ti.transaction_id AND s.status = 'voided'
+      )
     GROUP BY c.id
     ORDER BY revenue DESC
     LIMIT 5
@@ -168,8 +193,11 @@ if ($is_owner) {
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
     <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Dashboard · Espenida's Pet & Poultry Supply</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="assets/css/dashboardCSS.css">
@@ -178,12 +206,6 @@ if ($is_owner) {
     <link rel="stylesheet" href="assets/css/notif.css">
     <link rel="stylesheet" href="assets/css/responsive.css">
     <script src="assets/js/responsive.js"></script>
-    <style>
-        .btn-brown { background-color: #8B4513 !important; border-color: #8B4513 !important; color: #fff !important; }
-        .btn-brown:hover { background-color: #6B3410 !important; border-color: #6B3410 !important; }
-        .text-brown { color: #8B4513 !important; }
-        .border-brown { border-color: #8B4513 !important; }
-    </style>
 </head>
 <body>
     <button class="mobile-menu-btn" id="mobileMenuBtn">
@@ -266,20 +288,17 @@ if ($is_owner) {
     
     <!-- MAIN CONTENT AREA -->
     <div class="main-content">
-        <!-- Welcome Banner (unchanged) -->
-        <div class="welcome-banner" style="position: relative; background-color: #2c5530; overflow: visible;">
-            <img src="assets/images/brand-logos.svg" alt="Brand Logos" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.15; pointer-events: none;">
-            <div style="position: relative; z-index: 2; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        <!-- Welcome banner -->
+        <div class="welcome-banner dashboard-banner">
+            <img src="assets/images/brand-logos.svg" alt="" aria-hidden="true" class="welcome-banner-art">
+            <div class="welcome-banner-inner">
                 <div class="welcome-text">
-                    <h1 style="font-size: 22px !important; margin-bottom: 3px;">
-                        <i class="fas fa-paw"></i>
-                        Welcome back, <?php echo htmlspecialchars($first_name . ' ' . $last_name); ?>!
-                    </h1>
-                    <p style="font-size: 13px !important; opacity: 0.9;">
+                    <h1>Welcome back, <?php echo htmlspecialchars($first_name); ?></h1>
+                    <p>
                         <?php echo date('l, F j, Y'); ?> · <?php echo htmlspecialchars($position ?: ucfirst($role)); ?>
                     </p>
                 </div>
-                <div class="d-flex align-items-center gap-3">
+                <div class="welcome-banner-actions">
                     <!-- Notification Bell -->
                     <div class="notif-bell-wrap" id="notifBellWrap">
                         <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notifications">
@@ -303,14 +322,14 @@ if ($is_owner) {
                             </div>
                         </div>
                     </div>
-                    <div class="date-display" style="font-size: 14px !important; padding: 8px 16px;">
-                        <i class="fas fa-calendar-alt me-2"></i><?php echo date('M d, Y'); ?>
+                    <div class="date-display">
+                        <i class="fas fa-calendar-alt"></i><?php echo date('M d, Y'); ?>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- NEW: Quick Action Buttons -->
+        <!-- Quick actions -->
         <div class="quick-actions-grid">
             <a href="PosUI_db.php" class="quick-action-card">
                 <div class="quick-action-icon">
@@ -339,7 +358,7 @@ if ($is_owner) {
                     <small class="quick-action-desc">Analytics</small>
                 </div>
             </a>
-             <a href="archive_products.php" class="quick-action-card" onclick="openStockModal()">
+             <a href="archive_products.php" class="quick-action-card">
                 <div class="quick-action-icon">
                     <i class="fa-solid fa-box-archive"></i>
                 </div>
@@ -350,46 +369,34 @@ if ($is_owner) {
             </a>
         </div>
          
-        <!-- Stats Grid (unchanged) -->
+        <!-- Key figures -->
         <div class="stats-grid">
+            <?php
+            $stat_cards = [
+                ['key' => 'sales',     'tone' => 'revenue',   'icon' => 'fa-peso-sign',  'label' => "Today's Sales",    'value' => '₱' . number_format($sales_data['today'])],
+                ['key' => 'orders',    'tone' => 'orders',    'icon' => 'fa-cart-shopping', 'label' => 'Orders Today',     'value' => number_format($sales_data['orders_today'])],
+                ['key' => 'customers', 'tone' => 'customers', 'icon' => 'fa-receipt',    'label' => 'Total Transactions', 'value' => number_format($sales_data['transactions'])],
+                ['key' => 'avg_order', 'tone' => 'average',   'icon' => 'fa-chart-line', 'label' => 'Avg. Order Value', 'value' => '₱' . number_format($sales_data['avg_order'])],
+            ];
+            $trend_icon = ['up' => 'fa-arrow-trend-up', 'down' => 'fa-arrow-trend-down', 'flat' => 'fa-minus'];
+            foreach ($stat_cards as $card):
+                $t = $trends[$card['key']];
+            ?>
             <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-chart-line"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Today's Sales</div>
-                    <div class="stat-value">₱<?php echo number_format($sales_data['today']); ?></div>
-                    <div class="stat-change"><i class="fas fa-arrow-up"></i> +12% from yesterday</div>
+                <div class="stat-head">
+                    <span class="stat-label"><?php echo $card['label']; ?></span>
+                    <span class="stat-icon <?php echo $card['tone']; ?>"><i class="fa-solid <?php echo $card['icon']; ?>"></i></span>
+                </div>
+                <div class="stat-value"><?php echo $card['value']; ?></div>
+                <div class="stat-change is-<?php echo $t['dir']; ?>">
+                    <i class="fa-solid <?php echo $trend_icon[$t['dir']]; ?>"></i>
+                    <span><?php echo htmlspecialchars($t['text']); ?></span>
                 </div>
             </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-shopping-cart"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Orders Today</div>
-                    <div class="stat-value"><?php echo $sales_data['orders_today']; ?></div>
-                    <div class="stat-change"><i class="fas fa-arrow-up"></i> +5% from yesterday</div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-users"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Total Customers</div>
-                    <div class="stat-value"><?php echo number_format($sales_data['customers']); ?></div>
-                    <div class="stat-change"><i class="fas fa-arrow-up"></i> +24 new this week</div>
-                </div>
-            </div>
-            
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-receipt"></i></div>
-                <div class="stat-info">
-                    <div class="stat-label">Avg. Order Value</div>
-                    <div class="stat-value">₱<?php echo number_format($sales_data['avg_order']); ?></div>
-                    <div class="stat-change"><i class="fas fa-arrow-up"></i> +₱12 from last week</div>
-                </div>
-            </div>
+            <?php endforeach; ?>
         </div>
-        
-        <!-- Charts Grid (unchanged) -->
+
+        <!-- Charts -->
         <div class="dashboard-grid">
             <div class="chart-container">
                 <div class="chart-header">
@@ -412,29 +419,37 @@ if ($is_owner) {
             </div>
         </div>
         
-        <!-- Category Breakdown and Inventory Alerts (unchanged) -->
+        <!-- Category performance and stock alerts -->
         <div class="dashboard-grid">
             <div class="chart-container scrollable-panel">
                 <div class="chart-header">
                     <div class="chart-title"><i class="fas fa-chart-simple"></i> Category Performance</div>
                 </div>
-                <div class="scrollable-content" style="margin-top: 15px;">
+                <div class="scrollable-content">
                     <?php 
                     $colors = ['#8B4513', '#2c5530', '#C47A3A', '#416937', '#d4a382'];
+                    if (!$category_sales): ?>
+                        <div class="panel-empty">
+                            <i class="fa-solid fa-chart-simple"></i>
+                            <p>No sales recorded in the last 30 days.</p>
+                        </div>
+                    <?php endif;
                     foreach ($category_sales as $index => $category): 
                     ?>
-                    <div class="category-item">
-                        <div class="category-name">
-                            <span class="category-color" style="background: <?php echo $colors[$index % count($colors)]; ?>"></span>
-                            <?php echo htmlspecialchars($category['category']); ?>
+                    <div class="category-row">
+                        <div class="category-item">
+                            <span class="category-name">
+                                <span class="category-color" style="--swatch: <?php echo $colors[$index % count($colors)]; ?>"></span>
+                                <?php echo htmlspecialchars($category['category']); ?>
+                            </span>
+                            <span class="category-figures">
+                                <strong><?php echo $category['percentage']; ?>%</strong>
+                                <small>₱<?php echo number_format($category['revenue']); ?></small>
+                            </span>
                         </div>
-                        <div style="text-align: right;">
-                            <strong><?php echo $category['percentage']; ?>%</strong><br>
-                            <small style="color: #64748b;">₱<?php echo number_format($category['revenue']); ?></small>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" style="width: <?php echo $category['percentage']; ?>%; --swatch: <?php echo $colors[$index % count($colors)]; ?>"></div>
                         </div>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" style="width: <?php echo $category['percentage']; ?>%;"></div>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -442,10 +457,16 @@ if ($is_owner) {
             
             <div class="chart-container scrollable-panel">
                 <div class="chart-header">
-                    <div class="chart-title"><i class="fas fa-exclamation-triangle" style="color: #e74c3c;"></i> Low Stock Alerts</div>
-                    <a href="#" class="range-btn">Manage Stock</a>
+                    <div class="chart-title"><i class="fas fa-triangle-exclamation is-warning"></i> Low Stock Alerts</div>
+                    <a href="categories.php" class="range-btn">Manage Stock</a>
                 </div>
-                <div class="scrollable-content" style="margin-top: 15px;">
+                <div class="scrollable-content">
+                    <?php if (!$inventory_alerts): ?>
+                        <div class="panel-empty">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <p>Every product is above its stock threshold.</p>
+                        </div>
+                    <?php endif; ?>
                     <?php foreach ($inventory_alerts as $alert): ?>
                     <div class="alert-item">
                         <div>
@@ -460,7 +481,7 @@ if ($is_owner) {
         </div>
     </div>
 
-    <!-- All Modals (unchanged) -->
+    <!-- Modals -->
     <div class="modal fade" id="userProfileModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content">

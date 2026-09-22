@@ -104,30 +104,35 @@
     }
 
     /* Welcome banner */
-    .welcome-banner {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 16px;
+    .welcome-banner.dashboard-banner {
+        padding: 16px !important;
         min-height: unset;
     }
 
-    .welcome-banner > div:last-child {
+    .dashboard-banner .welcome-banner-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .dashboard-banner .welcome-banner-actions {
         width: 100%;
         justify-content: space-between;
     }
 
-    .welcome-banner .welcome-text h1 {
+    .welcome-banner.dashboard-banner .welcome-text h1 {
         font-size: 17px !important;
     }
 
-    .welcome-banner .welcome-text p {
-        font-size: 11px !important;
+    /* reco.css hides this paragraph on small screens; the dashboard keeps it */
+    .welcome-banner.dashboard-banner .welcome-text p {
+        display: block;
+        font-size: 12px;
     }
 
-    .welcome-banner .date-display {
-        font-size: 12px !important;
-        padding: 5px 10px;
+    .welcome-banner.dashboard-banner .date-display {
+        font-size: 12px;
+        padding: 6px 10px;
     }
 
     /* Quick actions */
@@ -142,9 +147,9 @@
     }
 
     .quick-action-icon {
-        width: 42px;
-        height: 42px;
-        font-size: 18px;
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
     }
 
     .quick-action-label {
@@ -163,9 +168,9 @@
     }
 
     .stat-icon {
-        width: 46px;
-        height: 46px;
-        font-size: 22px;
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
     }
 
     .stat-value {
@@ -237,13 +242,7 @@
 
     .stat-card {
         padding: 12px 10px;
-        flex-direction: column;
-        align-items: flex-start;
         gap: 8px;
-    }
-
-    .stat-info {
-        margin-left: 0;
     }
 
     .stat-value {

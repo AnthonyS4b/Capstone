@@ -151,13 +151,13 @@ document.addEventListener('DOMContentLoaded', function() {
             datasets: [{
                 label: 'Sales (₱)',
                 data: [],
-                backgroundColor: 'rgba(44, 85, 48, 0.75)',
-                borderColor: '#2c5530',
-                borderWidth: 1,
-                borderRadius: 6,
+                backgroundColor: '#2c5530',
+                borderWidth: 0,
+                borderRadius: 4,
                 borderSkipped: false,
-                barPercentage: 0.65,
-                hoverBackgroundColor: '#8B4513'
+                barPercentage: 0.6,
+                categoryPercentage: 0.7,
+                hoverBackgroundColor: '#1f3d23'
             }]
         },
         options: {
@@ -166,11 +166,12 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleFont: { size: 13 },
+                    backgroundColor: '#16221a',
+                    titleFont: { size: 12, weight: '600' },
                     bodyFont: { size: 12 },
                     padding: 10,
-                    cornerRadius: 8,
+                    cornerRadius: 6,
+                    displayColors: false,
                     callbacks: {
                         label: function(context) {
                             return '₱' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -181,19 +182,22 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    grid: { color: '#eef0ee', drawTicks: false },
+                    border: { display: false },
                     ticks: {
                         callback: function(value) {
                             if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return '₱' + (value / 1000).toFixed(0) + 'K';
                             return '₱' + value.toLocaleString();
                         },
-                        font: { size: 11 }
+                        font: { size: 11 },
+                        color: '#61706a'
                     }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 11 } }
+                    border: { display: false },
+                    ticks: { font: { size: 11 }, color: '#61706a' }
                 }
             },
             animation: { duration: 600, easing: 'easeOutQuart' }
@@ -253,14 +257,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Revenue (₱)',
                 data: catValues,
                 backgroundColor: catLabels.map((_, i) => catColors[i % catColors.length]),
-                borderRadius: 6,
+                borderRadius: 4,
                 borderSkipped: false,
                 barPercentage: 0.6,
-                hoverBackgroundColor: catLabels.map((_, i) => {
-                    // Slightly darker on hover
-                    const base = catColors[i % catColors.length];
-                    return base;
-                })
+                categoryPercentage: 0.7
             }]
         },
         options: {
@@ -269,11 +269,12 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleFont: { size: 13 },
+                    backgroundColor: '#16221a',
+                    titleFont: { size: 12, weight: '600' },
                     bodyFont: { size: 12 },
                     padding: 10,
-                    cornerRadius: 8,
+                    cornerRadius: 6,
+                    displayColors: false,
                     callbacks: {
                         label: function(context) {
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
@@ -286,19 +287,22 @@ document.addEventListener('DOMContentLoaded', function() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                    grid: { color: '#eef0ee', drawTicks: false },
+                    border: { display: false },
                     ticks: {
                         callback: function(value) {
                             if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
                             if (value >= 1000) return '₱' + (value / 1000).toFixed(0) + 'K';
                             return '₱' + value.toLocaleString();
                         },
-                        font: { size: 11 }
+                        font: { size: 11 },
+                        color: '#61706a'
                     }
                 },
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 11 } }
+                    border: { display: false },
+                    ticks: { font: { size: 11 }, color: '#61706a' }
                 }
             },
             animation: { duration: 800, easing: 'easeInOutQuart' }
