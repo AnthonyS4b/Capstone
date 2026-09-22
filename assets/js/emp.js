@@ -30,16 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Switch account form PIN validation
-        const switchForm = document.getElementById('switchAccountForm');
-        if (switchForm) {
-            switchForm.addEventListener('submit', function (e) {
-                const pin = document.getElementById('accountPin').value;
-                if (!pin || pin.length !== 4 || !/^\d+$/.test(pin)) {
-                    e.preventDefault();
-                    showToast('warning', 'Invalid PIN', 'Please enter a valid 4-digit PIN');
-                }
-            });
-        }
 
         // Reset receipt modal on close
         const receiptModal = document.getElementById('receiptModal');
@@ -115,6 +105,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (list)       list.style.display       = 'block';
         if (form)       form.style.display       = 'none';
         if (confirmBox) confirmBox.style.display = 'none';
+        if (typeof switchAccountClearError === 'function') switchAccountClearError();
     }
 
     // ── Change own PIN ─────────────────────────────────────────────────────────
@@ -298,3 +289,87 @@ document.addEventListener('DOMContentLoaded', function () {
         };
         return map[status] || `<span>${escHtml(status)}</span>`;
     }
+
+// -- Switch account: submit over fetch so a wrong PIN keeps the modal open ----
+function switchAccountShowError(message) {
+    const box = document.getElementById('switchAccountError');
+    if (box) {
+        box.textContent = message;
+        box.style.display = 'block';
+    }
+    const pin = document.getElementById('accountPin');
+    if (pin) {
+        pin.value = '';
+        pin.classList.add('is-invalid');
+        pin.focus();
+    }
+}
+
+function switchAccountClearError() {
+    const box = document.getElementById('switchAccountError');
+    if (box) {
+        box.textContent = '';
+        box.style.display = 'none';
+    }
+    const pin = document.getElementById('accountPin');
+    if (pin) pin.classList.remove('is-invalid');
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const switchForm = document.getElementById('switchAccountForm');
+    if (!switchForm) return;
+
+    const pinInput = document.getElementById('accountPin');
+    if (pinInput) {
+        pinInput.addEventListener('input', switchAccountClearError);
+    }
+
+    switchForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const pin = pinInput ? pinInput.value.trim() : '';
+        if (!/^\d{4}$/.test(pin)) {
+            switchAccountShowError('Please enter a valid 4-digit PIN.');
+            return;
+        }
+
+        const submitBtn = switchForm.querySelector('button[type="submit"]');
+        const original  = submitBtn ? submitBtn.innerHTML : '';
+        if (submitBtn) {
+            submitBtn.disabled  = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Switching...';
+        }
+        switchAccountClearError();
+
+        fetch(switchForm.action, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(switchForm),
+            credentials: 'same-origin'
+        })
+        .then(function (res) {
+            return res.json().catch(function () {
+                throw new Error('The server returned an unexpected response.');
+            });
+        })
+        .then(function (data) {
+            if (data && data.success) {
+                // Only a real switch leaves the page.
+                window.location.href = data.redirect || 'dashboard.php';
+                return;
+            }
+            if (submitBtn) {
+                submitBtn.disabled  = false;
+                submitBtn.innerHTML = original;
+            }
+            switchAccountShowError((data && data.message) || 'Could not switch account.');
+        })
+        .catch(function (err) {
+            if (submitBtn) {
+                submitBtn.disabled  = false;
+                submitBtn.innerHTML = original;
+            }
+            switchAccountShowError(err.message || 'Network error. Please try again.');
+        });
+    });
+});

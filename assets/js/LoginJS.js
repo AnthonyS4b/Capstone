@@ -160,15 +160,79 @@
         updatePinDots();
     }
 
+    // Show a failure without reloading, so the selected account survives
+    function showLoginError(message) {
+        const box = document.getElementById('loginError');
+        if (box) {
+            box.textContent = message;
+            box.style.display = 'block';
+        }
+        resetPin();
+        setKeypadBusy(false);
+    }
+
+    function clearLoginError() {
+        const box = document.getElementById('loginError');
+        if (box) {
+            box.textContent = '';
+            box.style.display = 'none';
+        }
+    }
+
+    // Block further input while a PIN is in flight so it cannot be sent twice
+    let loginInFlight = false;
+    function setKeypadBusy(busy) {
+        loginInFlight = busy;
+        document.querySelectorAll('.keypad-btn').forEach(function (button) {
+            if (busy) {
+                button.setAttribute('disabled', 'disabled');
+            } else if (isAccountSelected()) {
+                button.removeAttribute('disabled');
+            }
+        });
+        const prompt = document.getElementById('pinPrompt');
+        if (prompt && busy) prompt.textContent = 'Checking PIN...';
+    }
+
     // Handle PIN submission
     function submitPin() {
-        if (currentPin.length === maxPinLength) {
-            const userId = document.getElementById('user_id').value;
-            if (userId) {
-                document.getElementById('pin').value = currentPin;
-                document.getElementById('loginForm').submit();
+        if (currentPin.length !== maxPinLength || loginInFlight) return;
+
+        const form   = document.getElementById('loginForm');
+        const userId = document.getElementById('user_id').value;
+        if (!form || !userId) return;
+
+        document.getElementById('pin').value = currentPin;
+        clearLoginError();
+        setKeypadBusy(true);
+
+        fetch(window.location.pathname, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: new FormData(form),
+            credentials: 'same-origin'
+        })
+        .then(function (res) {
+            return res.json().catch(function () {
+                throw new Error('The server returned an unexpected response.');
+            });
+        })
+        .then(function (data) {
+            if (data && data.success) {
+                const prompt = document.getElementById('pinPrompt');
+                if (prompt) prompt.textContent = 'Signing you in...';
+                window.location.href = data.redirect || 'dashboard.php';
+                return;
             }
-        }
+            const prompt = document.getElementById('pinPrompt');
+            if (prompt) prompt.textContent = 'Enter PIN to continue';
+            showLoginError((data && data.message) || 'Could not sign you in.');
+        })
+        .catch(function (err) {
+            const prompt = document.getElementById('pinPrompt');
+            if (prompt) prompt.textContent = 'Enter PIN to continue';
+            showLoginError(err.message || 'Network error. Please try again.');
+        });
     }
 
     // ========== INITIALIZATION ==========
@@ -258,6 +322,7 @@
                 
                 // Reset PIN
                 resetPin();
+                clearLoginError();
                 
                 // Update keypad state (should ENABLE buttons because account is selected)
                 updateKeypadState();

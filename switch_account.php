@@ -6,6 +6,44 @@ security_require_login();
 require_once 'config/database.php';
 require_once 'includes/session_tracker.php';
 
+/**
+ * The PIN form posts over fetch so a wrong PIN can be reported without
+ * reloading the page, which used to close the modal and make the cashier
+ * reselect the account and retype the PIN. A plain form post still works
+ * when JavaScript is unavailable, and that path keeps redirecting.
+ */
+$isAjax = (
+    (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+        && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+    || (isset($_POST['ajax']) && $_POST['ajax'] === '1')
+);
+
+/**
+ * Answer in whichever form the caller expects, then stop.
+ */
+function switch_respond(bool $isAjax, bool $ok, string $title, string $message, string $redirect = 'dashboard.php'): void
+{
+    if ($isAjax) {
+        http_response_code($ok ? 200 : 401);
+        header('Content-Type: application/json');
+        echo json_encode([
+            'success'  => $ok,
+            'title'    => $title,
+            'message'  => $message,
+            'redirect' => $ok ? $redirect : null,
+        ]);
+        exit;
+    }
+
+    $_SESSION['toast_message'] = [
+        'type'    => $ok ? 'success' : 'error',
+        'title'   => $title,
+        'message' => $message,
+    ];
+    header('Location: ' . $redirect);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pin'])) {
     security_require_csrf();
     $target_user_id = $_POST['user_id'];
@@ -13,7 +51,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
     $limitKey = security_client_key('switch_account', (string)$target_user_id);
     $limit = security_rate_limit($limitKey, 5, 300);
     if (!$limit['allowed']) {
-        security_json_error('Too many incorrect attempts. Try again in a few minutes.', 429);
+        switch_respond($isAjax, false, 'Too Many Attempts',
+            'Too many incorrect attempts. Try again in a few minutes.');
     }
     
     try {
@@ -66,35 +105,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
             recordSwitch($user['id'], $old_user_email, $old_user_id);
             error_log("Switch recorded for new user: " . $user['first_name'] . " from: " . $old_user_name);
             
-            // Set success message
+            // Queue the toast for whichever page we land on next
             $_SESSION['toast_message'] = [
-                'type' => 'success',
-                'title' => 'Account Switched!',
+                'type'    => 'success',
+                'title'   => 'Account Switched!',
                 'message' => 'Welcome back, ' . $user['first_name'] . '! Your store progress continues.'
             ];
-            
-            header("Location: dashboard.php");
-            exit();
+
+            switch_respond($isAjax, true, 'Account Switched!',
+                'Welcome back, ' . $user['first_name'] . '!');
         } else {
             security_record_failure($limitKey);
-            // Invalid PIN
-            $_SESSION['toast_message'] = [
-                'type' => 'error',
-                'title' => 'Switch Failed',
-                'message' => 'Invalid PIN. Please try again.'
-            ];
-            header("Location: dashboard.php");
-            exit();
+            // $limit['attempts'] is the count before this try; this one just failed.
+            $remaining = max(0, 5 - (int)($limit['attempts'] ?? 0) - 1);
+            $message = $remaining > 0
+                ? 'Incorrect PIN. ' . $remaining . ' attempt' . ($remaining === 1 ? '' : 's') . ' remaining.'
+                : 'Incorrect PIN.';
+            switch_respond($isAjax, false, 'Switch Failed', $message);
         }
     } catch (PDOException $e) {
         error_log("Switch account error: " . $e->getMessage());
-        $_SESSION['toast_message'] = [
-            'type' => 'error',
-            'title' => 'Error',
-            'message' => 'An error occurred. Please try again.'
-        ];
-        header("Location: dashboard.php");
-        exit();
+        switch_respond($isAjax, false, 'Error', 'An error occurred. Please try again.');
     }
 } else {
     header("Location: dashboard.php");

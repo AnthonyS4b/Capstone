@@ -88,6 +88,10 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -556,6 +560,8 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
                         <form id="switchAccountForm" method="POST" action="switch_account.php">
                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                             <input type="hidden" name="user_id" id="selectedUserId">
+                            <input type="hidden" name="ajax" value="1">
+                            <div id="switchAccountError" class="alert alert-danger py-2 px-3 mb-3 small" role="alert" aria-live="polite" style="display:none;"></div>
                             <div class="mb-3">
                                 <label class="form-label">PIN</label>
                                 <input type="password" class="form-control" id="accountPin" name="pin" maxlength="4" pattern="\d{4}" placeholder="****" required>

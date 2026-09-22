@@ -2303,3 +2303,58 @@
 [22-Sep-2026 08:43:47 Europe/Berlin] Transaction data: User_ID=1, Total=55, Payment=100, Method=cash
 [22-Sep-2026 08:43:47 Europe/Berlin] Transaction inserted with ID: 1517
 [22-Sep-2026 08:43:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[22-Sep-2026 15:00:55 Europe/Berlin] Found user_id in session: 1
+[22-Sep-2026 15:00:56 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[22-Sep-2026 15:00:56 Europe/Berlin] Transaction data: User_ID=1, Total=85, Payment=85, Method=gcash
+[22-Sep-2026 15:00:56 Europe/Berlin] Transaction inserted with ID: 1518
+[22-Sep-2026 15:00:56 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[22-Sep-2026 15:03:45 Europe/Berlin] Found user_id in session: 1
+[22-Sep-2026 15:03:45 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[22-Sep-2026 15:03:45 Europe/Berlin] Transaction data: User_ID=1, Total=250, Payment=500, Method=cash
+[22-Sep-2026 15:03:45 Europe/Berlin] Transaction inserted with ID: 1519
+[22-Sep-2026 15:03:45 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[22-Sep-2026 15:10:04 Europe/Berlin] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Nigga
+    [description] => 
+    [price] => 100
+    [cost_price] => 50
+    [stock] => 10
+    [unit] => Per Piece
+    [sku] => CAT-58981704
+    [barcode] => N/A
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-09-22
+)
+
+[22-Sep-2026 15:10:06 Europe/Berlin] Error in logActivity: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+[22-Sep-2026 15:10:06 Europe/Berlin] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 0
+    [data] => Array
+        (
+            [id] => 0
+            [sku] => CAT-58981704
+            [barcode] => N/A
+            [unit] => Per Piece
+            [cost_price] => 50
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[22-Sep-2026 15:10:22 Europe/Berlin] Error in logActivity: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+[22-Sep-2026 15:10:29 Europe/Berlin] Error in logActivity: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+[22-Sep-2026 15:10:56 Europe/Berlin] Error in logActivity: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '0' for key 'PRIMARY'
+[22-Sep-2026 15:11:00 Europe/Berlin] Found user_id in session: 1
+[22-Sep-2026 15:11:00 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[22-Sep-2026 15:11:00 Europe/Berlin] Transaction data: User_ID=1, Total=250, Payment=500, Method=cash
+[22-Sep-2026 15:11:00 Europe/Berlin] Transaction inserted with ID: 1520
+[22-Sep-2026 15:11:02 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===

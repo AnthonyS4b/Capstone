@@ -188,6 +188,10 @@ if ($is_owner) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -654,7 +658,7 @@ if ($is_owner) {
                         </div>
                         <?php endforeach; else: ?><div class="text-center py-4"><i class="fas fa-users-slash fa-3x mb-3 text-muted"></i><p class="text-muted">No other accounts available</p></div><?php endif; } catch (PDOException $e) { echo '<div class="alert alert-danger">Unable to load accounts.</div>'; } ?>
                     </div>
-                    <div id="quickLoginForm" style="display: none;" class="mt-4 p-3 border-top"><h6 class="mb-3"><i class="fas fa-lock me-2"></i>Enter PIN for <span id="selectedAccountName"></span></h6><form id="switchAccountForm" method="POST" action="switch_account.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>"><input type="hidden" name="user_id" id="selectedUserId"><div class="mb-3"><label for="accountPin" class="form-label">PIN</label><input type="password" class="form-control" id="accountPin" name="pin" maxlength="4" pattern="\d{4}" placeholder="Enter Pin" required></div><div class="d-grid gap-2"><button type="submit" class="btn btn-brown"><i class="fas fa-exchange-alt me-2"></i>Switch Account</button><button type="button" class="btn btn-outline-secondary" onclick="cancelAccountSelection()">Cancel</button></div></form></div>
+                    <div id="quickLoginForm" style="display: none;" class="mt-4 p-3 border-top"><h6 class="mb-3"><i class="fas fa-lock me-2"></i>Enter PIN for <span id="selectedAccountName"></span></h6><form id="switchAccountForm" method="POST" action="switch_account.php"><input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>"><input type="hidden" name="user_id" id="selectedUserId"><input type="hidden" name="ajax" value="1"><div id="switchAccountError" class="alert alert-danger py-2 px-3 mb-3 small" role="alert" aria-live="polite" style="display:none;"></div><div class="mb-3"><label for="accountPin" class="form-label">PIN</label><input type="password" class="form-control" id="accountPin" name="pin" maxlength="4" pattern="\d{4}" placeholder="Enter Pin" required></div><div class="d-grid gap-2"><button type="submit" class="btn btn-brown"><i class="fas fa-exchange-alt me-2"></i>Switch Account</button><button type="button" class="btn btn-outline-secondary" onclick="cancelAccountSelection()">Cancel</button></div></form></div>
                 </div>
             </div>
         </div>

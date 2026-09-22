@@ -27,6 +27,23 @@ $users = [];
 $db_error = null;
 $error = null;
 
+/**
+ * Reply to a fetch submission and stop. The plain form post path below is
+ * untouched so the page still works without JavaScript.
+ */
+function login_json(bool $ok, string $title, string $message, ?string $redirect = null): void
+{
+    http_response_code($ok ? 200 : 401);
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success'  => $ok,
+        'title'    => $title,
+        'message'  => $message,
+        'redirect' => $redirect,
+    ]);
+    exit;
+}
+
 try {
     // Create database connection
     $db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
@@ -34,6 +51,12 @@ try {
     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
     // Handle login
+    $isAjax = (
+        (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+            && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (isset($_POST['ajax']) && $_POST['ajax'] === '1')
+    );
+
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pin'], $_POST['user_id'])) {
         security_require_csrf();
         $pin = $_POST['pin'];
@@ -51,6 +74,9 @@ try {
 
         if (!$limit['allowed']) {
             $error = 'Too many incorrect attempts. Please try again in a few minutes.';
+            if ($isAjax) {
+                login_json(false, 'Too Many Attempts', $error);
+            }
         } elseif ($user && password_verify($pin, $user['pin'])) {
             security_clear_failures($limitKey);
             session_regenerate_id(true);
@@ -73,12 +99,24 @@ try {
                 'message' => 'You have successfully logged in. Redirecting to dashboard...'
             ];
 
+            if ($isAjax) {
+                login_json(true, 'Welcome ' . $user['first_name'] . '!',
+                    'Signed in. Taking you to your dashboard.', 'dashboard.php');
+            }
+
             // Redirect to dashboard
             header("Location: dashboard.php");
             exit();
         } else {
             security_record_failure($limitKey);
-            $error = "Invalid PIN! Please try again.";
+            // $limit['attempts'] is the count before this try; this one failed.
+            $remaining = max(0, 5 - (int)($limit['attempts'] ?? 0) - 1);
+            $error = $remaining > 0
+                ? 'Incorrect PIN. ' . $remaining . ' attempt' . ($remaining === 1 ? '' : 's') . ' remaining.'
+                : 'Incorrect PIN.';
+            if ($isAjax) {
+                login_json(false, 'Login Failed', $error);
+            }
         }
     }
 
@@ -102,6 +140,10 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
 <html lang="en">
 
 <head>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Espenida's Pet & Poultry Supply — Point of Sale System Login">
@@ -190,7 +232,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                                     <div class="d-flex">
                                         <div class="toast-body">
                                             <i class="fas fa-exclamation-circle me-2"></i>
-                                            <strong>Login Failed!</strong> <?php echo addslashes($error); ?>
+                                            <strong>Login Failed!</strong> <?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
                                         </div>
                                         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
                                     </div>
@@ -225,6 +267,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="user_id" id="user_id">
                     <input type="hidden" name="pin" id="pin">
+                    <input type="hidden" name="ajax" value="1">
 
                     <div class="row g-0">
                         <!-- ===== LEFT — Account Selection ===== -->
@@ -302,6 +345,10 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
 
                             <p class="text-muted mb-1" id="pinPrompt" style="font-size:0.82rem;font-weight:500;">Select an account to enter PIN</p>
 
+                            <!-- Stays put until the next attempt, unlike the one-second toast -->
+                            <div id="loginError" class="alert alert-danger py-2 px-3 my-2 small"
+                                 role="alert" aria-live="polite" style="display:none;"></div>
+
                             <!-- PIN Dots -->
                             <div class="pin-dots-row">
                                 <?php for ($i = 0; $i < 4; $i++): ?>
@@ -346,7 +393,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
         </div>
     </div>
 
-    <script src="assets/js/loginJS.js"></script>
+    <script src="assets/js/LoginJS.js"></script>
 </body>
 
 </html>
