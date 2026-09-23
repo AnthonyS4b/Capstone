@@ -566,6 +566,30 @@ function updateSummary() {
     calculateChange();
 }
 
+// Cash fields accept money only: digits and one decimal point, max 2 decimals.
+// No minus sign, "e" notation or other characters, typed or pasted.
+function sanitizeMoneyInput(input) {
+    if (!input) return;
+    // Keep digits and the first dot, then cap decimals at 2
+    let digits = input.value.replace(/[^0-9.]/g, '');
+    const firstDot = digits.indexOf('.');
+    if (firstDot !== -1) {
+        digits = digits.slice(0, firstDot + 1) + digits.slice(firstDot + 1).replace(/\./g, '').slice(0, 2);
+    }
+    if (digits !== input.value) {
+        const pos = input.selectionStart - (input.value.length - digits.length);
+        input.value = digits;
+        try { input.setSelectionRange(Math.max(pos, 0), Math.max(pos, 0)); } catch (e) { /* not focused */ }
+    }
+}
+
+function blockNonMoneyKeys(e) {
+    if (e.ctrlKey || e.metaKey || e.altKey || e.key.length > 1) return; // shortcuts, arrows, Backspace…
+    if (/[0-9]/.test(e.key)) return;
+    if (e.key === '.' && !e.target.value.includes('.')) return;
+    e.preventDefault();
+}
+
 function calculateChange() {
     const payment = parseFloat(paymentInput?.value) || 0;
     const total = cart.reduce((sum, item) => sum + getCartLineTotal(item), 0);
@@ -635,24 +659,68 @@ function processCheckout() {
     showPaymentConfirmation(total, payment);
 }
 
+function formatPeso(n) {
+    return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Total shown in the confirm modal; kept as a number so display formatting can't break maths
+function getConfirmTotal() {
+    return parseFloat(document.getElementById('confirmTotal')?.dataset.total) || 0;
+}
+
+// Quick cash that fits this sale: the exact amount, then the next round bills a customer would hand over
+function quickCashSuggestions(total) {
+    const out = [Math.ceil(total * 100) / 100];
+    for (const step of [50, 100, 500, 1000]) {
+        const v = Math.ceil(total / step) * step;
+        if (v > out[0] && !out.includes(v)) out.push(v);
+    }
+    for (const bill of [500, 1000, 5000, 10000]) {
+        if (bill > out[out.length - 1] && out.length < 6) out.push(bill);
+    }
+    return out.slice(0, 6);
+}
+
+function renderConfirmQuickCash(total) {
+    const box = document.getElementById('confirmQuickCash');
+    if (!box) return;
+    const amounts = quickCashSuggestions(total);
+    box.dataset.count = amounts.length;
+    box.innerHTML = amounts.map((v, i) =>
+        `<button type="button" class="quick-cash-btn" data-cash-amount="${v}" data-cash-target="confirmPaymentAmount">
+            ${i === 0 ? '<span class="pay-quick-tag">Exact</span>' : ''}${formatPeso(v).replace('.00', '')}
+        </button>`
+    ).join('');
+}
+
 function showPaymentConfirmation(total, paymentAmount) {
     const confirmTotal = document.getElementById('confirmTotal');
     const confirmPayment = document.getElementById('confirmPaymentAmount');
     const confirmItems = document.getElementById('confirmItems');
-    
-    if (confirmTotal) confirmTotal.textContent = '₱' + total.toFixed(2);
-    if (confirmPayment) confirmPayment.value = paymentAmount;
-    updateConfirmChange();
-    
+    const itemCount = document.getElementById('confirmItemCount');
+
+    if (confirmTotal) {
+        confirmTotal.dataset.total = total.toFixed(2);
+        confirmTotal.textContent = formatPeso(total);
+    }
+    if (confirmPayment) confirmPayment.value = paymentAmount || '';
+
+    const units = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    if (itemCount) itemCount.textContent = `${units} item${units === 1 ? '' : 's'} · view list`;
     if (confirmItems) {
         confirmItems.innerHTML = cart.map(item =>
-            `<div class="d-flex justify-content-between small border-bottom py-1">
-                <span>${escapeHtml(item.name)} x${item.quantity}</span>
-                <span>₱${getCartLineTotal(item).toFixed(2)}</span>
+            `<div class="pay-item">
+                <span class="pay-item-name">${escapeHtml(item.name)}</span>
+                <span class="pay-item-qty">×${item.quantity}</span>
+                <span class="pay-item-amt">${formatPeso(getCartLineTotal(item))}</span>
             </div>`
         ).join('');
     }
-    
+    renderConfirmQuickCash(total);
+
+    const gcashRef = document.getElementById('gcashReference');
+    if (gcashRef) gcashRef.value = '';
+
     const methodCashRadio = document.getElementById('methodCash');
     if (methodCashRadio) {
         methodCashRadio.checked = true;
@@ -661,29 +729,52 @@ function showPaymentConfirmation(total, paymentAmount) {
         if (cashSection) cashSection.style.display = 'block';
         if (gcashSection) gcashSection.style.display = 'none';
     }
-    
+    updateConfirmChange();
+
     const modalEl = document.getElementById('paymentConfirmModal');
-    if (modalEl) new bootstrap.Modal(modalEl).show();
+    if (modalEl) {
+        modalEl.addEventListener('shown.bs.modal', () => {
+            confirmPayment?.focus();
+            confirmPayment?.select();
+        }, { once: true });
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
 }
 
 function updateConfirmChange() {
-    const confirmTotal = document.getElementById('confirmTotal');
     const confirmPayment = document.getElementById('confirmPaymentAmount');
     const changeDisplay = document.getElementById('confirmChangeDisplay');
-    
-    if (!confirmTotal || !confirmPayment || !changeDisplay) return;
-    
-    const total = parseFloat(confirmTotal.textContent.replace('₱', '')) || 0;
+    const changeLabel = document.getElementById('confirmChangeLabel');
+    const changeRow = document.getElementById('confirmChangeRow');
+    const btnText = document.getElementById('confirmPaymentBtnText');
+    if (!confirmPayment || !changeDisplay) return;
+
+    const total = getConfirmTotal();
+    const isCash = document.getElementById('methodCash')?.checked !== false;
+    const hasInput = confirmPayment.value.trim() !== '';
     const payment = parseFloat(confirmPayment.value) || 0;
-    const change = payment - total;
-    
-    if (payment >= total) { 
-        changeDisplay.textContent = '₱' + change.toFixed(2); 
-        changeDisplay.style.color = '#10b981'; 
-    } else { 
-        changeDisplay.textContent = 'Insufficient'; 
-        changeDisplay.style.color = '#e74c3c'; 
+    const enough = payment >= total && total > 0;
+
+    if (changeRow) {
+        changeRow.classList.toggle('is-ok', enough);
+        changeRow.classList.toggle('is-short', hasInput && !enough);
     }
+    if (enough) {
+        if (changeLabel) changeLabel.textContent = 'Change';
+        changeDisplay.textContent = formatPeso(payment - total);
+    } else if (hasInput) {
+        if (changeLabel) changeLabel.textContent = 'Short by';
+        changeDisplay.textContent = formatPeso(total - payment);
+    } else {
+        if (changeLabel) changeLabel.textContent = 'Change';
+        changeDisplay.textContent = '—';
+    }
+
+    // Keep the quick-cash highlight in sync with what is typed
+    document.querySelectorAll('#confirmQuickCash .quick-cash-btn').forEach(b =>
+        b.classList.toggle('active', hasInput && Number(b.dataset.cashAmount) === payment));
+
+    if (btnText) btnText.textContent = isCash ? `Complete sale · ${formatPeso(total)}` : 'Confirm GCash payment';
 }
 
 function processPayment(total, payment, change, paymentMethod, reference) {
@@ -800,115 +891,46 @@ function finishTransaction(response, items, total, payment, change, paymentMetho
     loadProducts();
 }
 
-// Receipt Functions
+// Receipt Functions (layout and printing live in assets/js/receipt.js, shared with Sales Transactions)
 function showReceipt(transaction) {
-    const date = new Date(transaction.date);
-    const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    const cashierName = transaction.cashier || (typeof LOGGED_CASHIER !== 'undefined' ? LOGGED_CASHIER : 'Staff');
-    
-    // Tax calculation (12% VAT - Philippine standard)
-    const TAX_RATE = 0.12;
-    const subtotal = transaction.total / (1 + TAX_RATE); // back-calculate net of VAT
-    const taxAmount = transaction.total - subtotal;
-    
-    const itemsHtml = transaction.items.map(item =>
-        `<div style="display:flex;justify-content:space-between;font-size:12px;">
-            <span>${escapeHtml(item.name)} x${item.quantity}</span>
-            <span>₱${(item.price * item.quantity).toFixed(2)}</span>
-        </div>`
-    ).join('');
-    
-    const paymentIcon = transaction.payment_method === 'gcash' ? '📱' : '💵';
-    const refHtml = transaction.payment_reference
-        ? `<div style="display:flex;justify-content:space-between;font-size:12px;">
-            <span>Ref #:</span>
-            <span>${escapeHtml(transaction.payment_reference)}</span>
-          </div>`
-        : '';
-    
-    const receiptHtml = `
-        <div style="font-family:'Courier New',monospace;font-size:12px;">
-            <div style="text-align:center;font-weight:bold;margin-bottom:5px;">
-                Espenida's Pet & Poultry
-            </div>
-            <div style="text-align:center;margin-bottom:2px;">${formattedDate}</div>
-            <div style="text-align:center;margin-bottom:10px;">#: ${transaction.id}</div>
-            ${itemsHtml}
-            <div style="margin-top:10px;border-top:1px dashed #000;padding-top:5px;">
-                <div style="display:flex;justify-content:space-between;font-size:12px;">
-                    <span>Subtotal (VAT excl.):</span>
-                    <span>₱${subtotal.toFixed(2)}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;">
-                    <span>VAT (12%):</span>
-                    <span>₱${taxAmount.toFixed(2)}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-weight:bold;border-top:1px dashed #000;margin-top:4px;padding-top:4px;">
-                    <span>Total (VAT incl.):</span>
-                    <span>₱${transaction.total.toFixed(2)}</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;">
-                    <span>Payment (${paymentIcon}):</span>
-                    <span>₱${transaction.payment.toFixed(2)}</span>
-                </div>
-                ${refHtml}
-                <div style="display:flex;justify-content:space-between;color:#10b981;">
-                    <span>Change:</span>
-                    <span>₱${transaction.change.toFixed(2)}</span>
-                </div>
-            </div>
-            <div style="margin-top:10px;text-align:center;">
-                <div>Cashier: ${escapeHtml(cashierName)}</div>
-                <div style="margin-top:5px;">Thank you!</div>
-            </div>
-        </div>`;
-    
+    const isGcash = transaction.payment_method === 'gcash';
+    const total = Number(transaction.total) || 0;
+
     const receiptContainer = document.getElementById('receiptDetails');
-    if (receiptContainer) receiptContainer.innerHTML = receiptHtml;
-    
+    if (receiptContainer) {
+        receiptContainer.innerHTML = Receipt.html({
+            number: transaction.id,
+            date: transaction.date,
+            cashier: transaction.cashier || (typeof LOGGED_CASHIER !== 'undefined' ? LOGGED_CASHIER : 'Staff'),
+            items: transaction.items,
+            total: total,
+            payment: transaction.payment,
+            change: transaction.change,
+            method: transaction.payment_method,
+            reference: transaction.payment_reference,
+            status: 'completed'
+        });
+    }
+
+    // Banner: what the cashier needs next
+    const summary = document.getElementById('rcptSummary');
+    if (summary) {
+        summary.textContent = `${transaction.id || ''} · ${formatPeso(total)} ${isGcash ? 'via GCash' : 'in cash'}`;
+    }
+    const changeBox = document.getElementById('rcptChange');
+    const changeValue = document.getElementById('rcptChangeValue');
+    if (changeBox && changeValue) {
+        const changeDue = Number(transaction.change) || 0;
+        changeBox.hidden = isGcash;
+        changeValue.textContent = formatPeso(changeDue);
+    }
+
     const modalEl = document.getElementById('receiptModal');
-    if (modalEl) new bootstrap.Modal(modalEl).show();
+    if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
 }
 
 function printReceipt() {
-    const content = document.getElementById('receiptDetails')?.innerHTML;
-    if (!content) return;
-    
-    const win = window.open('', '_blank');
-    win.document.write(`<html>
-        <head>
-            <title>Receipt</title>
-            <style>
-                body {
-                    font-family: 'Courier New', monospace;
-                    padding: 10px;
-                    margin: 0;
-                    background: white;
-                }
-                .receipt {
-                    max-width: 280px;
-                    margin: 0 auto;
-                }
-                @media print {
-                    body {
-                        padding: 0;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="receipt">${content}</div>
-            <script>
-                window.onload = function() {
-                    window.print();
-                    window.onafterprint = function() {
-                        window.close();
-                    };
-                };
-            <\/script>
-        </body>
-    </html>`);
-    win.document.close();
+    Receipt.print(document.getElementById('receiptDetails')?.innerHTML);
 }
 
 // GCash QR Functions
@@ -1076,7 +1098,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Cart buttons
     if (clearCartBtn) clearCartBtn.addEventListener('click', clearCart);
-    if (paymentInput) paymentInput.addEventListener('input', calculateChange);
+    if (paymentInput) {
+        paymentInput.addEventListener('keydown', blockNonMoneyKeys);
+        paymentInput.addEventListener('input', () => { sanitizeMoneyInput(paymentInput); calculateChange(); });
+    }
     if (checkoutBtn) checkoutBtn.addEventListener('click', processCheckout);
     document.querySelectorAll('.quick-cash-btn').forEach(button => {
         button.addEventListener('click', () => setQuickCashAmount(button));
@@ -1112,6 +1137,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (gcashSection) gcashSection.style.display = 'none'; 
             const qrImg = document.getElementById('gcashQRImage'); 
             if (qrImg) qrImg.style.animation = 'none'; 
+            updateConfirmChange();
+            setTimeout(() => confirmPaymentIn?.focus(), 50);
         });
         
         methodGcashRadio.addEventListener('change', function() { 
@@ -1119,11 +1146,31 @@ document.addEventListener('DOMContentLoaded', function() {
             if (cashSection) cashSection.style.display = 'none'; 
             if (gcashSection) gcashSection.style.display = 'block'; 
             simulateQRGeneration(); 
+            updateConfirmChange();
             setTimeout(() => { if (gcashReferenceIn) gcashReferenceIn.focus(); }, 1600); 
         });
     }
     
-    if (confirmPaymentIn) confirmPaymentIn.addEventListener('input', updateConfirmChange);
+    document.getElementById('confirmQuickCash')?.addEventListener('click', e => {
+        const btn = e.target.closest('.quick-cash-btn');
+        if (btn) setQuickCashAmount(btn);
+    });
+
+    // GCash reference: digits only
+    gcashReferenceIn?.addEventListener('input', () => {
+        const digits = gcashReferenceIn.value.replace(/\D/g, '').slice(0, 6);
+        if (digits !== gcashReferenceIn.value) gcashReferenceIn.value = digits;
+    });
+
+    // Enter in the cash field completes the sale
+    confirmPaymentIn?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('confirmPaymentBtn')?.click(); }
+    });
+
+    if (confirmPaymentIn) {
+        confirmPaymentIn.addEventListener('keydown', blockNonMoneyKeys);
+        confirmPaymentIn.addEventListener('input', () => { sanitizeMoneyInput(confirmPaymentIn); updateConfirmChange(); });
+    }
     
     // Confirm payment button
     const confirmBtn = document.getElementById('confirmPaymentBtn');
@@ -1139,7 +1186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirmTotalEl = document.getElementById('confirmTotal');
             if (!confirmTotalEl) return;
             
-            const total = parseFloat(confirmTotalEl.textContent.replace('₱', '')) || 0;
+            const total = getConfirmTotal();
             let payment, change, reference = null;
             
             if (method === 'cash') {

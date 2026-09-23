@@ -1,0 +1,631 @@
+/* ═══════════════════════════════════════════════════════════════════
+   POS — Confirm payment modal (#paymentConfirmModal.pay-modal)
+   Loaded after PosCSS.css; the id+class prefix outranks its older rules.
+   ═══════════════════════════════════════════════════════════════════ */
+
+#paymentConfirmModal.pay-modal {
+    --pay-brand: #2c5530;
+    --pay-brand-strong: #1f3d23;
+    --pay-brand-tint: #eaf0ea;
+    --pay-ink: #16221a;
+    --pay-muted: #61706a;
+    --pay-subtle: #8b968f;
+    --pay-line: #e4e7e4;
+    --pay-canvas: #f6f7f6;
+    --pay-positive: #15803d;
+    --pay-negative: #b42318;
+}
+
+#paymentConfirmModal.pay-modal .modal-dialog {
+    max-width: 440px;
+}
+
+#paymentConfirmModal.pay-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Header ─── */
+#paymentConfirmModal.pay-modal .pay-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 0;
+}
+
+#paymentConfirmModal.pay-modal .pay-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--pay-ink);
+}
+
+#paymentConfirmModal.pay-modal .pay-head .btn-close {
+    font-size: 12px;
+    opacity: 0.5;
+}
+
+/* ─── Body ─── */
+#paymentConfirmModal.pay-modal .pay-body {
+    padding: 14px 20px 4px;
+}
+
+#paymentConfirmModal.pay-modal .pay-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pay-muted);
+}
+
+/* Amount due */
+#paymentConfirmModal.pay-modal .pay-due {
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--pay-canvas);
+    border: 1px solid var(--pay-line);
+    margin-bottom: 16px;
+}
+
+#paymentConfirmModal.pay-modal .pay-due .pay-label {
+    margin-bottom: 2px;
+}
+
+#paymentConfirmModal.pay-modal .pay-due-value {
+    display: block;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--pay-ink);
+}
+
+#paymentConfirmModal.pay-modal .pay-items {
+    margin-top: 8px;
+}
+
+#paymentConfirmModal.pay-modal .pay-items summary {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pay-brand);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+#paymentConfirmModal.pay-modal .pay-items summary::-webkit-details-marker {
+    display: none;
+}
+
+#paymentConfirmModal.pay-modal .pay-items summary::after {
+    content: '\f078';
+    font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free';
+    font-weight: 900;
+    font-size: 9px;
+    margin-left: 6px;
+    display: inline-block;
+    transition: transform 0.15s ease;
+}
+
+#paymentConfirmModal.pay-modal .pay-items[open] summary::after {
+    transform: rotate(180deg);
+}
+
+#paymentConfirmModal.pay-modal #confirmItems {
+    margin-top: 8px;
+    max-height: 150px;
+    overflow-y: auto;
+    border-top: 1px solid var(--pay-line);
+}
+
+#paymentConfirmModal.pay-modal .pay-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 84px;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px solid var(--pay-line);
+}
+
+#paymentConfirmModal.pay-modal .pay-item:last-child {
+    border-bottom: none;
+}
+
+#paymentConfirmModal.pay-modal .pay-item-name {
+    color: var(--pay-ink);
+    overflow-wrap: anywhere;
+}
+
+#paymentConfirmModal.pay-modal .pay-item-qty {
+    color: var(--pay-subtle);
+}
+
+#paymentConfirmModal.pay-modal .pay-item-amt {
+    text-align: right;
+    color: var(--pay-ink);
+}
+
+/* Payment method: segmented control */
+#paymentConfirmModal.pay-modal .pay-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 16px;
+    border-radius: 10px;
+    background: var(--pay-canvas);
+    border: 1px solid var(--pay-line);
+}
+
+#paymentConfirmModal.pay-modal .pay-method {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 10px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pay-muted);
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#paymentConfirmModal.pay-modal .pay-method:hover {
+    color: var(--pay-ink);
+}
+
+#paymentConfirmModal.pay-modal .btn-check:checked + .pay-method {
+    background: #fff;
+    color: var(--pay-brand);
+    box-shadow: 0 1px 3px rgba(22, 34, 26, 0.12);
+}
+
+#paymentConfirmModal.pay-modal .btn-check:focus-visible + .pay-method {
+    outline: 2px solid var(--pay-brand);
+    outline-offset: 1px;
+}
+
+/* Cash received */
+#paymentConfirmModal.pay-modal .pay-amount {
+    display: flex;
+    align-items: center;
+    height: 54px;
+    padding: 0 14px;
+    border: 1.5px solid var(--pay-line);
+    border-radius: 10px;
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#paymentConfirmModal.pay-modal .pay-amount:focus-within {
+    border-color: var(--pay-brand);
+    box-shadow: 0 0 0 3px var(--pay-brand-tint);
+}
+
+#paymentConfirmModal.pay-modal .pay-currency {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--pay-subtle);
+    margin-right: 6px;
+}
+
+#paymentConfirmModal.pay-modal #confirmPaymentAmount {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: none;
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+    font-size: 22px;
+    font-weight: 650;
+    color: var(--pay-ink);
+}
+
+#paymentConfirmModal.pay-modal #confirmPaymentAmount::placeholder {
+    color: #c3cac5;
+}
+
+/* Quick cash */
+#paymentConfirmModal.pay-modal .pay-quick {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin: 10px 0 14px;
+}
+
+#paymentConfirmModal.pay-modal .pay-quick .quick-cash-btn {
+    position: relative;
+    height: 40px;
+    padding: 0 6px;
+    border: 1px solid var(--pay-line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--pay-ink);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+    transform: none;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+#paymentConfirmModal.pay-modal .pay-quick .quick-cash-btn:hover {
+    border-color: var(--pay-brand);
+    background: #fff;
+    color: var(--pay-brand);
+}
+
+#paymentConfirmModal.pay-modal .pay-quick .quick-cash-btn.active {
+    border-color: var(--pay-brand);
+    background: var(--pay-brand-tint);
+    color: var(--pay-brand);
+}
+
+#paymentConfirmModal.pay-modal .pay-quick-tag {
+    display: block;
+    margin-top: -2px;
+    font-size: 9.5px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pay-subtle);
+}
+
+/* Change / short by */
+#paymentConfirmModal.pay-modal .pay-change {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    background: var(--pay-canvas);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--pay-muted);
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#paymentConfirmModal.pay-modal #confirmChangeDisplay {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--pay-subtle);
+}
+
+#paymentConfirmModal.pay-modal .pay-change.is-ok {
+    background: #e7f4ec;
+    color: var(--pay-positive);
+}
+
+#paymentConfirmModal.pay-modal .pay-change.is-ok #confirmChangeDisplay {
+    color: var(--pay-positive);
+}
+
+#paymentConfirmModal.pay-modal .pay-change.is-short {
+    background: #fdeceb;
+    color: var(--pay-negative);
+}
+
+#paymentConfirmModal.pay-modal .pay-change.is-short #confirmChangeDisplay {
+    color: var(--pay-negative);
+}
+
+/* GCash */
+#paymentConfirmModal.pay-modal .pay-gcash {
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 12px;
+}
+
+#paymentConfirmModal.pay-modal #qrCodeContainer {
+    position: relative;
+    cursor: zoom-in;
+    text-align: center;
+}
+
+#paymentConfirmModal.pay-modal #gcashQRImage {
+    width: 132px;
+    height: 132px;
+    object-fit: contain;
+    border: 1px solid var(--pay-line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+#paymentConfirmModal.pay-modal #qrLoadingSpinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 2rem;
+    height: 2rem;
+    margin: -1rem 0 0 -1rem;
+    color: var(--pay-brand);
+}
+
+#paymentConfirmModal.pay-modal #enlargeHint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--pay-subtle);
+}
+
+#paymentConfirmModal.pay-modal .pay-gcash-side p {
+    margin: 0 0 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--pay-muted);
+}
+
+#paymentConfirmModal.pay-modal .pay-input {
+    width: 100%;
+    height: 44px;
+    padding: 0 12px;
+    border: 1.5px solid var(--pay-line);
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--pay-ink);
+    outline: none;
+}
+
+#paymentConfirmModal.pay-modal .pay-input:focus {
+    border-color: var(--pay-brand);
+    box-shadow: 0 0 0 3px var(--pay-brand-tint);
+}
+
+/* ─── Footer ─── */
+#paymentConfirmModal.pay-modal .pay-foot {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+    padding: 12px 20px 20px;
+}
+
+#paymentConfirmModal.pay-modal .pay-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 15px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#paymentConfirmModal.pay-modal .pay-btn-ghost {
+    background: #fff;
+    border-color: var(--pay-line);
+    color: var(--pay-ink);
+}
+
+#paymentConfirmModal.pay-modal .pay-btn-ghost:hover {
+    background: var(--pay-canvas);
+}
+
+#paymentConfirmModal.pay-modal .pay-btn-primary {
+    background: var(--pay-brand);
+    color: #fff;
+}
+
+#paymentConfirmModal.pay-modal .pay-btn-primary:hover {
+    background: var(--pay-brand-strong);
+}
+
+#paymentConfirmModal.pay-modal .pay-btn:focus-visible {
+    outline: 2px solid var(--pay-brand);
+    outline-offset: 2px;
+}
+
+/* ─── Small screens ─── */
+@media (max-width: 480px) {
+    #paymentConfirmModal.pay-modal .modal-dialog {
+        margin: 12px;
+    }
+
+    #paymentConfirmModal.pay-modal .pay-due-value {
+        font-size: 26px;
+    }
+
+    #paymentConfirmModal.pay-modal .pay-gcash {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+    }
+
+    #paymentConfirmModal.pay-modal .pay-gcash-side {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+/* Four suggestions fit on one row; five or six wrap as 3 + 2/3 */
+#paymentConfirmModal.pay-modal .pay-quick[data-count="4"] {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* PosCSS.css pads and tints the QR wrapper; here the image carries its own frame */
+#paymentConfirmModal.pay-modal #qrCodeContainer {
+    width: 132px;
+    padding: 0;
+    margin: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   POS — Receipt modal (#receiptModal.rcpt-modal)
+   The receipt itself is styled by RECEIPT_CSS in PosJS.js (shared with print).
+   ═══════════════════════════════════════════════════════════════════ */
+
+#receiptModal.rcpt-modal .modal-dialog {
+    max-width: 420px;
+    padding: 0;
+}
+
+#receiptModal.rcpt-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Banner: success + the change to hand back */
+#receiptModal.rcpt-modal .rcpt-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 44px 18px 20px;
+    background: #2c5530;
+    color: #fff;
+}
+
+#receiptModal.rcpt-modal .rcpt-check {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    font-size: 15px;
+}
+
+#receiptModal.rcpt-modal .rcpt-head-text {
+    flex: 1;
+    min-width: 0;
+}
+
+#receiptModal.rcpt-modal .rcpt-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 650;
+    color: #fff;
+}
+
+#receiptModal.rcpt-modal .rcpt-sub {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: rgba(255, 255, 255, 0.8);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#receiptModal.rcpt-modal .rcpt-change {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.15;
+}
+
+#receiptModal.rcpt-modal .rcpt-change[hidden] {
+    display: none;
+}
+
+#receiptModal.rcpt-modal .rcpt-change-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#receiptModal.rcpt-modal .rcpt-change-value {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+#receiptModal.rcpt-modal .rcpt-head .btn-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    filter: invert(1) grayscale(1) brightness(2);
+    opacity: 0.7;
+    font-size: 11px;
+}
+
+/* Receipt paper on a light canvas */
+#receiptModal.rcpt-modal .modal-body {
+    padding: 16px !important;
+    background: #f6f7f6 !important;
+}
+
+#receiptModal.rcpt-modal #receiptDetails {
+    background: #fff;
+    border: 1px solid #e4e7e4;
+    border-radius: 10px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 2px rgba(22, 34, 26, 0.05);
+}
+
+/* Footer */
+#receiptModal.rcpt-modal .receipt-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 16px 16px;
+    border-top: 1px solid #e4e7e4;
+    background: #fff;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 46px;
+    margin: 0;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 14.5px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn-ghost {
+    background: #fff;
+    border-color: #cfd4cf;
+    color: #16221a;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn-ghost:hover {
+    background: #f6f7f6;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn-primary {
+    background: #2c5530;
+    color: #fff;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn-primary:hover {
+    background: #1f3d23;
+}
+
+#receiptModal.rcpt-modal .rcpt-btn:focus-visible {
+    outline: 2px solid #2c5530;
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    #receiptModal.rcpt-modal .modal-dialog {
+        margin: 12px;
+    }
+}

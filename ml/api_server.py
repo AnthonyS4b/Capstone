@@ -1030,7 +1030,7 @@ def cancel_strategy() -> Tuple[Any, int]:
 
         # Get the strategy from history first
         strategy = DatabaseConnector.execute_query(
-            "SELECT product_id, original_price, strategy_id FROM strategy_history WHERE id = %s AND status = 'applied'",
+            "SELECT product_id, original_price, discounted_price, strategy_id FROM strategy_history WHERE id = %s AND status = 'applied'",
             (history_id,), fetch_one=True
         )
         
@@ -1046,12 +1046,17 @@ def cancel_strategy() -> Tuple[Any, int]:
             (history_id,)
         )
 
-        # Revert the product price
+        # Revert the product price, unless the owner changed it during the promotion
+        # (then their newer price stands, matching includes/promotion_pricing.php)
+        price_kept = False
         if strategy["strategy_id"] != "cross_sell_pairing":
-            DatabaseConnector.execute_insert_update(
-                "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
-                (original_price, product_id)
+            reverted = DatabaseConnector.execute_insert_update(
+                "UPDATE products SET price = %s, updated_at = NOW() "
+                "WHERE id = %s AND ABS(price - %s) < 0.005",
+                (original_price, product_id, strategy["discounted_price"])
             )
+            price_kept = (not reverted and
+                          abs(float(strategy["discounted_price"]) - float(original_price)) >= 0.005)
         
         # Log it implicitly via strategy_history update, no ml logs needed for stop action
         logger.info(f"Strategy ID {history_id} cancelled for product #{product_id}")
@@ -1060,6 +1065,8 @@ def cancel_strategy() -> Tuple[Any, int]:
             "success": True,
             "message": ("Cross-Sell Pairing cancelled. The regular product price is unchanged."
                         if strategy["strategy_id"] == "cross_sell_pairing" else
+                        "Strategy cancelled. The price you set during the promotion was kept."
+                        if price_kept else
                         f"Strategy cancelled successfully. Price reverted to ₱{original_price:.2f}")
         }), 200
 

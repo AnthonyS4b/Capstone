@@ -50,117 +50,136 @@ body {
 }
 
 /* ===== WELCOME BANNER - FORCED GRADIENT ===== */
+/* Scoped to this page so the rules do not leak into the dashboard or the
+   recommendations page, which style .welcome-banner of their own. */
 .welcome-banner {
-    background: linear-gradient(135deg, #2c5530 0%, #8B4513 100%) !important;
-    border-radius: 16px !important;
-    padding: 25px 30px !important;
-    margin-bottom: 25px !important;
-    color: white !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    box-shadow: 0 8px 20px rgba(0, 40, 80, 0.2) !important;
-    position: relative !important;
-    overflow: visible !important; /* allow notification panel to drop below the banner */
-    border: none !important;
-    min-height: 120px !important;
-}
-
-/* Force all text to be white */
-.welcome-banner * {
-    color: white !important;
+    background: var(--brand);
+    border-radius: var(--r-lg);
+    padding: 18px 22px;
+    margin-bottom: var(--gap);
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gap);
+    position: relative;
+    /* visible so the notification panel can drop below the banner edge */
+    overflow: visible;
+    border: none;
+    box-shadow: none;
+    min-height: 0;
 }
 
 .welcome-text h1 {
-    font-size: 28px !important;
-    margin-bottom: 5px !important;
-    font-weight: 600 !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 2px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 9px;
 }
 
 .welcome-text h1 i {
-    color: white !important;
-    font-size: 28px !important;
+    font-size: 15px;
+    opacity: 0.75;
 }
 
 .welcome-text p {
-    font-size: 14px !important;
-    opacity: 0.9 !important;
-    margin: 0 !important;
+    font-size: 13px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
 }
 
 .date-display {
-    background: rgba(0, 0, 0, 0.2) !important;
-    padding: 10px 20px !important;
-    border-radius: 40px !important;
-    font-weight: 500 !important;
-    backdrop-filter: blur(5px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    font-size: 14px !important;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    padding: 7px 13px;
+    border-radius: var(--r-sm);
+    font-weight: 500;
+    font-size: 12px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ===== STATS CARDS ===== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: var(--gap);
+    margin-bottom: var(--gap);
 }
 
+/* Same shape as the dashboard cards: label and icon on top, the number as
+   the hero. The old layout put a gradient icon tile beside a small number. */
 .stat-card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 16px 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    /* No hover lift. These are readouts, not controls. */
+    transition: border-color 0.15s ease;
+}
+
+.stat-head {
     display: flex;
     align-items: center;
-    gap: 15px;
-    transition: transform 0.2s;
+    justify-content: space-between;
+    gap: 10px;
 }
 
-.stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+.stat-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    letter-spacing: 0;
 }
 
 .stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #8B4513 0%, #C47A3A 100%);
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: var(--r-sm);
+    background: var(--canvas);
+    color: var(--ink-muted);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 22px;
-}
-
-.stat-info h3 {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-    color: #1e293b;
-}
-
-.stat-info p {
-    margin: 0;
     font-size: 13px;
-    color: #64748b;
+}
+
+/* Flat tints rather than one brown gradient on every card */
+.stat-icon.count   { background: var(--brand-tint);   color: var(--brand); }
+.stat-icon.revenue { background: var(--positive-tint); color: var(--positive); }
+.stat-icon.today   { background: var(--accent-tint);  color: var(--accent); }
+.stat-icon.average { background: var(--canvas);       color: var(--ink-muted); }
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
 }
 
 /* ===== FILTER SECTION ===== */
 .filter-section {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    padding: 12px 14px;
+    margin-bottom: var(--gap);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 10px;
     align-items: center;
 }
 
@@ -173,28 +192,35 @@ body {
 }
 
 .filter-group label {
-    font-weight: 500;
-    color: #475569;
+    font-weight: 400;
+    color: var(--ink-subtle);
     font-size: 13px;
-    width: 30px;
+    width: 18px;
     text-align: center;
 }
 
 .filter-group input,
 .filter-group select {
-    padding: 8px 12px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
+    padding: 8px 11px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
     font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
     flex: 1;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    min-width: 0;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filter-group input::placeholder {
+    color: var(--ink-subtle);
 }
 
 .filter-group input:focus,
 .filter-group select:focus {
-    border-color: #4a6fa5;
+    border-color: var(--brand);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.1);
 }
 
 .filter-actions {
@@ -202,47 +228,77 @@ body {
     gap: 8px;
 }
 
-.btn-filter {
-    background: #8B4513;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
+.btn-filter,
+.btn-reset,
+.btn-export {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 13px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 12px;
     font-weight: 500;
+    line-height: 1.2;
     cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-filter:hover,
+.btn-reset:hover,
+.btn-export:hover {
+    background: var(--canvas);
+    border-color: var(--line-strong);
+}
+
+/* Applying the filter is the primary action in this row */
+.btn-filter {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
 }
 
 .btn-filter:hover {
-    background: #2c5530;
+    background: var(--brand-strong);
+    border-color: var(--brand-strong);
 }
 
-.btn-reset {
-    background: #e2e8f0;
-    color: #475569;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
+/* Dates or status changed but not applied yet */
+.btn-filter.is-pending {
+    box-shadow: 0 0 0 3px rgba(44, 85, 48, 0.22);
+}
+
+.btn-filter.is-pending::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    margin-left: 2px;
+    border-radius: 50%;
+    background: #f5c24b;
+}
+
+.filter-group label.filter-label-text {
+    width: auto;
+    min-width: 30px;
+    font-size: 12px;
     font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    color: var(--ink-muted);
+    text-align: left;
+    margin: 0;
 }
 
-.btn-reset:hover {
-    background: #cbd5e1;
-}
+
 
 /* ===== TRANSACTIONS TABLE ===== */
 .transactions-section {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--line);
 }
 
 .section-header {
@@ -256,34 +312,20 @@ body {
 
 .section-header h5 {
     margin: 0;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
-    color: #1e293b;
+    letter-spacing: -0.01em;
+    color: var(--ink);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .section-header h5 i {
-    color: #4a6fa5;
+    color: var(--ink-subtle);
 }
 
-.btn-export {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
-}
 
-.btn-export:hover {
-    background: #059669;
-}
 
 .transactions-table {
     width: 100%;
@@ -292,58 +334,98 @@ body {
 
 .transactions-table th {
     text-align: left;
-    padding: 12px;
-    font-size: 12px;
+    padding: 9px 12px;
+    font-size: 11px;
     font-weight: 600;
-    color: #64748b;
+    color: var(--ink-muted);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid #e2e8f0;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--line);
 }
 
 .transactions-table td {
-    padding: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    color: #334155;
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
     font-size: 13px;
+    vertical-align: middle;
 }
 
-.transactions-table tr:hover {
-    background: #f8fafc;
+/* Money and counts line up digit for digit down the column */
+.transactions-table td:nth-child(3),
+.transactions-table td:nth-child(4),
+.transactions-table td:nth-child(6),
+.transactions-table td:nth-child(7) {
+    font-variant-numeric: tabular-nums;
+}
+
+.transactions-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transactions-table tbody tr:hover {
+    background: var(--canvas);
     cursor: pointer;
 }
 
 .transaction-id {
     font-weight: 600;
-    color: #8B4513;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+/* The class was applied in the markup but never had a rule, so the emoji was
+   carrying the whole cell. */
+.payment-method {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+.payment-method i {
+    width: 13px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-subtle);
+}
+
+.payment-method.payment-gcash i {
+    color: var(--brand);
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 20px;
-    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
     font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
     display: inline-block;
 }
 
 .status-completed {
-    background: #d1fae5;
-    color: #065f46;
+    background: var(--positive-tint);
+    color: var(--positive);
 }
 
 .status-voided {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--negative-tint);
+    color: var(--negative);
 }
 
 .status-refunded {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--warning-tint);
+    color: var(--warning);
 }
 
+/* The total is not a gain to be coloured green; it is just the amount. */
 .amount-positive {
     font-weight: 600;
-    color: #059669;
+    color: var(--ink);
 }
 
 /* Empty State */
@@ -439,7 +521,7 @@ body {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #2c5530 0%, #8B4513 100%);
+    background: var(--brand);
     color: white;
     border-radius: 16px 16px 0 0;
     padding: 15px 20px;
@@ -452,6 +534,38 @@ body {
 
 .modal-header .btn-close:hover {
     opacity: 1;
+}
+
+/* Modal footer buttons. Bootstrap's stock blue and grey sit outside this
+   project's palette; the destructive action keeps its red. */
+.modal-footer .btn-primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: #fff;
+}
+
+.modal-footer .btn-primary:hover,
+.modal-footer .btn-primary:focus {
+    background: var(--brand-strong);
+    border-color: var(--brand-strong);
+}
+
+.modal-footer .btn-secondary {
+    background: var(--surface);
+    border-color: var(--line);
+    color: var(--ink);
+}
+
+.modal-footer .btn-secondary:hover,
+.modal-footer .btn-secondary:focus {
+    background: var(--canvas);
+    border-color: var(--line-strong);
+    color: var(--ink);
+}
+
+.modal-footer .btn-danger {
+    background: var(--negative);
+    border-color: var(--negative);
 }
 
 .modal-body {
@@ -529,15 +643,14 @@ body {
     border: 1px solid #e2e8f0;
     color: #64748b;
     margin: 0 3px;
-    transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    will-change: background-color, color, transform, border-color;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     cursor: pointer;
 }
 
 .btn-icon:hover {
-    background: #4a6fa5;
+    background: var(--ink-subtle);
     color: white;
-    border-color: #4a6fa5;
+    border-color: var(--ink-subtle);
 }
 
 .btn-icon.void:hover {
@@ -610,4 +723,157 @@ body {
     .transactions-table td {
         padding: 8px;
     }
+}
+/* ═══════════════════════════════════════════════════════════════════
+   Transaction details modal (#transactionModal.tx-modal)
+   The receipt inside comes from assets/js/receipt.js (same as the POS).
+   ═══════════════════════════════════════════════════════════════════ */
+#transactionModal.tx-modal .modal-dialog {
+    max-width: 440px;
+}
+
+#transactionModal.tx-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+}
+
+#transactionModal.tx-modal .tx-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 16px 14px 20px;
+    border-bottom: 1px solid #e4e7e4;
+    background: #fff;
+}
+
+#transactionModal.tx-modal .tx-head-text {
+    flex: 1;
+    min-width: 0;
+}
+
+#transactionModal.tx-modal .tx-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #16221a;
+    font-variant-numeric: tabular-nums;
+}
+
+#transactionModal.tx-modal .tx-sub {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: #61706a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#transactionModal.tx-modal .tx-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+#transactionModal.tx-modal .tx-status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+#transactionModal.tx-modal .tx-status.is-completed { color: #15803d; }
+#transactionModal.tx-modal .tx-status.is-voided { color: #b42318; }
+#transactionModal.tx-modal .tx-status.is-pending { color: #b45309; }
+
+#transactionModal.tx-modal .tx-head .btn-close {
+    margin: 0;
+    font-size: 11px;
+    opacity: 0.5;
+}
+
+#transactionModal.tx-modal .modal-body {
+    padding: 16px;
+    background: #f6f7f6;
+}
+
+#transactionModal.tx-modal #transactionDetails {
+    background: #fff;
+    border: 1px solid #e4e7e4;
+    border-radius: 10px;
+    padding: 18px 18px 16px;
+    box-shadow: 0 1px 2px rgba(22, 34, 26, 0.05);
+}
+
+#transactionModal.tx-modal .tx-foot {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px 16px;
+    border-top: 1px solid #e4e7e4;
+    background: #fff;
+}
+
+#transactionModal.tx-modal .tx-spacer {
+    flex: 1;
+}
+
+#transactionModal.tx-modal .tx-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 42px;
+    margin: 0;
+    padding: 0 16px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+#transactionModal.tx-modal .tx-btn-ghost {
+    background: #fff;
+    border-color: #cfd4cf;
+    color: #16221a;
+}
+
+#transactionModal.tx-modal .tx-btn-ghost:hover { background: #f6f7f6; }
+
+#transactionModal.tx-modal .tx-btn-primary {
+    background: #2c5530;
+    color: #fff;
+}
+
+#transactionModal.tx-modal .tx-btn-primary:hover { background: #1f3d23; }
+
+/* Destructive action stays quiet until hovered */
+#transactionModal.tx-modal .tx-btn-danger {
+    background: #fff;
+    border-color: #f1c7c3;
+    color: #b42318;
+}
+
+#transactionModal.tx-modal .tx-btn-danger:hover {
+    background: #fdeceb;
+    border-color: #b42318;
+}
+
+#transactionModal.tx-modal .tx-btn:focus-visible {
+    outline: 2px solid #2c5530;
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    #transactionModal.tx-modal .modal-dialog { margin: 12px; }
+    #transactionModal.tx-modal .tx-btn { padding: 0 12px; }
 }

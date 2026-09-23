@@ -306,18 +306,22 @@ function displayCategories(categories) {
     let html = '';
     categories.forEach(category => {
         const isActive = currentCategoryId == category.id;
+        const count = parseInt(category.product_count, 10) || 0;
+        const color = /^#[0-9a-f]{3,8}$/i.test(category.color || '') ? category.color : '#2c5530';
         html += `
             <div class="category-card ${isActive ? 'active' : ''}" onclick="selectCategory(${category.id}, '${escapeHtml(category.name).replace(/'/g, "\\'")}')">
-                <div class="category-actions">
-                    <button class="btn-icon" onclick="event.stopPropagation(); editCategory(${category.id})" title="Edit Category"><i class="fas fa-edit"></i></button>
-                    <button class="btn-icon archive" onclick="event.stopPropagation(); archiveCategory(${category.id})" title="Archive Category"><i class="fas fa-box-archive"></i></button>
+                <div class="inv-cat-top">
+                    <span class="inv-cat-icon" style="--cat:${color}"><i class="fas ${escapeHtml(category.icon || 'fa-paw')}"></i></span>
+                    <div class="category-actions">
+                        <button class="btn-icon" onclick="event.stopPropagation(); editCategory(${category.id})" title="Edit category"><i class="fas fa-pen"></i></button>
+                        <button class="btn-icon archive" onclick="event.stopPropagation(); archiveCategory(${category.id})" title="Archive category"><i class="fas fa-box-archive"></i></button>
+                    </div>
                 </div>
-                <div class="category-icon-small" style="background: ${category.color}"><i class="fas ${category.icon || 'fa-paw'}"></i></div>
                 <h3>${escapeHtml(category.name)}</h3>
-                <p>${category.description ? escapeHtml(category.description.substring(0, 30) + (category.description.length > 30 ? '...' : '')) : 'No description'}</p>
-                <div class="category-stats">
-                    <div class="stat-item"><div class="stat-value">${category.product_count || 0}</div><div class="stat-label">Products</div></div>
-                    <div class="stat-item"><div class="stat-value"><span class="badge bg-${category.status === 'active' ? 'success' : 'secondary'}">${category.status}</span></div><div class="stat-label">Status</div></div>
+                <p>${category.description ? escapeHtml(category.description) : '<span class="inv-muted">No description</span>'}</p>
+                <div class="inv-cat-foot">
+                    <span><strong>${count}</strong> product${count === 1 ? '' : 's'}</span>
+                    ${category.status !== 'active' ? '<span class="inv-tag">Inactive</span>' : ''}
                 </div>
             </div>`;
     });
@@ -337,7 +341,7 @@ function selectCategory(categoryId, categoryName) {
     if (productsSection) productsSection.style.display = 'block';
 
     const addProductBtn = document.getElementById('addProductBtn');
-    if (addProductBtn) addProductBtn.style.display = 'inline-block';
+    if (addProductBtn) addProductBtn.style.display = 'inline-flex';
 
     document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
@@ -511,43 +515,15 @@ function setInactiveInstead(categoryId) {
 
 // Confirmation modal before archiving (shown only when safe)
 function showArchiveConfirmModal(categoryId) {
-    const existing = document.getElementById('archiveConfirmModal');
-    if (existing) existing.remove();
-
-    const html = `
-    <div class="modal fade" id="archiveConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header" style="background:linear-gradient(135deg,#2c5530,#8B4513);color:white;border-radius:14px 14px 0 0;">
-                    <h5 class="modal-title"><i class="fas fa-box-archive me-2"></i>Archive Category</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex align-items-start gap-3 p-3 rounded" style="background:#fff8eb;border:1px solid #fde8c8;">
-                        <i class="fas fa-box-archive fa-2x mt-1" style="color:#8B4513;flex-shrink:0;"></i>
-                        <div>
-                            <strong style="color:#6B3410;">This category has no transaction records.</strong>
-                            <p class="mb-0 mt-1" style="font-size:13px;color:#78350f;">
-                                All products in this category will also be archived. 
-                                You can restore them from the Archive page anytime.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-sm" style="background:#8B4513;color:white;border:none;"
-                        onclick="confirmArchiveCategory(${categoryId})">
-                        <i class="fas fa-box-archive me-1"></i>Yes, Archive It
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', html);
-    const modal = new bootstrap.Modal(document.getElementById('archiveConfirmModal'));
-    modal.show();
+    const category = categories.find(c => String(c.id) === String(categoryId));
+    const count = parseInt(category?.product_count, 10) || 0;
+    confirmDialog({
+        title: 'Archive category?',
+        message: `${category ? category.name : 'This category'} and its ${count} product${count === 1 ? '' : 's'} will be moved to the archive.`,
+        detail: 'None of them have sales records. You can restore them from the Archive page.',
+        confirmText: 'Archive',
+        tone: 'warning'
+    }).then(ok => { if (ok) confirmArchiveCategory(categoryId); });
 }
 
 function confirmArchiveCategory(categoryId) {
@@ -605,6 +581,17 @@ function loadCategoryProducts(categoryId) {
     });
 }
 
+/**
+ * True when a YYYY-MM-DD date is before today (local time). String compare avoids
+ * new Date('YYYY-MM-DD') being parsed as UTC midnight.
+ */
+function isDateExpired(dateStr) {
+    if (!dateStr || dateStr.startsWith('0000-00-00')) return false;
+    const now = new Date();
+    const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    return dateStr.substring(0, 10) < today;
+}
+
 function getDaysInBadgeHtml(product) {
     // Use server-computed days_in_stock (from DATEDIFF in SQL).
     // Fall back to JS calculation only if the field is missing.
@@ -623,21 +610,21 @@ function getDaysInBadgeHtml(product) {
 
     if (days === null || isNaN(days) || days < 0) days = 0;
 
-    let cls = 'days-in-fresh';
-    let icon = 'fa-seedling';
-    if (days > 90) { cls = 'days-in-critical'; icon = 'fa-fire'; }
-    else if (days > 60) { cls = 'days-in-aging'; icon = 'fa-exclamation-triangle'; }
-    else if (days > 30) { cls = 'days-in-moderate'; icon = 'fa-clock'; }
-
-    return `<span class="days-in-badge ${cls}"><i class="fas ${icon} me-1"></i>${days}d</span>`;
+    const cls = days > 90 ? 'is-bad' : days > 60 ? 'is-warn' : '';
+    const title = days > 90 ? 'In stock over 90 days' : days > 60 ? 'In stock over 60 days' : '';
+    return `<span class="inv-days ${cls}" title="${title}">${days}<span class="inv-unit">d</span></span>`;
 }
 
+// id → name for the rows on screen (used by the archive confirm dialog)
+let productNames = new Map();
+
 function displayProducts(products) {
+    productNames = new Map((products || []).map(p => [String(p.id), p.name]));
     const tbody = document.getElementById('productsTableBody');
     if (!tbody) return;
 
     if (!products || products.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4"><i class="fas fa-box-open fa-2x text-muted mb-2"></i><p class="text-muted">No products in this category. Click "Add Product to ${escapeHtml(currentCategoryName)}" to add one.</p></td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="inv-empty-cell"><p>No products in this category. Click "Add Product to ${escapeHtml(currentCategoryName)}" to add one.</p></td></tr>`;
         return;
     }
 
@@ -646,82 +633,71 @@ function displayProducts(products) {
         const unitType = getUnitTypeFromValue(product.unit);
         const isWeight = (unitType === 'weight');
 
-        // Stock display
+        // Stock: plain number, coloured only when low or out
         let stockHtml;
         if (isWeight) {
-            stockHtml = '<span class="unit-badge">Per unit</span>';
+            stockHtml = '<span class="inv-muted">By weight</span>';
         } else {
-            let stockClass = 'stock-good';
             const stockValue = parseInt(product.stock) || 0;
-            if (stockValue <= 0) stockClass = 'stock-out';
-            else if (stockValue <= 5) stockClass = 'stock-low';
-            else if (stockValue <= 15) stockClass = 'stock-medium';
-            stockHtml = `<span class="stock-badge ${stockClass}">${stockValue <= 0 ? 'Out' : stockValue}</span>`;
+            const stockCls = stockValue <= 5 ? 'is-bad' : stockValue <= 15 ? 'is-warn' : '';
+            stockHtml = `<span class="${stockCls}">${stockValue <= 0 ? 'Out' : stockValue}</span>`;
         }
 
-        // Unit display
-        const unitHtml = product.unit ? `<span class="unit-badge">${escapeHtml(product.unit)}</span>` : '<span class="text-muted">—</span>';
+        const unitHtml = product.unit ? escapeHtml(product.unit) : '<span class="inv-muted">—</span>';
 
-        // Cost price display
         const costHtml = product.cost_price && parseFloat(product.cost_price) > 0
-            ? `<span class="cost-text">₱${parseFloat(product.cost_price).toFixed(2)}</span>`
-            : '<span class="text-muted">—</span>';
+            ? `₱${parseFloat(product.cost_price).toFixed(2)}`
+            : '<span class="inv-muted">—</span>';
 
-        // Expiration display
-        let expiryHtml = '<span class="text-muted">—</span>';
-        if (product.expiration_date && product.expiration_date !== '0000-00-00' && product.expiration_date !== null) {
+        // Expiry: the date, with a short relative note underneath
+        let expiryHtml = '<span class="inv-muted">—</span>';
+        if (product.expiration_date && product.expiration_date !== '0000-00-00') {
             const exp = new Date(product.expiration_date);
-            const today = new Date();
-            const diff = Math.ceil((exp - today) / (1000 * 60 * 60 * 24));
+            const diff = Math.ceil((exp - new Date()) / (1000 * 60 * 60 * 24));
             const fmt = exp.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
-
-            if (diff < 0) {
-                expiryHtml = `<span class="expiry-badge expiry-expired"><i class="fas fa-times-circle me-1"></i>Expired</span><small class="d-block text-muted">${fmt}</small>`;
-            } else if (diff <= 30) {
-                expiryHtml = `<span class="expiry-badge expiry-soon"><i class="fas fa-exclamation-triangle me-1"></i>${diff}d</span><small class="d-block text-muted">${fmt}</small>`;
-            } else if (diff <= 90) {
-                expiryHtml = `<span class="expiry-badge expiry-warning"><i class="fas fa-clock me-1"></i>${Math.ceil(diff / 30)}mo</span><small class="d-block text-muted">${fmt}</small>`;
-            } else {
-                expiryHtml = `<span class="expiry-badge expiry-good"><i class="fas fa-check-circle me-1"></i>Good</span><small class="d-block text-muted">${fmt}</small>`;
-            }
+            let cls = '', note;
+            if (isDateExpired(product.expiration_date)) { cls = 'is-bad'; note = 'Expired'; }
+            else if (diff <= 30) { cls = 'is-bad'; note = diff <= 1 ? 'Tomorrow' : `In ${diff} days`; }
+            else if (diff <= 90) { cls = 'is-warn'; note = `In ${Math.round(diff / 30)} mo`; }
+            else { note = `In ${Math.round(diff / 30)} mo`; }
+            expiryHtml = `<span class="${cls}">${fmt}</span><span class="inv-sub">${note}</span>`;
         }
 
         const currentStatus = product.status || 'active';
-        const displayStatus = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1);
-        const statusClass = currentStatus === 'active' ? 'status-active' : 'status-inactive';
+        // Expired stock outranks the Active/Inactive switch; the tooltip keeps the underlying status visible
+        const isExpired = isDateExpired(product.expiration_date);
+        const displayStatus = isExpired ? 'Expired' : currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1);
+        const statusClass = isExpired ? 'status-expired' : (currentStatus === 'active' ? 'status-active' : 'status-inactive');
+        const statusTitle = isExpired ? `Oldest batch expired · product is ${currentStatus}` : '';
 
-        // Image thumbnail
-        let imageHtml;
-        if (product.image) {
-            imageHtml = `<img src="${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" class="product-thumb" loading="lazy">`;
-        } else {
-            imageHtml = `<div class="product-thumb-placeholder" style="background:${product.category_color || '#4a6fa5'}"><i class="fas fa-box"></i></div>`;
-        }
+        const imageHtml = product.image
+            ? `<img src="${escapeHtml(product.image)}" alt="" class="inv-thumb" loading="lazy">`
+            : `<span class="inv-thumb inv-thumb-empty"><i class="fas fa-box"></i></span>`;
+
+        const safeName = escapeHtml(product.name).replace(/'/g, "\\'");
 
         html += `
             <tr>
-                <td>${imageHtml}</td>
                 <td>
-                    <div class="d-flex align-items-center">
-                        <div>
-                            <strong>${escapeHtml(product.name)}</strong><br>
-                            <small class="text-muted">${escapeHtml(product.category_name || '')}</small>
-                            ${product.sku ? `<small class="text-muted d-block" style="font-family:monospace;">${escapeHtml(product.sku)}</small>` : ''}
-                            ${product.barcode ? `<small class="text-muted d-block" style="font-family:monospace;"><i class="fas fa-barcode me-1"></i>${escapeHtml(product.barcode)}</small>` : ''}
+                    <div class="inv-product">
+                        ${imageHtml}
+                        <div class="inv-product-text">
+                            <span class="inv-name">${escapeHtml(product.name)}</span>
+                            <span class="inv-sub">${[product.sku, product.barcode].filter(Boolean).map(escapeHtml).join(' · ')}</span>
                         </div>
                     </div>
                 </td>
-                <td>${unitHtml}</td>
-                <td>${costHtml}</td>
-                <td><strong>₱${parseFloat(product.price).toFixed(2)}</strong></td>
-                <td>${stockHtml}</td>
-                <td class="days-in-cell">${getDaysInBadgeHtml(product)}</td>
-                <td>${expiryHtml}</td>
-                <td><span class="status-badge ${statusClass}">${displayStatus}</span></td>
-                <td>
-                    ${isOwner ? `<button class="btn-icon" onclick="editProduct(${product.id})" title="Edit Product"><i class="fas fa-edit"></i></button>` : ''}
-                    <button class="btn-icon" onclick="openStockModal(${product.id},'${escapeHtml(product.name).replace(/'/g, "\\'")}',${product.stock || 0}, '${currentStatus}')" title="Manage Stock & Status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
-                    <button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to Archive"><i class="fas fa-box-archive"></i></button>
+                <td class="inv-muted-cell">${unitHtml}</td>
+                <td class="inv-num inv-muted-cell">${costHtml}</td>
+                <td class="inv-num"><strong>₱${parseFloat(product.price).toFixed(2)}</strong></td>
+                <td class="inv-num">${stockHtml}</td>
+                <td class="inv-num days-in-cell">${getDaysInBadgeHtml(product)}</td>
+                <td class="inv-expiry">${expiryHtml}</td>
+                <td><span class="inv-status ${statusClass}" title="${statusTitle}">${displayStatus}</span></td>
+                <td class="inv-actions">
+                    ${isOwner ? `<button class="btn-icon" onclick="editProduct(${product.id})" title="Edit product"><i class="fas fa-pen"></i></button>` : ''}
+                    <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${product.stock || 0}, '${currentStatus}')" title="Manage stock & status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
+                    <button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to archive"><i class="fas fa-box-archive"></i></button>
                 </td>
             </tr>`;
     });
@@ -729,7 +705,14 @@ function displayProducts(products) {
 }
 
 function archiveProduct(productId) {
-    if (confirm('Move this product to archive?')) {
+    confirmDialog({
+        title: 'Archive product?',
+        message: `${productNames.get(String(productId)) || 'This product'} will be moved to the archive.`,
+        detail: 'It leaves the POS and inventory list. You can restore it from the Archive page.',
+        confirmText: 'Archive',
+        tone: 'warning'
+    }).then(ok => {
+        if (!ok) return;
         showLoading();
         $.ajax({
             url: ajaxUrl,
@@ -750,12 +733,36 @@ function archiveProduct(productId) {
                 showToast('error', 'Error', 'Failed to archive product');
             }
         });
-    }
+    });
 }
 
 function editProduct(productId) {
     openProductModal(productId);
 }
+
+// Profit per unit shown under Cost / Selling price
+function updateMarginHint() {
+    const hint = document.getElementById('marginHint');
+    if (!hint) return;
+    const cost = parseFloat(document.getElementById('productCostPrice')?.value);
+    const price = parseFloat(document.getElementById('productPrice')?.value);
+    hint.classList.remove('is-bad');
+    if (!(price > 0) || !(cost > 0)) { hint.textContent = ''; return; }
+    const profit = price - cost;
+    const pct = Math.round((profit / price) * 100);
+    const peso = n => '₱' + Math.abs(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    if (profit <= 0) {
+        hint.classList.add('is-bad');
+        hint.textContent = profit === 0 ? 'Selling at cost — no profit.' : `Selling at a loss of ${peso(profit)} per unit.`;
+    } else {
+        hint.textContent = `Profit ${peso(profit)} per unit (${pct}% margin)`;
+    }
+}
+
+document.addEventListener('input', e => {
+    if (e.target && (e.target.id === 'productCostPrice' || e.target.id === 'productPrice')) updateMarginHint();
+});
+document.getElementById('productModal')?.addEventListener('shown.bs.modal', updateMarginHint);
 
 function saveProduct() {
     // Sync hidden unit field from the two visible fields
@@ -810,8 +817,18 @@ function saveProduct() {
         showToast('warning', 'Warning', 'Please select a unit / measurement');
         return;
     }
-    if (!price || parseFloat(price) <= 0) {
+    if (!/^\d+(\.\d{1,2})?$/.test(price || '') || parseFloat(price) <= 0) {
         showToast('warning', 'Warning', 'Selling price is required and must be greater than 0');
+        return;
+    }
+    if (costPrice && !/^\d+(\.\d{1,2})?$/.test(costPrice)) {
+        showToast('warning', 'Invalid Cost', 'Cost price must be 0 or a positive amount');
+        document.getElementById('productCostPrice')?.focus();
+        return;
+    }
+    if (unitType !== 'weight' && !/^\d+$/.test(String(stock))) {
+        showToast('warning', 'Invalid Stock', 'Stock must be a whole number of 0 or more');
+        document.getElementById('productStock')?.focus();
         return;
     }
     // Cost price must be LESS than selling price
@@ -1122,7 +1139,7 @@ function openProductModal(productId = null) {
     if (idField) idField.value = '';
 
     const modalTitle = document.getElementById('productModalTitle');
-    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-box me-2"></i>Add New Product';
+    if (modalTitle) modalTitle.textContent = 'Add product';
 
     // Reset UI elements
     const stockWrapper = document.getElementById('stockFieldWrapper');
@@ -1213,7 +1230,7 @@ function openProductModal(productId = null) {
                     onUnitTypeChange();
                     if (stockWrapper) stockWrapper.style.display = 'block';
                     checkExpirationWarning();
-                    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Product';
+                    if (modalTitle) modalTitle.textContent = 'Edit product';
 
                     // Load existing image
                     const imgField = document.getElementById('productImage');
@@ -1323,47 +1340,34 @@ function refreshBatchList(productId) {
                     if (response.data.length > 0) {
                         displayContainer.style.display = 'block';
                         response.data.forEach((batch, index) => {
-                            let isFirst = index === 0;
-                            let firstText = isFirst ? `<span class="text-primary fw-bold me-2" style="font-size:11px; width:70px; display:inline-block;"><i class="fas fa-play me-1"></i>SELL 1ST</span>` : `<span class="text-muted fw-semibold me-2" style="font-size:11px; width:70px; display:inline-block;">Batch ${index + 1}</span>`;
-                            let expDisplay = batch.expiration_date ? `Exp ${batch.expiration_date}` : `<span class="badge bg-secondary text-white bg-opacity-25 text-opacity-75">No expiry</span>`;
-                            
-                            let rowBg = isFirst ? 'bg-white border-primary border-start border-3 shadow-sm' : 'bg-white border-light border';
-                            
+                            const isFirst = index === 0;
+                            const expired = isDateExpired(batch.expiration_date);
+                            const fmtDate = d => d
+                                ? new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                                : '';
+                            const expText = batch.expiration_date
+                                ? `<span class="${expired ? 'is-bad' : ''}">Exp ${fmtDate(batch.expiration_date)}</span>${expired ? ' <span class="inv-batch-tag is-bad">Expired</span>' : ''}`
+                                : '<span class="inv-muted">No expiry</span>';
+
                             batchesList.innerHTML += `
-                                <div class="d-flex justify-content-between align-items-center p-2 rounded ${rowBg} batch-row-clickable" 
-                                     data-batch-id="${batch.id}" data-batch-exp="${batch.expiration_date || ''}" 
+                                <div class="inv-batch ${isFirst ? 'is-first' : ''} batch-row-clickable"
+                                     data-batch-id="${batch.id}" data-batch-exp="${batch.expiration_date || ''}"
                                      data-product-id="${productId}"
-                                     onclick="toggleBatchExpiryEditor(this)" 
-                                     style="cursor:pointer; transition: background 0.15s;" 
-                                     title="Click to edit expiration date">
-                                    <div class="d-flex align-items-center flex-grow-1">
-                                        ${firstText}
-                                        <strong class="text-dark me-3" style="font-size:13px; width: 60px;">${batch.stock} units</strong>
-                                        <span style="font-size:12px;" class="text-muted batch-exp-display">${expDisplay}</span>
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span style="font-size:11px;" class="text-muted">recv: ${batch.date_added}</span>
-                                        <i class="fas fa-pen text-muted" style="font-size:10px; opacity:0.5;"></i>
-                                    </div>
+                                     onclick="toggleBatchExpiryEditor(this)"
+                                     role="button" tabindex="0" title="Change this batch's expiry date">
+                                    <span class="inv-batch-order">${isFirst ? 'Sells first' : 'Next'}</span>
+                                    <span class="inv-batch-qty">${batch.stock} <small>units</small></span>
+                                    <span class="inv-batch-exp batch-exp-display">${expText}</span>
+                                    <span class="inv-batch-recv">Received ${fmtDate(batch.date_added)}</span>
+                                    <i class="fas fa-pen inv-batch-edit" aria-hidden="true"></i>
                                 </div>
-                                <div class="batch-expiry-editor px-2 pb-2" id="batchEditor_${batch.id}" style="display:none;">
-                                    <div class="d-flex align-items-center gap-2 p-2 rounded" style="background:#f8f9fa; border:1px solid #dee2e6;">
-                                        <i class="fas fa-calendar-alt text-muted"></i>
-                                        <input type="date" class="form-control form-control-sm" 
-                                               id="batchExpInput_${batch.id}" 
-                                               value="${batch.expiration_date || ''}" 
-                                               style="max-width:160px; font-size:13px;">
-                                        <button class="btn btn-sm btn-primary px-2 py-1" 
-                                                onclick="event.stopPropagation(); saveBatchExpiry(${batch.id}, ${productId})" 
-                                                style="font-size:12px;">
-                                            <i class="fas fa-check me-1"></i>Save
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-secondary px-2 py-1" 
-                                                onclick="event.stopPropagation(); closeBatchExpiryEditor(${batch.id})" 
-                                                style="font-size:12px;">
-                                            Cancel
-                                        </button>
-                                    </div>
+                                <div class="batch-expiry-editor inv-batch-editor" id="batchEditor_${batch.id}" style="display:none;">
+                                    <label class="visually-hidden" for="batchExpInput_${batch.id}">Expiry date</label>
+                                    <input type="date" class="form-control form-control-sm" id="batchExpInput_${batch.id}" value="${batch.expiration_date || ''}">
+                                    <button type="button" class="inv-btn inv-btn-primary inv-btn-sm"
+                                            onclick="event.stopPropagation(); saveBatchExpiry(${batch.id}, ${productId})">Save</button>
+                                    <button type="button" class="inv-btn inv-btn-sm"
+                                            onclick="event.stopPropagation(); closeBatchExpiryEditor(${batch.id})">Cancel</button>
                                 </div>
                             `;
                         });
@@ -1371,7 +1375,21 @@ function refreshBatchList(productId) {
                         displayContainer.style.display = 'none';
                     }
                 }
-                
+
+                // Warn when the batches don't add up to the product's stock
+                const mismatchEl = document.getElementById('batchMismatchWarning');
+                const stockEl = document.getElementById('currentStock');
+                if (mismatchEl && stockEl) {
+                    const productStock = parseInt(stockEl.textContent, 10) || 0;
+                    const batchTotal = response.data.reduce((sum, b) => sum + (parseInt(b.stock, 10) || 0), 0);
+                    if (response.data.length > 0 && batchTotal !== productStock) {
+                        mismatchEl.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>Batches total <strong>${batchTotal}</strong> units but current stock is <strong>${productStock}</strong>. Expiry tracking may be off — re-save the product or contact the owner.`;
+                        mismatchEl.style.display = 'block';
+                    } else {
+                        mismatchEl.style.display = 'none';
+                    }
+                }
+
                 if (addSelect) {
                     addSelect.innerHTML = '<option value="">Select a batch...</option>';
                     response.data.forEach(batch => {
@@ -1523,13 +1541,15 @@ function updateStock() {
 
     // Determine the effective action:
     // If action is 'none' OR quantity is empty/zero, treat as status-only update
-    if (action !== 'none' && rawQuantity && parseInt(rawQuantity) > 0) {
+    const qtyText = (rawQuantity || '').trim();
+    if (action !== 'none' && /^[1-9]\d*$/.test(qtyText)) {
         // User wants to add/remove stock
-        quantity = parseInt(rawQuantity);
+        quantity = parseInt(qtyText, 10);
         effectiveType = action;
-    } else if (action !== 'none' && rawQuantity && parseInt(rawQuantity) < 0) {
-        // Invalid negative quantity
-        showToast('warning', 'Warning', 'Quantity cannot be negative');
+    } else if (action !== 'none' && qtyText !== '') {
+        // Anything else typed ("0", "-5", "--22") is a mistake, not a status-only save
+        showToast('warning', 'Invalid Quantity', 'Enter a whole number greater than 0');
+        document.getElementById('stockQuantity')?.focus();
         return;
     } else {
         // No quantity provided or action is 'none' — status-only update

@@ -28,12 +28,23 @@ try {
     $pdo = getDBConnection();
     
     // Check if user exists
-    $check = $pdo->prepare("SELECT id FROM users WHERE id = ?");
+    $check = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
     $check->execute([$user_id]);
-    
-    if ($check->rowCount() === 0) {
+    $target = $check->fetch(PDO::FETCH_ASSOC);
+
+    if (!$target) {
         echo json_encode(['success' => false, 'message' => 'User not found']);
         exit();
+    }
+
+    // The store must always keep an owner
+    if ($target['role'] === 'owner') {
+        $others = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = 'owner' AND is_active = 1 AND id <> ?");
+        $others->execute([$user_id]);
+        if ((int)$others->fetchColumn() === 0) {
+            echo json_encode(['success' => false, 'message' => 'This is the only owner account and cannot be deleted.']);
+            exit();
+        }
     }
     
     // Delete user

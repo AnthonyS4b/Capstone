@@ -169,9 +169,15 @@ function updateStats(recs) {
         : 80;
 
     $('#slowMovingCount').text(slow);
-    $('#potentialRevenue').text('₱' + revenue.toLocaleString('en-PH', { minimumFractionDigits: 0 }));
+    $('#slowMovingNote').text(`of ${recs.length} flagged product${recs.length === 1 ? '' : 's'}`);
+    $('#potentialRevenue').text('₱' + revenue.toLocaleString('en-PH', { maximumFractionDigits: 0 }));
     $('#avgShelfLife').text(avgDays + ' days');
     $('#confidenceScore').text(avgConf + '%');
+
+    // Counts next to each filter tab
+    ['all', 'critical', 'warning', 'monitor', 'slow'].forEach(f => {
+        $(`.rp-count[data-count="${f}"]`).text(filterRecommendations(recs, f).length);
+    });
 }
 
 // ═══════════ FILTER ═══════════
@@ -224,7 +230,7 @@ function applyRecommendationView() {
 
     const listHeader = document.getElementById('recommendationsListHeader');
     if (listHeader) {
-        listHeader.hidden = currentView !== 'list' || !c.querySelector('.product-card');
+        listHeader.hidden = currentView !== 'list' || !c.querySelector('.rp-item');
         listHeader.setAttribute('aria-hidden', String(listHeader.hidden));
     }
 }
@@ -235,147 +241,112 @@ function updateResultCount(count) {
 
     const total = allRecommendations.length;
     resultCount.textContent = count === total
-        ? `${count} recommendation${count === 1 ? '' : 's'}`
-        : `${count} of ${total} recommendations`;
+        ? `${count} product${count === 1 ? '' : 's'} · highest risk first`
+        : `Showing ${count} of ${total} products`;
+}
+
+const RISK_LABELS = { CRITICAL: 'Critical', WARNING: 'Warning', MONITOR: 'Monitor', LOW: 'Low' };
+
+function peso(n) {
+    return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function buildCard(r) {
     const strategy = r.strategies?.[0] || {};
-    const riskClass = (r.risk_level || 'LOW').toLowerCase();
+    const riskLevel = r.risk_level || 'LOW';
+    const riskClass = riskLevel.toLowerCase();
+    const riskPct = Math.round((r.risk_score || 0) * 100);
     const daysInStock = r.days_in_stock || 0;
     const monthly = Math.round(r.monthly_sales || 0);
+    const sold90 = r.total_sold_90d || 0;
     const stock = r.current_stock || 0;
-    const price = r.current_price || 0;
-    const costPrice = r.cost_price || 0;
     const category = r.category || 'General';
-    const isMonitor = r.risk_level === 'MONITOR';
+    const isMonitor = riskLevel === 'MONITOR';
+    const isEscalation = strategy.strategy_id === 'escalate_reevaluate' || strategy.is_escalation;
 
-    // Days metrics coloring (90+ Critical, 50+ Warning)
-    const daysClass = daysInStock >= 90 ? 'critical' : daysInStock >= 50 ? 'warning' : '';
-    const stockClass = stock <= 5 ? 'critical' : stock <= 15 ? 'warning' : '';
+    // Days in stock: 90+ is a problem, 50+ worth watching
+    const daysClass = daysInStock >= 90 ? 'is-bad' : daysInStock >= 50 ? 'is-warn' : '';
+    const stockClass = stock <= 5 ? 'is-bad' : stock <= 15 ? 'is-warn' : '';
 
-    // Expiry Warning Alert (New)
-    let expiryAlertHTML = '';
+    // Expiry sits under the product name instead of a full-width banner
+    let expiryHTML = '';
     if (r.is_critical_expiry && r.expiration_date) {
-        const dateObj = new Date(r.expiration_date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        expiryAlertHTML = `
-            <div class="expiry-alert">
-                <i class="fas fa-exclamation-triangle"></i>
-                <div>
-                    <strong>EXPIRY ALERT</strong>: This product is set to expire on <strong>${formattedDate}</strong>. 
-                     Nearly Expired Items have higher priority than Days in Stocks.
-                </div>
-            </div>
-        `;
+        const d = new Date(r.expiration_date);
+        const when = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        expiryHTML = `<span class="rp-expiry" title="Near-expiry items are prioritised over days in stock"><i class="fas fa-hourglass-end" aria-hidden="true"></i> Expires ${when}</span>`;
     }
 
-    // Strategy section: show monitor message for MONITOR items
-    let strategyHTML = '';
-    const firstStrategy = r.strategies?.[0] || {};
-    const isEscalation = firstStrategy.strategy_id === 'escalate_reevaluate' || firstStrategy.is_escalation;
-
+    // Recommendation cell
+    let recoHTML;
     if (isEscalation) {
-        strategyHTML = `
-            <div class="strategy-section escalation-strategy" style="border-left: 4px solid #ef4444; background: rgba(239,68,68,0.06);">
-                <div class="strategy-header">
-                    <span class="strategy-name" style="color:#ef4444;">⚠ Escalate &amp; Re-evaluate</span>
-                    <span class="discount-pill" style="background:#ef444420;color:#ef4444;border:1px solid #ef444440;">Strategies Exhausted</span>
-                </div>
-                <div class="strategy-description">
-                    All standard strategies have been tried recently. A deeper business review is recommended.
-                </div>
-            </div>`;
+        recoHTML = `
+            <span class="rp-reco-name is-bad">Needs manual review</span>
+            <span class="rp-reco-note">Standard strategies were tried recently without effect.</span>`;
     } else if (isMonitor && r.monitor_message) {
-        strategyHTML = `
-            <div class="strategy-section monitor-strategy">
-            <div class="strategy-header">
-                <span class="strategy-name">Weekly Monitoring</span>
-            </div>
-            <div class="strategy-description">${esc(r.monitor_message)}</div>
-        </div>`;
+        recoHTML = `
+            <span class="rp-reco-name">Monitor weekly</span>
+            <span class="rp-reco-note">${esc(r.monitor_message)}</span>`;
     } else if (strategy.strategy_name) {
         const isBogo = strategy.strategy_id === 'buy_one_take_one' || strategy.strategy_name.toLowerCase().includes('buy 1 take 1');
-        const badgeHTML = isBogo 
-            ? `<span class="discount-pill bogo-pill" style="background:var(--accent);color:white;">Buy 1 Take 1</span>` 
-            : (strategy.recommended_discount > 0 ? `<span class="discount-pill">${Math.round(strategy.recommended_discount)}% off</span>` : '');
-            
-        strategyHTML = `
-        <div class="strategy-section">
-            <div class="strategy-header">
-                <span class="strategy-name">${esc(strategy.strategy_name)}</span>
-                ${badgeHTML}
-            </div>
-            <div class="strategy-description">
-                ${strategy.expected_impact_min && strategy.expected_impact_max
-                    ? `Expected ${strategy.expected_impact_min}–${strategy.expected_impact_max}% sales uplift over ${strategy.duration_days} days`
-                    : 'Strategy recommended for this product'}
-            </div>
-        </div>`;
+        const offer = isBogo ? 'Buy 1 Take 1'
+            : (strategy.recommended_discount > 0 ? `${Math.round(strategy.recommended_discount)}% off` : '');
+        const impact = strategy.expected_impact_min && strategy.expected_impact_max
+            ? `+${strategy.expected_impact_min}–${strategy.expected_impact_max}% sales · ${strategy.duration_days} days`
+            : 'Recommended for this product';
+        recoHTML = `
+            <span class="rp-reco-name">${esc(strategy.strategy_name)}${offer ? ` <span class="rp-offer">${offer}</span>` : ''}</span>
+            <span class="rp-reco-note">${impact}</span>`;
+    } else {
+        recoHTML = `<span class="rp-reco-note">No action suggested</span>`;
     }
 
+    // Product photo; a broken or missing image falls back to the placeholder
+    const placeholder = `<span class="rp-thumb rp-thumb-empty" aria-hidden="true"><i class="fas fa-box"></i></span>`;
+    const thumbHTML = r.image
+        ? `<img class="rp-thumb" src="${esc(r.image)}" alt="" loading="lazy"
+               onerror="this.outerHTML='<span class=&quot;rp-thumb rp-thumb-empty&quot; aria-hidden=&quot;true&quot;><i class=&quot;fas fa-box&quot;></i></span>'">`
+        : placeholder;
+
+    const payload = JSON.stringify(r).replace(/'/g, "&#39;");
+
     return `
-    <div class="product-card" data-risk="${riskClass}" data-slow="${r.is_slow_moving}">
-        <div class="card-top-bar">
-            <span class="badge-priority badge-${riskClass}">${r.risk_level}</span>
-            <span class="badge-risk badge-risk-${riskClass}">${Math.round(r.risk_score * 100)}% Risk</span>
-        </div>
-
-        <div class="product-header">
-            <div class="product-info">
-                <h4>${esc(r.product_name)}</h4>
-                <span class="product-category">${esc(category)}</span>
+    <article class="rp-row rp-item risk-${riskClass}" data-risk="${riskClass}" data-slow="${r.is_slow_moving}">
+        <div class="rp-cell rp-product">
+            ${thumbHTML}
+            <div class="rp-product-text">
+                <span class="rp-name">${esc(r.product_name)}</span>
+                <span class="rp-cat">${esc(category)}</span>
+                ${expiryHTML}
             </div>
         </div>
-
-        <div class="metrics-row">
-            <div class="metric-item">
-                <div class="metric-label">Days in Stock</div>
-                <div class="metric-value ${daysClass}">${daysInStock}</div>
-            </div>
-            <div class="metric-item">
-                <div class="metric-label">Monthly Sales</div>
-                <div class="metric-value">${monthly}</div>
-            </div>
-            <div class="metric-item">
-                <div class="metric-label">Total Sold</div>
-                <div class="metric-value">${r.total_sold_90d || 0}</div>
-            </div>
+        <div class="rp-cell rp-risk" data-label="Risk">
+            <span class="rp-risk-label"><span class="rp-dot" aria-hidden="true"></span>${RISK_LABELS[riskLevel] || esc(riskLevel)}</span>
+            <span class="rp-meter" title="Risk score ${riskPct}%"><span style="width:${riskPct}%"></span></span>
+            <span class="rp-sub">${riskPct}% risk</span>
         </div>
-
-        <div class="smart-insights">
-            <div class="insight-row">
-                <span class="insight-label">Selling Price</span>
-                <span class="insight-value">₱${price.toFixed(2)}</span>
-            </div>
-            <div class="insight-row">
-                <span class="insight-label">Current Stock</span>
-                <span class="insight-value ${stockClass}">${stock} units</span>
-            </div>
+        <div class="rp-cell rp-num" data-label="Price">${peso(r.current_price)}</div>
+        <div class="rp-cell rp-num ${stockClass}" data-label="Stock">${stock}</div>
+        <div class="rp-cell rp-num ${daysClass}" data-label="Days held">${daysInStock}</div>
+        <div class="rp-cell rp-num" data-label="Sales">
+            <span>${monthly}/mo</span>
+            <span class="rp-sub">${sold90} in 90d</span>
         </div>
-
-        ${expiryAlertHTML}
-        ${strategyHTML}
-
-        <div class="action-buttons">
-            <button class="btn-action btn-forecast" onclick='openForecastModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'>
-                <i class="fas fa-chart-line" aria-hidden="true"></i> View Details
-            </button>
-            <button class="btn-action btn-apply" 
-                onclick='openApplyModal(${JSON.stringify(r).replace(/'/g, "&#39;")})'
-                ${isEscalation ? 'disabled title="No applicable strategy to apply — please review manually" style=\"opacity:0.5;cursor:not-allowed;\"' : ''}> 
-                <i class="fas fa-check" aria-hidden="true"></i> Apply Strategy
-            </button>
+        <div class="rp-cell rp-reco">${recoHTML}</div>
+        <div class="rp-cell rp-actions">
+            <button type="button" class="rp-link" onclick='openForecastModal(${payload})'>Details</button>
+            <button type="button" class="rp-btn rp-btn-primary rp-btn-sm"
+                onclick='openApplyModal(${payload})'
+                ${isEscalation ? 'disabled title="No applicable strategy — review manually"' : ''}>Apply</button>
         </div>
-    </div>`;
+    </article>`;
 }
 
 function showEmptyState(title, msg) {
     const c = document.getElementById('recommendationsContainer');
     if (c) {
         c.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1;">
-                <h3>${esc(title)}</h3>
+            <div class="rp-empty">
+                <p class="rp-empty-title">${esc(title)}</p>
                 <p>${esc(msg)}</p>
             </div>`;
     }
@@ -447,7 +418,7 @@ function openForecastModal(rec) {
                     <div class="month-box" data-month-index="${i}">
                         <div class="month-label">${months[i]}</div>
                         <div class="month-value">${formatProjectedUnits(withS)} units</div>
-                        <div class="month-change positive">+${change}% vs no action</div>
+                        <div class="month-change ${change >= 0 ? 'positive' : 'negative'}">${change >= 0 ? '+' : ''}${change}% vs no action</div>
                     </div>`;
                 }).join('')}
             </div>
@@ -641,8 +612,11 @@ function buildStrategyTab(rec, selectedStrategyIndex = 0) {
         </div>`;
     }
 
-    // Show only 2 strategies max
-    const displayStrategies = strategies.slice(0, 2);
+    // Show every strategy the model returned. This used to slice to 2 while
+    // the Apply dialog listed all of them, so a strategy could appear at apply
+    // time that was never shown here. Card index maps to rec.strategies index,
+    // which selectForecastStrategy() relies on.
+    const displayStrategies = strategies;
 
     if (!displayStrategies.length && !isMonitor) {
         return '<div class="detail-card"><p>No strategies available for this product.</p></div>';
@@ -1162,7 +1136,7 @@ function openApplyModal(rec, preferredStrategyId = null) {
     if (confirmBtn) {
         confirmBtn.style.display = '';
         confirmBtn.disabled = false;
-        confirmBtn.innerHTML = 'Apply Strategy';
+        confirmBtn.innerHTML = 'Apply strategy';
         confirmBtn.onclick = () => {
             const selected = content.querySelector('.strategy-option.selected');
             if (!selected) { showToast('warning', 'Warning', 'Please select a strategy'); return; }
@@ -1246,7 +1220,7 @@ function applyStrategy(productId, strategyId, discount, notes, btn, pairedProduc
         complete() {
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = 'Apply Strategy';
+                btn.innerHTML = 'Apply strategy';
             }
         },
     });

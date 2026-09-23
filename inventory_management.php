@@ -153,10 +153,10 @@ $js_data = [
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico?v=20260923">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=20260923">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=20260923">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png?v=20260923">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -169,12 +169,14 @@ $js_data = [
     <link rel="stylesheet" href="assets/css/inventory.css">
     <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/transitions.css">
-    <link rel="stylesheet" href="assets/css/notif.css">
+    <link rel="stylesheet" href="assets/css/notif.css?v=<?= filemtime(__DIR__ . '/assets/css/notif.css') ?>">
 
     <link rel="stylesheet" href="assets/css/responsive.css">
-    <script src="assets/js/responsive.js"></script>
+    <link rel="stylesheet" href="assets/css/inventory-ui.css?v=<?= filemtime(__DIR__ . '/assets/css/inventory-ui.css') ?>">
+    <script src="assets/js/responsive.js?v=<?= filemtime(__DIR__ . '/assets/js/responsive.js') ?>"></script>
+    <link rel="stylesheet" href="assets/css/sidebar.css?v=<?= filemtime(__DIR__ . '/assets/css/sidebar.css') ?>">
 </head>
-<body>
+<body class="inv-ui">
     <button class="mobile-menu-btn" id="mobileMenuBtn">
         <i class="fas fa-bars"></i>
     </button>
@@ -183,95 +185,15 @@ $js_data = [
     <div class="toast-container" id="toastContainer"></div>
 
     <div class="inventory-container">
-        <!-- SIDEBAR - Same as Dashboard/POS -->
-        <div class="sidebar" id="sidebar">
-            <div class="store-brand">
-                <div class="logo-container">
-                    <!-- STORE LOGO & NAME SECTION - IMAGE VERSION -->
-                    <img src="assets/images/sidebar.jpg" alt="Espenida's Logo" class="store-logo-img">
-                </div>
-                <div class="store-name">
-                    <span class="store-name-main">Espenida's</span>
-                    <span class="store-name-sub">PET & POULTRY SUPPLY</span>
-                </div>
-            </div>
-            
-            <button class="collapse-btn" id="collapseBtn">
-                <i class="fas fa-chevron-left" id="collapseIcon"></i>
-                <span>Espenida Store</span>
-            </button>
-
-            <div class="sidebar-user-info">
-                <div class="user-avatar-small">
-                    <?php echo strtoupper(substr($first_name, 0, 1) . substr($last_name, 0, 1)); ?>
-                </div>
-                <div class="user-details-small">
-                    <h4><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h4>
-                    <span><?php echo htmlspecialchars($position ?: ucfirst($role)); ?></span>
-                </div>
-            </div>
-
-            <div class="section-title"><span>DASHBOARD</span></div>
-            <a href="dashboard.php" class="dashboard-link">
-                <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-            </a>
-
-            <div class="section-title"><span>POINT OF SALE</span></div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-cash-register"></i><span>Point of Sale</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="PosUI_db.php"><i class="fas fa-cash-register"></i>Point of Sale</a></li>
-                    <?php if ($is_owner): ?>
-                    <li><a class="dropdown-item" href="sales_transactions.php"><i class="fas fa-history"></i>Sales Transactions</a></li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-
-            <div class="section-title"><span>INVENTORY MANAGEMENT</span></div>
-            <div class="dropdown">
-                <button class="dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-box"></i><span>Inventory Management</span>
-                </button>
-                <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="categories.php"><i class="fa-solid fa-layer-group"></i>Inventory</a></li> 
-                <li><a class="dropdown-item" href="Archive_products.php"><i class="fa-solid fa-box-archive"></i> Archive</a></li> 
-                <li><a class="dropdown-item" href="Inventory_management.php"><i class="fa-solid fa-arrow-trend-down"></i>Log History</a></li> 
-                </ul>
-            </div>
-
-            <?php if ($is_owner): ?>
-            <div class="section-title"><span>RECOMMENDATIONS</span></div>
-            <button class="recommendation-btn" id="recommendationBtn">
-                <i class="fas fa-lightbulb"></i><span>Recommendations</span>
-            </button>
-            <?php endif; ?>
-            
-            <?php if ($is_owner): ?>
-                <div class="section-title"><span>SYSTEM & ADMIN</span></div>
-                <div class="dropdown">
-                    <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-user"></i><span>System & Admin</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" href="#roleManagementModal" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
-                        <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            <div class="spacer"></div>
-
-            <button class="logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i><span>Log out</span>
-            </button>
-        </div>
+        <?php include __DIR__ . '/includes/sidebar.php'; ?>
         
         <!-- Main Inventory History Content -->
         <div class="inventory-main">
             <div class="inventory-header">
-                <h1><i class="fas fa-history"></i> Inventory & Log History</h1>
+                <div class="inv-header-text">
+                    <h1>Log History</h1>
+                    <p>Who added, changed, archived and signed in — newest first.</p>
+                </div>
                 <div class="header-actions">
                     <!-- Notification Bell -->
                     <div class="notif-bell-wrap" id="notifBellWrap">
@@ -307,22 +229,22 @@ $js_data = [
                 <ul class="nav nav-tabs" id="inventoryTabs" role="tablist">
                     <li class="nav-item" role="presentation">
                         <button class="nav-link active" id="current-tab" data-bs-toggle="tab" data-bs-target="#current" type="button" role="tab">
-                            <i class="fas fa-box"></i>Added Items
+                            Added items
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="archived-tab" data-bs-toggle="tab" data-bs-target="#archived" type="button" role="tab">
-                            <i class="fas fa-archive"></i>Archived/Deleted
+                            Archived &amp; deleted
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity" type="button" role="tab">
-                            <i class="fas fa-edit"></i>Activity Log
+                            Activity
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="sessions-tab" data-bs-toggle="tab" data-bs-target="#sessions" type="button" role="tab">
-                            <i class="fas fa-clock"></i> Login Times & Account Swaps
+                            Sign-ins &amp; account switches
                         </button>
                     </li>
                 </ul>
@@ -360,12 +282,11 @@ $js_data = [
                                     <tr>
                                         <th>Product</th>
                                         <th>Category</th>
-                                        <th>Price</th>
-                                        <th>Stock</th>
-                                        <th>👤 WHO ADDED IT</th>
-                                        <th>Role</th>
-                                        <th>📅 When Added</th>
-                                        <th>Last Edited By</th>
+                                        <th class="inv-num">Price</th>
+                                        <th class="inv-num">Stock</th>
+                                        <th>Added by</th>
+                                        <th>Added</th>
+                                        <th>Last edited</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inventoryTableBody">
@@ -381,72 +302,40 @@ $js_data = [
                                                 $added_by_email = $item['added_by_email'] ?? '';
                                                 $added_initials = strtoupper(substr($added_by_name, 0, 1) . (substr($added_by_name, strpos($added_by_name, ' ') + 1, 1) ?: ''));
                                             ?>
-                                            <tr data-id="<?php echo $item['id']; ?>" 
-                                                data-category="<?php echo $item['category_id']; ?>" 
+                                            <tr data-id="<?php echo $item['id']; ?>"
+                                                data-category="<?php echo $item['category_id']; ?>"
                                                 data-stock="<?php echo $item['stock']; ?>"
                                                 data-role="<?php echo $added_by_role; ?>">
                                                 <td>
-                                                    <div class="d-flex align-items-center gap-2">
-                                                        <i class="fas fa-box" style="color: #4a6fa5;"></i>
-                                                        <div>
-                                                            <div style="font-weight: 600;"><?php echo htmlspecialchars($item['name']); ?></div>
-                                                            <?php if (!empty($item['sku'])): ?>
-                                                                <small class="text-muted">SKU: <?php echo htmlspecialchars($item['sku']); ?></small>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </div>
+                                                    <span class="inv-name"><?php echo htmlspecialchars($item['name']); ?></span>
+                                                    <?php if (!empty($item['sku'])): ?>
+                                                        <span class="inv-sub"><?php echo htmlspecialchars($item['sku']); ?></span>
+                                                    <?php endif; ?>
                                                 </td>
-                                                <td><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
-                                                <td><strong>₱<?php echo number_format($item['price'], 2); ?></strong></td>
+                                                <td class="inv-muted-cell"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
+                                                <td class="inv-num">₱<?php echo number_format($item['price'], 2); ?></td>
+                                                <td class="inv-num <?php echo $item['stock'] <= 5 ? 'is-bad' : ($item['stock'] <= 15 ? 'is-warn' : ''); ?>"><?php echo (int)$item['stock']; ?></td>
                                                 <td>
-                                                    <span class="stock-badge <?php echo $stock_class; ?>">
-                                                        <?php echo $item['stock']; ?> units
-                                                    </span>
+                                                    <span class="inv-person"><?php echo htmlspecialchars($added_by_name); ?></span>
+                                                    <span class="inv-sub"><?php echo ucfirst($added_by_role); ?></span>
                                                 </td>
                                                 <td>
-                                                    <div class="user-info-cell">
-                                                        <div class="user-avatar <?php echo $added_by_role; ?>">
-                                                            <?php echo $added_initials ?: 'U'; ?>
-                                                        </div>
-                                                        <div class="user-details">
-                                                            <div class="user-name"><?php echo htmlspecialchars($added_by_name); ?></div>
-                                                            <div class="user-email"><?php echo htmlspecialchars($added_by_email); ?></div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <span class="user-badge <?php echo $added_by_role; ?>">
-                                                        <i class="fas fa-<?php echo $added_by_role === 'owner' ? 'crown' : 'user'; ?>"></i>
-                                                        <?php echo ucfirst($added_by_role); ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="timestamp">
-                                                        <i class="far fa-calendar-alt"></i> 
-                                                        <?php echo date('M d, Y', strtotime($item['added_date'])); ?><br>
-                                                        <i class="far fa-clock"></i> 
-                                                        <?php echo date('h:i A', strtotime($item['added_date'])); ?>
-                                                    </span>
+                                                    <span><?php echo date('M d, Y', strtotime($item['added_date'])); ?></span>
+                                                    <span class="inv-sub"><?php echo date('h:i A', strtotime($item['added_date'])); ?></span>
                                                 </td>
                                                 <td>
                                                     <?php if (!empty($item['last_edited_by_name'])): ?>
-                                                        <span class="timestamp">
-                                                            <i class="fas fa-user-edit"></i> 
-                                                            <?php echo htmlspecialchars($item['last_edited_by_name']); ?><br>
-                                                            <small><?php echo date('M d, Y', strtotime($item['last_edited_date'])); ?></small>
-                                                        </span>
+                                                        <span class="inv-person"><?php echo htmlspecialchars($item['last_edited_by_name']); ?></span>
+                                                        <span class="inv-sub"><?php echo date('M d, Y', strtotime($item['last_edited_date'])); ?></span>
                                                     <?php else: ?>
-                                                        <span class="text-muted">Never edited</span>
+                                                        <span class="inv-muted">Never</span>
                                                     <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="8" class="text-center py-4">
-                                                <i class="fas fa-box-open fa-3x mb-3 text-muted"></i>
-                                                <p class="text-muted">No products found</p>
-                                            </td>
+                                            <td colspan="7" class="inv-empty-cell"><p>No products found</p></td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -476,11 +365,10 @@ $js_data = [
                                     <tr>
                                         <th>Product</th>
                                         <th>Category</th>
-                                        <th>📋 Action</th>
-                                        <th>👤 WHO Did It</th>
-                                        <th>Role</th>
-                                        <th>📅 When</th>
-                                        <th>Restore</th>
+                                        <th>Action</th>
+                                        <th>By</th>
+                                        <th>When</th>
+                                        <th><span class="visually-hidden">Restore</span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="archivedTableBody">
@@ -494,56 +382,31 @@ $js_data = [
                                             ?>
                                             <tr>
                                                 <td>
-                                                    <div style="font-weight: 600;"><?php echo htmlspecialchars($item['name']); ?></div>
+                                                    <span class="inv-name"><?php echo htmlspecialchars($item['name']); ?></span>
                                                     <?php if (!empty($item['sku'])): ?>
-                                                        <small class="text-muted">SKU: <?php echo htmlspecialchars($item['sku']); ?></small>
+                                                        <span class="inv-sub"><?php echo htmlspecialchars($item['sku']); ?></span>
                                                     <?php endif; ?>
                                                 </td>
-                                                <td><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
+                                                <td class="inv-muted-cell"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
+                                                <td><span class="action-badge action-<?php echo $action_type; ?>"><?php echo ucfirst($action_type); ?></span></td>
                                                 <td>
-                                                    <span class="action-badge action-<?php echo $action_type; ?>">
-                                                        <i class="fas fa-<?php echo $action_type === 'deleted' ? 'trash' : 'archive'; ?>"></i>
-                                                        <?php echo ucfirst($action_type); ?>
-                                                    </span>
+                                                    <span class="inv-person"><?php echo htmlspecialchars($action_by_name); ?></span>
+                                                    <span class="inv-sub"><?php echo ucfirst($action_by_role); ?></span>
                                                 </td>
                                                 <td>
-                                                    <div class="user-info-cell">
-                                                        <div class="user-avatar <?php echo $action_by_role; ?>">
-                                                            <?php echo $action_initials; ?>
-                                                        </div>
-                                                        <div class="user-details">
-                                                            <div class="user-name"><?php echo htmlspecialchars($action_by_name); ?></div>
-                                                            <div class="user-email"><?php echo htmlspecialchars($item['action_by_email'] ?? ''); ?></div>
-                                                        </div>
-                                                    </div>
+                                                    <span><?php echo date('M d, Y', strtotime($item['action_date'])); ?></span>
+                                                    <span class="inv-sub"><?php echo date('h:i A', strtotime($item['action_date'])); ?></span>
                                                 </td>
-                                                <td>
-                                                    <span class="user-badge <?php echo $action_by_role; ?>">
-                                                        <i class="fas fa-<?php echo $action_by_role === 'owner' ? 'crown' : 'user'; ?>"></i>
-                                                        <?php echo ucfirst($action_by_role); ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="timestamp">
-                                                        <i class="far fa-calendar-alt"></i> 
-                                                        <?php echo date('M d, Y', strtotime($item['action_date'])); ?><br>
-                                                        <i class="far fa-clock"></i> 
-                                                        <?php echo date('h:i A', strtotime($item['action_date'])); ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-outline-success" onclick="restoreProduct(<?php echo $item['id']; ?>)">
-                                                        <i class="fas fa-undo"></i> Restore
+                                                <td class="inv-actions">
+                                                    <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(<?php echo $item['id']; ?>)">
+                                                        <i class="fas fa-undo-alt"></i>Restore
                                                     </button>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <i class="fas fa-archive fa-3x mb-3 text-muted"></i>
-                                                <p class="text-muted">No archived or deleted items</p>
-                                            </td>
+                                            <td colspan="6" class="inv-empty-cell"><p>No archived or deleted items</p></td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -567,6 +430,9 @@ $js_data = [
                                     <option value="delete">Deleted</option>
                                     <option value="restore">Restored</option>
                                     <option value="void">Voided</option>
+                                    <option value="restock">Restocked</option>
+                                    <option value="reduction">Stock removed</option>
+                                    <option value="expired">Expired stock removed</option>
                                 </select>
                                 <select class="filter-select" id="activityRoleFilter">
                                     <option value="">All Users</option>
@@ -600,49 +466,40 @@ $js_data = [
                                             $icon_class = 'action-restore';
                                             $icon = 'fa-undo';
                                             $bg_class = 'action-restore';
-                                        } elseif ($log['action'] === 'void') {
+                                        } elseif ($log['action'] === 'void' || $log['action'] === 'expired') {
                                             $icon_class = 'action-void';
                                             $icon = 'fa-ban';
                                             $bg_class = 'action-void';
                                         }
-                                        
-                                        $user_role = $log['user_role'] ?? 'employee';
+
+                                        // Entries with no user were made by the system itself
+                                        // (expired stock removed, promotion prices restored)
+                                        $is_system = empty($log['user_id']);
+                                        $user_role = $is_system ? 'system' : ($log['user_role'] ?? 'employee');
                                     ?>
-                                    <div class="session-item" data-role="<?php echo $user_role; ?>" data-action="<?php echo $log['action']; ?>">
-                                        <div class="session-icon <?php echo $bg_class; ?>">
-                                            <i class="fas <?php echo $icon; ?>"></i>
-                                        </div>
-                                        <div class="session-details">
-                                            <div class="session-user">
-                                                <strong><?php echo htmlspecialchars($log['user_name'] ?? 'Unknown User'); ?></strong>
-                                                <span class="user-badge <?php echo $user_role; ?> ms-2">
-                                                    <i class="fas fa-<?php echo $user_role === 'owner' ? 'crown' : 'user'; ?>"></i>
-                                                    <?php echo ucfirst($user_role); ?>
-                                                </span>
-                                                <small class="text-muted ms-2">(<?php echo htmlspecialchars($log['user_email'] ?? ''); ?>)</small>
-                                            </div>
-                                            <div class="session-time">
-                                                <span class="action-badge <?php echo $icon_class; ?> me-2">
-                                                    <i class="fas <?php echo $icon; ?>"></i>
-                                                    <?php echo ucfirst($log['action']); ?>
-                                                </span>
-                                                <strong><?php echo htmlspecialchars($log['product_name'] ?? 'Unknown Product'); ?></strong>
+                                    <div class="session-item inv-log-row" data-role="<?php echo $user_role; ?>" data-action="<?php echo htmlspecialchars($log['action']); ?>">
+                                        <time class="inv-log-time" datetime="<?php echo date('c', strtotime($log['created_at'])); ?>">
+                                            <span><?php echo date('M d, Y', strtotime($log['created_at'])); ?></span>
+                                            <span class="inv-sub"><?php echo date('h:i A', strtotime($log['created_at'])); ?></span>
+                                        </time>
+                                        <span class="action-badge <?php echo $icon_class; ?>"><?php echo ucfirst(htmlspecialchars(str_replace('_', ' ', $log['action']))); ?></span>
+                                        <div class="inv-log-body">
+                                            <div>
+                                                <strong><?php echo htmlspecialchars($log['product_name'] ?? 'Unknown product'); ?></strong>
                                                 <?php if (!empty($log['changes'])): ?>
-                                                    <span class="text-muted">- <?php echo htmlspecialchars($log['changes']); ?></span>
+                                                    <span class="inv-muted"> — <?php echo htmlspecialchars($log['changes']); ?></span>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="session-time">
-                                                <i class="far fa-clock"></i> 
-                                                <?php echo date('F d, Y h:i:s A', strtotime($log['created_at'])); ?>
-                                            </div>
+                                            <?php if ($is_system): ?>
+                                                <span class="inv-sub">by System · automatic</span>
+                                            <?php else: ?>
+                                                <span class="inv-sub">by <?php echo htmlspecialchars($log['user_name'] ?? 'Unknown user'); ?> · <?php echo ucfirst($user_role); ?></span>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <div class="text-center py-4">
-                                    <i class="fas fa-history fa-3x mb-3 text-muted"></i>
-                                    <p class="text-muted">No activity logs found</p>
-                                </div>
+                                <p class="inv-empty-text">No activity yet</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -689,46 +546,28 @@ $js_data = [
                                         
                                         $user_role = $session['user_role'] ?? 'employee';
                                     ?>
-                                    <div class="session-item" data-role="<?php echo $user_role; ?>" data-action="<?php echo $session['action']; ?>">
-                                        <div class="session-icon <?php echo $bg_class; ?>">
-                                            <i class="fas <?php echo $icon; ?>"></i>
-                                        </div>
-                                        <div class="session-details">
-                                            <div class="session-user">
-                                                <strong><?php echo htmlspecialchars($session['user_name'] ?? 'Unknown User'); ?></strong>
-                                                <span class="user-badge <?php echo $user_role; ?> ms-2">
-                                                    <i class="fas fa-<?php echo $user_role === 'owner' ? 'crown' : 'user'; ?>"></i>
-                                                    <?php echo ucfirst($user_role); ?>
-                                                </span>
-                                                <small class="text-muted ms-2">(<?php echo htmlspecialchars($session['user_email'] ?? ''); ?>)</small>
-                                            </div>
-                                            <div class="session-time">
-                                                <span class="session-badge <?php echo $badge_class; ?> me-2">
-                                                    <?php echo ucfirst($session['action']); ?>
-                                                </span>
+                                    <div class="session-item inv-log-row" data-role="<?php echo $user_role; ?>" data-action="<?php echo htmlspecialchars($session['action']); ?>">
+                                        <time class="inv-log-time" datetime="<?php echo date('c', strtotime($session['login_time'])); ?>">
+                                            <span><?php echo date('M d, Y', strtotime($session['login_time'])); ?></span>
+                                            <span class="inv-sub"><?php echo date('h:i:s A', strtotime($session['login_time'])); ?></span>
+                                        </time>
+                                        <span class="session-badge <?php echo $badge_class; ?>"><?php echo $session['action'] === 'switch' ? 'Switch' : ucfirst(htmlspecialchars($session['action'])); ?></span>
+                                        <div class="inv-log-body">
+                                            <div>
+                                                <strong><?php echo htmlspecialchars($session['user_name'] ?? 'Unknown user'); ?></strong>
+                                                <span class="inv-muted"> · <?php echo ucfirst($user_role); ?></span>
                                                 <?php if ($session['action'] === 'switch' && !empty($session['switched_from'])): ?>
-                                                    <i class="fas fa-arrow-right"></i> 
-                                                    Switched from <strong><?php echo htmlspecialchars($session['switched_from']); ?></strong>
+                                                    <span class="inv-muted"> — switched from <?php echo htmlspecialchars($session['switched_from']); ?></span>
                                                 <?php endif; ?>
                                             </div>
-                                            <div class="session-time">
-                                                <i class="far fa-clock"></i> 
-                                                <?php echo date('F d, Y h:i:s A', strtotime($session['login_time'])); ?>
-                                            </div>
                                             <?php if (!empty($session['ip_address'])): ?>
-                                                <div class="session-time">
-                                                    <i class="fas fa-network-wired"></i> 
-                                                    IP Address: <?php echo $session['ip_address']; ?>
-                                                </div>
+                                                <span class="inv-sub">IP <?php echo htmlspecialchars($session['ip_address']); ?></span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
-                                <div class="text-center py-4">
-                                    <i class="fas fa-users fa-3x mb-3 text-muted"></i>
-                                    <p class="text-muted">No session logs found</p>
-                                </div>
+                                <p class="inv-empty-text">No sign-ins recorded</p>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -772,9 +611,9 @@ $js_data = [
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="assets/js/inventory.js"></script>
-    <script src="assets/js/userManagement.js?v=20260814-1"></script>
-    <script src="assets/js/notif.js"></script>
+    <script src="assets/js/inventory.js?v=<?= filemtime(__DIR__ . '/assets/js/inventory.js') ?>"></script>
+    <script src="assets/js/userManagement.js?v=<?= filemtime(__DIR__ . '/assets/js/userManagement.js') ?>"></script>
+    <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>
 </html>

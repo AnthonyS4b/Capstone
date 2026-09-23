@@ -37,10 +37,10 @@ $ajax_url = 'ajax/category_ajax.php';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico?v=20260923">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=20260923">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=20260923">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png?v=20260923">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -51,11 +51,13 @@ $ajax_url = 'ajax/category_ajax.php';
     <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/archivecss.css">
     <link rel="stylesheet" href="assets/css/transitions.css">
-    <link rel="stylesheet" href="assets/css/notif.css">
+    <link rel="stylesheet" href="assets/css/notif.css?v=<?= filemtime(__DIR__ . '/assets/css/notif.css') ?>">
     <link rel="stylesheet" href="assets/css/responsive.css">
-    <script src="assets/js/responsive.js"></script>
+    <link rel="stylesheet" href="assets/css/inventory-ui.css?v=<?= filemtime(__DIR__ . '/assets/css/inventory-ui.css') ?>">
+    <script src="assets/js/responsive.js?v=<?= filemtime(__DIR__ . '/assets/js/responsive.js') ?>"></script>
+    <link rel="stylesheet" href="assets/css/sidebar.css?v=<?= filemtime(__DIR__ . '/assets/css/sidebar.css') ?>">
 </head>
-<body>
+<body class="inv-ui">
     <button class="mobile-menu-btn" id="mobileMenuBtn">
         <i class="fas fa-bars"></i>
     </button>
@@ -67,111 +69,15 @@ $ajax_url = 'ajax/category_ajax.php';
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- SIDEBAR - Copy your sidebar from categories.php -->
-    <div class="sidebar" id="sidebar">
-         <!-- STORE LOGO & NAME SECTION - IMAGE VERSION -->
-        <div class="store-brand">
-            <div class="logo-container">
-                <!-- YOUR STORE IMAGE LOGO -->
-                <img src="assets/images/sidebar.jpg" alt="Espenida's Logo" class="store-logo-img">
-            </div>
-            <div class="store-name">
-                <span class="store-name-main">Espenida's</span>
-                <span class="store-name-sub">PET & POULTRY SUPPLY</span>
-            </div>
-        </div>
-        
-        <!-- COLLAPSE BUTTON -->
-        <button class="collapse-btn" id="collapseBtn">
-            <i class="fas fa-chevron-left" id="collapseIcon"></i>
-            <span>Espenida Store</span>
-        </button>
-
-        <!-- User Info -->
-        <div class="sidebar-user-info">
-            <div class="user-avatar-small">
-                <?php echo strtoupper(substr($first_name, 0, 1) . substr($last_name, 0, 1)); ?>
-            </div>
-            <div class="user-details-small">
-                <h4><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h4>
-                <span><?php echo htmlspecialchars($position ?: ucfirst($role)); ?></span>
-            </div>
-        </div>
-
-        <!-- DASHBOARD -->
-        <div class="section-title"><span>DASHBOARD</span></div>
-        <a href="dashboard.php" class="dashboard-link">
-            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-        </a>
-
-        <!-- POINT OF SALE -->
-        <div class="section-title"><span>POINT OF SALE</span></div>
-        <div class="dropdown">
-            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-cash-register"></i><span>Point of Sale</span>
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="PosUI_db.php"><i class="fas fa-cash-register"></i>Point of Sale</a></li>
-                <?php if ($is_owner): ?>
-                <li><a class="dropdown-item" href="sales_transactions.php"><i class="fas fa-history"></i>Sales Transactions</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-
-        <!-- INVENTORY MANAGEMENT -->
-        <div class="section-title"><span>INVENTORY MANAGEMENT</span></div>
-        <div class="dropdown">
-            <button class="dropdown-toggle active" type="button" data-bs-toggle="dropdown">
-                <i class="fas fa-box"></i><span>Inventory Management</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="categories.php"><i class="fa-solid fa-layer-group"></i>Inventory</a></li> 
-                <li><a class="dropdown-item" href="Archive_products.php"><i class="fa-solid fa-box-archive"></i> Archive</a></li> 
-                <li><a class="dropdown-item" href="Inventory_management.php"><i class="fa-solid fa-arrow-trend-down"></i>Log History</a></li> 
-            </ul>
-        </div>
-
-        <?php if ($is_owner): ?>
-         <!-- RECOMMENDATION BUTTON -->
-        <div class="section-title">
-            <span>RECOMMENDATIONS</span>
-        </div>
-        <button class="recommendation-btn" id="recommendationBtn">
-            <i class="fas fa-lightbulb"></i>
-            <span>Recommendations</span>
-        </button>
-        <?php endif; ?>
-        
-        <!-- SYSTEM & ADMIN -->
-        <?php if ($is_owner): ?>
-            <div class="section-title"><span>SYSTEM & ADMIN</span></div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-user"></i><span>System & Admin</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#roleManagementModal" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
-                    <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <!-- SPACER -->
-        <div class="spacer"></div>
-
-        <!-- LOGOUT BUTTON -->
-        <button class="logout-btn" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i><span>Log out</span>
-        </button>
-    </div>
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <!-- MAIN CONTENT -->
     <div class="main-content">
         <!-- Welcome Banner -->
         <div class="welcome-banner">
             <div class="welcome-text">
-                <h1><i class="fas fa-box-archive me-2"></i>Archives</h1>
-                <p>Manage your archived and deleted products</p>
+                <h1>Archive</h1>
+                <p>Archived products and categories. Restore them to inventory or delete them for good.</p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <!-- Notification Bell -->
@@ -205,70 +111,36 @@ $ajax_url = 'ajax/category_ajax.php';
         <!-- Error Display -->
         <div id="errorContainer" style="display: none;"></div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid" id="statsContainer">
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-box-archive"></i></div>
-                <div class="stat-info">
-                    <h3 id="totalArchived">0</h3>
-                    <p>Total Archived</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-undo-alt"></i></div>
-                <div class="stat-info">
-                    <h3 id="restorable">0</h3>
-                    <p>Restorable Items</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                <div class="stat-info">
-                    <h3 id="oldestArchive">-</h3>
-                    <p>Oldest Archive</p>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon"><i class="fas fa-database"></i></div>
-                <div class="stat-info">
-                    <h3 id="storageUsed">0 KB</h3>
-                    <p>Storage Used</p>
-                </div>
-            </div>
-        </div>
+        <!-- Summary -->
+        <p class="inv-summary" id="statsContainer">
+            <span><strong id="totalArchived">0</strong> archived products</span>
+            <span>Oldest archived <strong id="oldestArchive">—</strong></span>
+        </p>
 
         <!-- Archive Table Section -->
         <div class="archive-section">
             <div class="section-header">
-                <h5><i class="fas fa-list me-2" style="color: #4a6fa5;"></i>Archive</h5>
-                <div>
-                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="testConnection()">
-                        <i class="fas fa-plug me-1"></i>Test Connection
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm me-2" onclick="refreshArchive()">
-                        <i class="fas fa-sync-alt me-1"></i>Refresh
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="archiveTabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-products" href="#" onclick="switchTab('products'); return false;">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-categories" href="#" onclick="switchTab('categories'); return false;">Categories</a>
+                    </li>
+                </ul>
+                <div class="inv-toolbar-actions">
+                    <button class="inv-btn inv-btn-quiet" onclick="refreshArchive()">
+                        <i class="fas fa-sync-alt"></i>Refresh
                     </button>
                     <?php if ($is_owner): ?>
-                    <button class="btn btn-danger btn-sm" onclick="emptyArchive()">
-                        <i class="fas fa-trash-alt me-1"></i>Empty Archive
+                    <button class="inv-btn inv-btn-danger" onclick="emptyArchive()">
+                        <i class="fas fa-trash-alt"></i>Empty archive
                     </button>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Tabs -->
-            <ul class="nav nav-tabs mb-3" id="archiveTabs">
-                <li class="nav-item">
-                    <a class="nav-link active" id="tab-products" href="#" onclick="switchTab('products'); return false;">
-                        <i class="fas fa-box me-1"></i>Products
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="tab-categories" href="#" onclick="switchTab('categories'); return false;">
-                        <i class="fas fa-layer-group me-1"></i>Categories
-                    </a>
-                </li>
-            </ul>
 
             <!-- Products Tab -->
             <div id="panel-products">
@@ -278,20 +150,16 @@ $ajax_url = 'ajax/category_ajax.php';
                             <tr>
                                 <th>Product</th>
                                 <th>Category</th>
-                                <th>Price</th>
-                                <th>Stock</th>
-                                <th>Archived Date</th>
-                                <th>Actions</th>
+                                <th class="inv-num">Price</th>
+                                <th class="inv-num">Stock</th>
+                                <th>Archived</th>
+                                <th><span class="visually-hidden">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody id="archiveTableBody">
                             <tr>
                                 <td colspan="6" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="fas fa-box-open"></i>
-                                        <h5>No Archived Products</h5>
-                                        <p class="text-muted">Loading archive data...</p>
-                                    </div>
+                                    <p class="inv-empty-text">Loading archive…</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -307,19 +175,15 @@ $ajax_url = 'ajax/category_ajax.php';
                             <tr>
                                 <th>Category</th>
                                 <th>Description</th>
-                                <th>Products Inside</th>
-                                <th>Archived Date</th>
-                                <th>Actions</th>
+                                <th class="inv-num">Products</th>
+                                <th>Archived</th>
+                                <th><span class="visually-hidden">Actions</span></th>
                             </tr>
                         </thead>
                         <tbody id="categoryArchiveTableBody">
                             <tr>
                                 <td colspan="5" class="text-center py-4">
-                                    <div class="empty-state">
-                                        <i class="fas fa-layer-group"></i>
-                                        <h5>No Archived Categories</h5>
-                                        <p class="text-muted">Loading...</p>
-                                    </div>
+                                    <p class="inv-empty-text">Loading…</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -334,9 +198,10 @@ $ajax_url = 'ajax/category_ajax.php';
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="assets/js/archive.js"></script>
-    <script src="assets/js/userManagement.js?v=20260814-1"></script>
-    <script src="assets/js/notif.js"></script>
+    <script src="assets/js/confirm-dialog.js?v=<?= filemtime(__DIR__ . '/assets/js/confirm-dialog.js') ?>"></script>
+    <script src="assets/js/archive.js?v=<?= filemtime(__DIR__ . '/assets/js/archive.js') ?>"></script>
+    <script src="assets/js/userManagement.js?v=<?= filemtime(__DIR__ . '/assets/js/userManagement.js') ?>"></script>
+    <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>
     <script>
       // Pass PHP variables to JavaScript

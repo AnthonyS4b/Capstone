@@ -2358,3 +2358,115 @@
 [22-Sep-2026 15:11:00 Europe/Berlin] Transaction data: User_ID=1, Total=250, Payment=500, Method=cash
 [22-Sep-2026 15:11:00 Europe/Berlin] Transaction inserted with ID: 1520
 [22-Sep-2026 15:11:02 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[22-Sep-2026 19:48:04 Europe/Berlin] Found user_id in session: 1
+[22-Sep-2026 19:48:04 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[22-Sep-2026 19:48:04 Europe/Berlin] Transaction data: User_ID=1, Total=85, Payment=100, Method=cash
+[22-Sep-2026 19:48:06 Europe/Berlin] Transaction inserted with ID: 1521
+[22-Sep-2026 19:48:08 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 14:42:24 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 14:42:24 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 14:42:24 Europe/Berlin] Transaction data: User_ID=1, Total=55, Payment=100, Method=cash
+[23-Sep-2026 14:42:24 Europe/Berlin] Transaction inserted with ID: 1522
+[23-Sep-2026 14:42:25 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 14:44:36 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 14:44:36 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 14:44:36 Europe/Berlin] Transaction data: User_ID=1, Total=420, Payment=500, Method=cash
+[23-Sep-2026 14:44:36 Europe/Berlin] Transaction inserted with ID: 1523
+[23-Sep-2026 14:44:36 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 14:45:53 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 14:45:53 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 14:45:53 Europe/Berlin] Transaction data: User_ID=1, Total=12222.5, Payment=13000, Method=cash
+[23-Sep-2026 14:45:53 Europe/Berlin] Transaction inserted with ID: 1524
+[23-Sep-2026 14:45:54 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 14:52:51 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 14:52:51 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 14:52:51 Europe/Berlin] Transaction data: User_ID=1, Total=9172.5, Payment=10000, Method=cash
+[23-Sep-2026 14:52:51 Europe/Berlin] Transaction inserted with ID: 1525
+[23-Sep-2026 14:52:51 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 15:56:56 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 15:56:56 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 15:56:56 Europe/Berlin] Transaction data: User_ID=1, Total=92.5, Payment=92.5, Method=gcash
+[23-Sep-2026 15:58:48 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 15:58:48 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 15:58:48 Europe/Berlin] Transaction data: User_ID=1, Total=92.5, Payment=200, Method=cash
+[23-Sep-2026 15:58:48 Europe/Berlin] Transaction inserted with ID: 1526
+[23-Sep-2026 15:58:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:21:46 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:21:46 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:21:46 Europe/Berlin] Transaction data: User_ID=1, Total=480, Payment=500, Method=cash
+[23-Sep-2026 16:21:48 Europe/Berlin] Transaction inserted with ID: 1527
+[23-Sep-2026 16:21:49 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:24:39 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:24:39 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:24:39 Europe/Berlin] Transaction data: User_ID=1, Total=85, Payment=100, Method=cash
+[23-Sep-2026 16:24:39 Europe/Berlin] Transaction inserted with ID: 1528
+[23-Sep-2026 16:24:39 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:25:37 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:25:37 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:25:37 Europe/Berlin] Transaction data: User_ID=1, Total=85, Payment=85, Method=gcash
+[23-Sep-2026 16:25:37 Europe/Berlin] Transaction inserted with ID: 1529
+[23-Sep-2026 16:25:38 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:27:34 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:27:34 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:27:34 Europe/Berlin] Transaction data: User_ID=1, Total=85, Payment=100, Method=cash
+[23-Sep-2026 16:27:34 Europe/Berlin] Transaction inserted with ID: 1530
+[23-Sep-2026 16:27:35 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:28:56 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:28:56 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:28:56 Europe/Berlin] Transaction data: User_ID=1, Total=65, Payment=100, Method=cash
+[23-Sep-2026 16:28:56 Europe/Berlin] Transaction inserted with ID: 1531
+[23-Sep-2026 16:28:58 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[23-Sep-2026 16:30:18 Europe/Berlin] Found user_id in session: 1
+[23-Sep-2026 16:30:18 Europe/Berlin] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[23-Sep-2026 16:30:18 Europe/Berlin] Transaction data: User_ID=1, Total=9870, Payment=10000, Method=cash
+[23-Sep-2026 16:30:18 Europe/Berlin] Transaction inserted with ID: 1532
+[23-Sep-2026 16:30:19 Europe/Berlin] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 01:04:03 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 4
+    [name] => Lampam
+    [description] => 
+    [price] => 180
+    [cost_price] => 99
+    [stock] => 96
+    [unit] => Per Piece
+    [sku] => PET-88719299
+    [barcode] => 12345688
+    [image] => assets/uploads/products/prod_1790183043_d8fdbce7.webp
+    [expiration_date] => 2029-08-28
+    [date_added] => 2026-09-23
+)
+
+[24-Sep-2026 01:04:05 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 81
+    [data] => Array
+        (
+            [id] => 81
+            [sku] => PET-88719299
+            [barcode] => 12345688
+            [unit] => Per Piece
+            [cost_price] => 99
+            [image] => assets/uploads/products/prod_1790183043_d8fdbce7.webp
+            [expiration_date] => 2029-08-28
+        )
+
+)
+
+[24-Sep-2026 01:20:45 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 01:20:45 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 01:20:45 Asia/Manila] Transaction data: User_ID=1, Total=85, Payment=85, Method=gcash
+[24-Sep-2026 01:37:51 Asia/Manila] VOID ERROR: Only completed transactions can be voided (this one is voided)
+[24-Sep-2026 01:37:53 Asia/Manila] VOID ERROR: Only completed transactions can be voided (this one is voided)
+[24-Sep-2026 01:41:45 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 01:41:45 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 01:41:45 Asia/Manila] Transaction data: User_ID=1, Total=85, Payment=85, Method=gcash
+[24-Sep-2026 01:41:53 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 01:41:53 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 01:41:53 Asia/Manila] Transaction data: User_ID=1, Total=85, Payment=85, Method=cash
+[24-Sep-2026 01:41:53 Asia/Manila] Transaction inserted with ID: 1533
+[24-Sep-2026 01:42:00 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

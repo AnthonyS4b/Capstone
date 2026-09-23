@@ -805,6 +805,11 @@ body {
     color: #64748b;
 }
 
+.status-expired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .product-icon-small {
     width: 28px;
     height: 28px;

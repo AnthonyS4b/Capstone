@@ -5,7 +5,12 @@ const ROWS_PER_PAGE      = 15;
 let currentPage          = 1;
 let totalPages           = 1;
 let currentTransactionId = null;
-let transactions         = [];   // full list from server
+let transactions         = [];   // rows of the current page, from the server
+let totalCount           = 0;    // matching rows across all pages
+
+// Dates and status take effect on Apply; the search box filters as you type
+let appliedFilters = { date_from: '', date_to: '', status: 'all' };
+let listRequest    = null;       // in-flight list request, dropped when a newer one starts
 
 // ─────────────────────────────────────────────
 // LOADING / TOAST
@@ -47,35 +52,46 @@ function showToast(type, title, message) {
 // ─────────────────────────────────────────────
 // LOAD TRANSACTIONS
 // ─────────────────────────────────────────────
-function loadTransactions(page = 1) {
-    showLoading();
+function loadTransactions(page = 1, opts = {}) {
+    const quiet = !!opts.quiet;      // live search: no full-screen spinner, no stats refresh
+    if (!quiet) showLoading();
 
-    $.ajax({
+    // Only the newest request may update the table (fast typing sends several)
+    if (listRequest) listRequest.abort();
+
+    listRequest = $.ajax({
         url      : 'ajax/transaction_ajax.php',
         method   : 'POST',
         dataType : 'json',
         data     : {
             action    : 'get_transactions',
             page      : page,
-            limit     : 100,
-            search    : document.getElementById('searchInput').value,
-            date_from : document.getElementById('dateFrom').value,
-            date_to   : document.getElementById('dateTo').value,
-            status    : document.getElementById('statusFilter').value
+            limit     : ROWS_PER_PAGE,
+            search    : document.getElementById('searchInput').value.trim(),
+            date_from : appliedFilters.date_from,
+            date_to   : appliedFilters.date_to,
+            status    : appliedFilters.status
         },
         success  : function (response) {
             hideLoading();
             if (response.success) {
                 transactions = response.data || [];
-                totalPages   = Math.max(1, Math.ceil(transactions.length / ROWS_PER_PAGE));
-                currentPage  = Math.min(page, totalPages);
-                renderPage(currentPage);
-                loadStats();
+                totalCount   = response.total_count || 0;
+                totalPages   = Math.max(1, response.total_pages || 1);
+                currentPage  = page;
+                // A void or a narrower filter can leave us past the last page
+                if (page > totalPages && totalCount > 0) {
+                    loadTransactions(totalPages, opts);
+                    return;
+                }
+                renderPage();
+                if (!quiet) loadStats();
             } else {
                 showToast('error', 'Error', response.message || 'Failed to load transactions');
             }
         },
         error    : function (xhr, status, error) {
+            if (status === 'abort') return;   // superseded by a newer search
             hideLoading();
             // Log the real server response so we can diagnose the issue
             console.error('=== AJAX ERROR ===');
@@ -99,15 +115,22 @@ function loadTransactions(page = 1) {
                         <td colspan="9" class="text-center py-3">
                             <div class="alert alert-danger text-start mx-3" style="font-size:12px;">
                                 <strong>Server response (copy this and share it):</strong><br>
-                                <pre style="white-space:pre-wrap;word-break:break-all;">${xhr.responseText || '(empty — check error.log)'}</pre>
+                                <pre style="white-space:pre-wrap;word-break:break-all;">${escapeHtml(xhr.responseText || '(empty — check error.log)')}</pre>
                                 <strong>HTTP status:</strong> ${xhr.status}<br>
-                                <strong>Error:</strong> ${error}
+                                <strong>Error:</strong> ${escapeHtml(error)}
                             </div>
                         </td>
                     </tr>`;
             }
-        }
+        },
+        complete : function () { listRequest = null; }
     });
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text == null ? '' : String(text);
+    return div.innerHTML;
 }
 
 // ─────────────────────────────────────────────
@@ -147,7 +170,7 @@ function displayTransactionRows(list) {
                     <div class="empty-state">
                         <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
                         <h5>No Transactions Found</h5>
-                        <p class="text-muted">Try adjusting your filters</p>
+                        <p class="text-muted">${emptyHint()}</p>
                     </div>
                 </td>
             </tr>`;
@@ -159,14 +182,14 @@ function displayTransactionRows(list) {
         const itemsCount    = t.item_count || 0;
         const txId          = 'TRX-' + String(t.id).padStart(6, '0');
         const pm            = t.payment_method || 'cash';
-        const pmIcon        = pm === 'gcash' ? '📱' : '💵';
+        const pmIcon        = pm === 'gcash' ? 'fa-mobile-screen' : 'fa-money-bill-wave';
         const pmLabel       = pm === 'gcash' ? 'GCash' : 'Cash';
         const status        = t.status || 'completed';
 
         let refHtml = '';
         if (t.notes && t.notes.includes('GCash Ref:')) {
             const ref = t.notes.replace('GCash Ref:', '').trim();
-            refHtml = `<small class="text-muted d-block">Ref: ${ref}</small>`;
+            refHtml = `<small class="text-muted d-block">Ref: ${escapeHtml(ref)}</small>`;
         }
 
         const voidBtn = status === 'completed'
@@ -182,7 +205,7 @@ function displayTransactionRows(list) {
                 <td>${itemsCount} item${itemsCount !== 1 ? 's' : ''}</td>
                 <td class="amount-positive">₱${parseFloat(t.total_amount || t.total || 0).toFixed(2)}</td>
                 <td>
-                    <span class="payment-method payment-${pm}">${pmIcon} ${pmLabel}</span>
+                    <span class="payment-method payment-${pm}"><i class="fa-solid ${pmIcon}"></i>${pmLabel}</span>
                     ${refHtml}
                 </td>
                 <td>₱${parseFloat(t.amount_paid || 0).toFixed(2)}</td>
@@ -198,14 +221,16 @@ function displayTransactionRows(list) {
     }).join('');
 }
 
+function emptyHint() {
+    const q = document.getElementById('searchInput').value.trim();
+    return q ? `Nothing matches “${escapeHtml(q)}” with the current filters.` : 'Try adjusting your filters';
+}
+
 // ─────────────────────────────────────────────
-// CLIENT-SIDE PAGINATION
+// PAGINATION (pages come from the server)
 // ─────────────────────────────────────────────
-function renderPage(page) {
-    currentPage = Math.max(1, Math.min(page, totalPages));
-    const start = (currentPage - 1) * ROWS_PER_PAGE;
-    const slice = transactions.slice(start, start + ROWS_PER_PAGE);
-    displayTransactionRows(slice);
+function renderPage() {
+    displayTransactionRows(transactions);
     displayPagination();
     updatePageInfo();
 }
@@ -213,10 +238,9 @@ function renderPage(page) {
 function updatePageInfo() {
     const el = document.getElementById('pageInfo');
     if (!el) return;
-    const total = transactions.length;
-    const start = total === 0 ? 0 : (currentPage - 1) * ROWS_PER_PAGE + 1;
-    const end   = Math.min(currentPage * ROWS_PER_PAGE, total);
-    el.textContent = `Showing ${start}–${end} of ${total} transactions`;
+    const start = totalCount === 0 ? 0 : (currentPage - 1) * ROWS_PER_PAGE + 1;
+    const end   = Math.min(start + transactions.length - 1, totalCount);
+    el.textContent = `Showing ${start}–${Math.max(end, 0)} of ${totalCount.toLocaleString()} transaction${totalCount === 1 ? '' : 's'}`;
 }
 
 function displayPagination() {
@@ -275,8 +299,8 @@ function pageBtn(i) {
 }
 
 function goToPage(page) {
-    if (page < 1 || page > totalPages) return;
-    renderPage(page);
+    if (page < 1 || page > totalPages || page === currentPage) return;
+    loadTransactions(page, { quiet: true });
     // Scroll table into view smoothly
     const section = document.querySelector('.transactions-section');
     if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -285,10 +309,46 @@ function goToPage(page) {
 // ─────────────────────────────────────────────
 // FILTERS
 // ─────────────────────────────────────────────
-function applyFilters()  { currentPage = 1; loadTransactions(1); }
-function resetFilters()  {
+function readFilterInputs() {
+    return {
+        date_from : document.getElementById('dateFrom').value,
+        date_to   : document.getElementById('dateTo').value,
+        status    : document.getElementById('statusFilter').value
+    };
+}
+
+// Highlight Apply while the date/status fields differ from what the table shows
+function markPendingFilters() {
+    const f   = readFilterInputs();
+    const btn = document.querySelector('.btn-filter');
+    if (!btn) return;
+    const pending = f.date_from !== appliedFilters.date_from
+                 || f.date_to   !== appliedFilters.date_to
+                 || f.status    !== appliedFilters.status;
+    btn.classList.toggle('is-pending', pending);
+}
+
+function applyFilters() {
+    const f = readFilterInputs();
+
+    // A single date is fine (from X onwards / up to Y); a reversed range is not
+    if (f.date_from && f.date_to && f.date_from > f.date_to) {
+        showToast('warning', 'Check the dates', '"From" must be on or before "To".');
+        document.getElementById('dateFrom').focus();
+        return;
+    }
+
+    appliedFilters = f;
+    markPendingFilters();
+    currentPage = 1;
+    loadTransactions(1);
+}
+
+function resetFilters() {
     ['searchInput','dateFrom','dateTo'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('statusFilter').value = 'all';
+    appliedFilters = readFilterInputs();
+    markPendingFilters();
     currentPage = 1;
     loadTransactions(1);
 }
@@ -318,82 +378,47 @@ function viewTransaction(transactionId) {
 
             const tx       = response.data;
             currentTransactionId = tx.id;
-            const date     = new Date(tx.created_at).toLocaleString();
             const txNumber = 'TRX-' + String(tx.id).padStart(6, '0');
             const pm       = tx.payment_method || 'cash';
-            const pmIcon   = pm === 'gcash' ? '📱' : '💵';
-            const pmLabel  = pm === 'gcash' ? 'GCash' : 'Cash';
             const status   = tx.status || 'completed';
+            const total    = parseFloat(tx.total_amount || tx.total || 0);
 
-            // Items
-            let itemsHtml = '';
-            if (tx.items && tx.items.length > 0) {
-                itemsHtml = tx.items.map(item => {
-                    const name     = item.product_name || item.name || 'Product';
-                    const lineTotal = (parseFloat(item.price) * parseInt(item.quantity)).toFixed(2);
-                    return `
-                        <div class="receipt-row">
-                            <span>${name} x${item.quantity}</span>
-                            <span>₱${lineTotal}</span>
-                        </div>`;
-                }).join('');
-            } else {
-                itemsHtml = '<div class="receipt-row text-muted"><span>No items found</span></div>';
-            }
+            // GCash reference is stored in notes as "GCash Ref: 123456"
+            const reference = (tx.notes || '').includes('GCash Ref:')
+                ? tx.notes.replace('GCash Ref:', '').trim() : '';
 
-            // GCash reference
-            let refHtml = '';
-            if (tx.notes && tx.notes.includes('GCash Ref:')) {
-                const ref = tx.notes.replace('GCash Ref:', '').trim();
-                refHtml = `<div class="receipt-row"><span>GCash Ref:</span><span>${ref}</span></div>`;
-            }
+            // Header: which sale this is, when and by whom
+            document.getElementById('txModalTitle').textContent = txNumber;
+            document.getElementById('txModalSub').textContent =
+                `${Receipt.formatDate(tx.created_at)} · ${tx.cashier_name || 'Unknown cashier'}`;
+            const statusEl = document.getElementById('txModalStatus');
+            statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+            statusEl.className = 'tx-status is-' + status;
 
-            document.getElementById('transactionDetails').innerHTML = `
-                <div class="receipt-header">
-                    <h4>Espenida's Pet &amp; Poultry</h4>
-                    <p>${date}</p>
-                    <p>Transaction #: ${txNumber}</p>
-                    <p>Cashier: ${tx.cashier_name || 'Unknown'}</p>
-                </div>
-                <div class="receipt-items">
-                    <div class="receipt-row header"><span>Item</span><span>Amount</span></div>
-                    ${itemsHtml}
-                </div>
-                <div class="receipt-total">
-                    <div class="receipt-row">
-                        <span>Total:</span>
-                        <span class="amount-positive">₱${parseFloat(tx.total_amount || tx.total || 0).toFixed(2)}</span>
-                    </div>
-                    <div class="receipt-row">
-                        <span>Payment Method:</span>
-                        <span class="payment-method payment-${pm}">${pmIcon} ${pmLabel}</span>
-                    </div>
-                    ${refHtml}
-                    <div class="receipt-row">
-                        <span>Amount Paid:</span>
-                        <span>₱${parseFloat(tx.amount_paid || 0).toFixed(2)}</span>
-                    </div>
-                    <div class="receipt-row">
-                        <span>Change:</span>
-                        <span>₱${parseFloat(tx.change_amount || 0).toFixed(2)}</span>
-                    </div>
-                    <div class="receipt-row">
-                        <span>Status:</span>
-                        <span class="status-badge status-${status}">${status}</span>
-                    </div>
-                </div>
-                <div class="receipt-footer">
-                    <p>Thank you for your purchase!</p>
-                    <p>This serves as your official receipt</p>
-                </div>`;
+            document.getElementById('transactionDetails').innerHTML = Receipt.html({
+                number  : txNumber,
+                date    : tx.created_at,
+                cashier : tx.cashier_name || 'Unknown',
+                items   : (tx.items || []).map(item => ({
+                    name     : item.product_name || item.name || 'Product',
+                    price    : parseFloat(item.price) || 0,
+                    quantity : parseInt(item.quantity, 10) || 0
+                })),
+                total   : total,
+                payment : parseFloat(tx.amount_paid || (pm === 'gcash' ? total : 0)),
+                change  : parseFloat(tx.change_amount || 0),
+                method  : pm,
+                reference,
+                status
+            });
 
-            // Show void button only if still completeed
+            // Void only makes sense for a completed sale
             const voidBtn = document.getElementById('voidBtn');
             if (voidBtn) {
-                voidBtn.style.display = (status === 'completed') ? 'inline-block' : 'none';
+                voidBtn.style.display = (status === 'completed') ? 'inline-flex' : 'none';
             }
 
-            new bootstrap.Modal(document.getElementById('transactionModal')).show();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('transactionModal')).show();
         },
         error : function () {
             hideLoading();
@@ -479,36 +504,7 @@ function executeVoid(transactionId) {
 // PRINT / EXPORT
 // ─────────────────────────────────────────────
 function printTransaction() {
-    const content = document.getElementById('transactionDetails')?.innerHTML;
-    if (!content) return;
-
-    const win = window.open('', '_blank');
-    win.document.write(`
-        <html>
-            <head>
-                <title>Receipt – Espenida's Pet &amp; Poultry</title>
-                <style>
-                    body { font-family:'Courier New',monospace; padding:20px; max-width:300px; margin:0 auto; }
-                    .receipt-header { text-align:center; margin-bottom:20px; }
-                    .receipt-items  { border-top:1px dashed #000; border-bottom:1px dashed #000; padding:10px 0; margin:10px 0; }
-                    .receipt-row    { display:flex; justify-content:space-between; padding:3px 0; }
-                    .receipt-row.header { font-weight:bold; border-bottom:1px solid #000; margin-bottom:5px; }
-                    .receipt-total  { margin-top:10px; }
-                    .amount-positive{ font-weight:bold; }
-                    .receipt-footer { text-align:center; margin-top:20px; font-size:12px; }
-                    .status-badge   { padding:2px 6px; border-radius:3px; display:inline-block; }
-                    .status-completed { background:#d1fae5; color:#065f46; }
-                    .status-voided  { background:#fee2e2; color:#991b1b; }
-                    .payment-method { display:inline-block; padding:2px 6px; border-radius:3px; }
-                    .payment-cash   { background:#fef3c7; color:#92400e; }
-                    .payment-gcash  { background:#dbeafe; color:#1e40af; }
-                </style>
-            </head>
-            <body><div class="receipt">${content}</div>
-            <script>window.onload=function(){window.print();}<\/script>
-            </body>
-        </html>`);
-    win.document.close();
+    Receipt.print(document.getElementById('transactionDetails')?.innerHTML);
 }
 
 function exportTransactions() {
@@ -607,6 +603,36 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof INITIAL_TOAST !== 'undefined' && INITIAL_TOAST) {
         showToast(INITIAL_TOAST.type, INITIAL_TOAST.title, INITIAL_TOAST.message);
     }
+
+    // Search as you type; dates and status wait for Apply
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        let searchTimer = null;
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            searchTimer = setTimeout(() => loadTransactions(1, { quiet: true }), 250);
+        });
+        searchInput.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimer);
+                loadTransactions(1, { quiet: true });
+            } else if (e.key === 'Escape' && this.value) {
+                this.value = '';
+                clearTimeout(searchTimer);
+                loadTransactions(1, { quiet: true });
+            }
+        });
+    }
+
+    ['dateFrom', 'dateTo', 'statusFilter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('change', markPendingFilters);
+        el.addEventListener('input', markPendingFilters);
+        // Enter in a date field applies, like pressing the button
+        el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyFilters(); } });
+    });
 
     // Load transactions — jQuery is guaranteed available here
     loadTransactions(1);

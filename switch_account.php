@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
     security_require_csrf();
     $target_user_id = $_POST['user_id'];
     $pin = $_POST['pin'];
-    $limitKey = security_client_key('switch_account', (string)$target_user_id);
+    $limitKey = security_pin_limit_key($target_user_id);
     $limit = security_rate_limit($limitKey, 5, 300);
     if (!$limit['allowed']) {
         switch_respond($isAjax, false, 'Too Many Attempts',

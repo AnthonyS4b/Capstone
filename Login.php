@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once __DIR__ . '/includes/security.php';
+require_once __DIR__ . '/includes/avatar.php';
 
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
@@ -69,7 +70,7 @@ try {
         $stmt->execute();
         $user = $stmt->fetch();
 
-        $limitKey = security_client_key('login', (string)$user_id);
+        $limitKey = security_pin_limit_key($user_id);
         $limit = security_rate_limit($limitKey, 5, 300);
 
         if (!$limit['allowed']) {
@@ -140,49 +141,27 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
 <html lang="en">
 
 <head>
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Espenida's Pet & Poultry Supply — Point of Sale System Login">
+    <meta name="theme-color" content="#2c5530">
     <title><?php echo SITE_NAME; ?> - POS Login</title>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico?v=20260923">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=20260923">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=20260923">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png?v=20260923">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/loginCSS.css">
-    <style>
-        /* Loading animation override */
-        #loading-animation.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        <?php if (isset($error) || $logged_out): ?>#loading-animation {
-            display: none !important;
-        }
-
-        <?php endif; ?>
-
-        /* Disabled button styles */
-        .keypad-btn:disabled {
-            opacity: 0.35 !important;
-            cursor: not-allowed !important;
-            pointer-events: none !important;
-        }
-
-        .keypad-btn:disabled:hover {
-            transform: none !important;
-            background-color: inherit !important;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/loginCSS.css?v=<?= filemtime(__DIR__ . '/assets/css/loginCSS.css') ?>">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <?php if (isset($error) || $logged_out): ?>
+        <style>#loading-animation { display: none !important; }</style>
+    <?php endif; ?>
 </head>
 
 <body>
     <!-- Loading Animation -->
     <div id="loading-animation">
-        <!-- Real logo in loading screen -->
         <img src="assets/images/espenidas_logo.jpg" class="logo-loading-img" alt="Espenida's Logo">
         <div class="progress-container">
             <div class="progress">
@@ -196,204 +175,147 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- Watermark logo background -->
-    <img src="assets/images/espenidas_logo.jpg" class="brand-logo-overlay" alt="">
+    <?php if (isset($error)): ?>
+        <script>
+            if (!window.toastShown) {
+                window.toastShown = true;
 
-    <!-- ===== MAIN PAGE WRAPPER ===== -->
-    <div class="login-page-wrapper">
-
-        <!-- HEADER: logo left, store name right -->
-        <div class="login-header">
-            <img src="assets/images/espenidas_logo.jpg" class="login-logo-img" alt="Espenida's Logo">
-            <div class="login-header-text">
-                <div class="login-store-name">Espenida's Pet &amp; Poultry Supply</div>
-                <div class="login-header-sub">Point of Sale System &nbsp;·&nbsp; Staff Login</div>
-            </div>
-        </div>
-
-        <!-- ===== LOGIN CARD ===== -->
-        <div class="login-container position-relative">
-            <?php if (isset($db_error)): ?>
-                <span class="mode-badge"><i class="fas fa-wifi-slash me-1"></i>Offline Mode</span>
-            <?php endif; ?>
-
-            <?php if (isset($error)): ?>
-                <script>
-                    if (!window.toastShown) {
-                        window.toastShown = true;
-
-                        function showErrorToast() {
-                            var toastContainer = document.getElementById('toastContainer');
-                            if (!toastContainer) return;
-                            toastContainer.innerHTML = '';
-                            var toastId = 'toast-error-' + Date.now();
-                            var toastHtml = `
-                                <div id="${toastId}" class="toast align-items-center text-white bg-danger border-0 mb-2 show" role="alert">
-                                    <div class="d-flex">
-                                        <div class="toast-body">
-                                            <i class="fas fa-exclamation-circle me-2"></i>
-                                            <strong>Login Failed!</strong> <?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
-                                        </div>
-                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                                    </div>
-                                    <div class="toast-timer"></div>
+                function showErrorToast() {
+                    var toastContainer = document.getElementById('toastContainer');
+                    if (!toastContainer) return;
+                    toastContainer.innerHTML = '';
+                    var toastId = 'toast-error-' + Date.now();
+                    var toastHtml = `
+                        <div id="${toastId}" class="toast align-items-center text-white bg-danger border-0 mb-2 show" role="alert">
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <strong>Login Failed!</strong> <?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
                                 </div>
-                            `;
-                            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-                            setTimeout(function() {
-                                var toast = document.getElementById(toastId);
-                                if (toast && toast.parentNode) toast.remove();
-                            }, 1000);
-                        }
-                        if (document.readyState === 'loading') {
-                            document.addEventListener('DOMContentLoaded', showErrorToast);
-                        } else {
-                            showErrorToast();
-                        }
-                    }
-                </script>
-            <?php endif; ?>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                            </div>
+                            <div class="toast-timer"></div>
+                        </div>
+                    `;
+                    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                    setTimeout(function() {
+                        var toast = document.getElementById(toastId);
+                        if (toast && toast.parentNode) toast.remove();
+                    }, 1000);
+                }
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', showErrorToast);
+                } else {
+                    showErrorToast();
+                }
+            }
+        </script>
+    <?php endif; ?>
 
-            <div class="login-body">
+    <main class="lg-shell">
+        <div class="lg-card">
+
+            <!-- Brand panel: store identity and the till's date and time -->
+            <aside class="lg-brand">
+                <div class="lg-brand-id">
+                    <span class="lg-mark"><img src="assets/images/favicon-192x192.png" alt=""></span>
+                    <div>
+                        <p class="lg-store">Espenida's Pet &amp; Poultry Supply</p>
+                        <p class="lg-store-sub">Point of sale</p>
+                    </div>
+                </div>
+                <div class="lg-clock">
+                    <span class="lg-time" id="lgTime"><?= date('g:i A') ?></span>
+                    <span class="lg-date" id="lgDate"><?= date('l, F j') ?></span>
+                </div>
+                <p class="lg-brand-foot">&copy; <?= date('Y') ?> Espenida's Pet &amp; Poultry Supply</p>
+            </aside>
+
+            <section class="lg-panel">
                 <?php if (isset($db_error)): ?>
-                    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        <?php echo $db_error; ?>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="lg-alert" role="alert">
+                        <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span><strong>Offline.</strong> <?php echo htmlspecialchars($db_error); ?></span>
                     </div>
                 <?php endif; ?>
 
-                <form id="loginForm" method="POST" action="">
+                <form id="loginForm" method="POST" action="" autocomplete="off">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="user_id" id="user_id">
                     <input type="hidden" name="pin" id="pin">
                     <input type="hidden" name="ajax" value="1">
 
-                    <div class="row g-0">
-                        <!-- ===== LEFT — Account Selection ===== -->
-                        <div class="col-md-6">
-                            <p class="section-label">Select Account</p>
+                    <!-- Step 1: choose an account -->
+                    <div class="lg-step" id="lgStepPick">
+                        <h1 class="lg-title">Who's signing in?</h1>
+                        <p class="lg-sub">Tap your name, then enter your PIN.</p>
 
-                            <div class="account-cards-list">
-                                <!-- Employee Accounts -->
-                                <?php
-                                $employees = array_filter($users, function ($user) {
-                                    return $user['role'] == 'employee';
-                                });
-
-                                if (!empty($employees)): ?>
-                                    <p class="small mb-1" style="color:var(--text-muted);font-weight:600;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;">Employees</p>
-                                    <?php foreach ($employees as $employee): ?>
-                                        <div class="account-card"
-                                            data-user-id="<?php echo $employee['id']; ?>"
-                                            data-user-name="<?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?>"
-                                            data-user-role="<?php echo $employee['role']; ?>"
-                                            data-user-position="<?php echo htmlspecialchars($employee['position']); ?>">
-                                            <div class="avatar bg-primary bg-opacity-10 text-primary">
-                                                <?php echo strtoupper(substr($employee['first_name'], 0, 1)); ?>
-                                            </div>
-                                            <div class="ms-3">
-                                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                    <span style="font-weight:600;font-size:0.88rem;color:var(--text-dark);"><?php echo htmlspecialchars($employee['first_name'] . ' ' . $employee['last_name']); ?></span>
-                                                    <span class="account-tag employee">Employee</span>
-                                                </div>
-                                                <small style="color:var(--text-muted);font-size:0.76rem;"><?php echo htmlspecialchars($employee['position']); ?></small>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-
-                                <!-- Owner Accounts -->
-                                <?php
-                                $owners = array_filter($users, function ($user) {
-                                    return $user['role'] == 'owner';
-                                });
-
-                                if (!empty($owners)): ?>
-                                    <p class="small mt-2 mb-1" style="color:var(--text-muted);font-weight:600;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase;">Owners</p>
-                                    <?php foreach ($owners as $owner): ?>
-                                        <div class="account-card"
-                                            data-user-id="<?php echo $owner['id']; ?>"
-                                            data-user-name="<?php echo htmlspecialchars($owner['first_name'] . ' ' . $owner['last_name']); ?>"
-                                            data-user-role="<?php echo $owner['role']; ?>"
-                                            data-user-position="<?php echo htmlspecialchars($owner['position']); ?>">
-                                            <div class="avatar bg-info bg-opacity-10 text-info">
-                                                <?php echo strtoupper(substr($owner['first_name'], 0, 1)); ?>
-                                            </div>
-                                            <div class="ms-3">
-                                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                                    <span style="font-weight:600;font-size:0.88rem;color:var(--text-dark);"><?php echo htmlspecialchars($owner['first_name'] . ' ' . $owner['last_name']); ?></span>
-                                                    <span class="account-tag owner">Owner</span>
-                                                </div>
-                                                <small style="color:var(--text-muted);font-size:0.76rem;"><?php echo htmlspecialchars($owner['position']); ?></small>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
+                        <?php if ($users): ?>
+                            <div class="lg-accounts">
+                                <?php foreach ($users as $user):
+                                    $full_name = $user['first_name'] . ' ' . $user['last_name'];
+                                    $is_owner  = $user['role'] === 'owner';
+                                    $position  = trim((string)$user['position']) ?: ($is_owner ? 'Owner' : 'Employee'); ?>
+                                    <button type="button" class="account-card<?= $is_owner ? ' is-owner' : '' ?>"
+                                        data-user-id="<?= (int)$user['id'] ?>"
+                                        data-user-name="<?= htmlspecialchars($full_name) ?>"
+                                        data-user-role="<?= htmlspecialchars($user['role']) ?>"
+                                        data-user-position="<?= htmlspecialchars($position) ?>">
+                                        <?= user_avatar_html($user['avatar'] ?? null, $user['first_name'], $user['last_name'], 'lg-avatar') ?>
+                                        <span class="lg-acc-name"><?= htmlspecialchars($full_name) ?></span>
+                                        <span class="lg-acc-pos"><?= htmlspecialchars($position) ?></span>
+                                    </button>
+                                <?php endforeach; ?>
                             </div>
-                        </div>
+                        <?php elseif (!isset($db_error)): ?>
+                            <p class="lg-empty">No active accounts. Ask the store owner to reactivate yours.</p>
+                        <?php endif; ?>
 
-                        <!-- Column Divider (desktop) -->
-                        <div class="col-auto d-none d-md-block" style="width:1px;background:var(--border-color);margin:0 20px;"></div>
-
-                        <!-- ===== RIGHT — PIN Entry ===== -->
-                        <div class="col-md pin-section">
-                            <div id="selectedAccountInfo" class="mb-3" style="display:none;">
-                                <h6 class="mb-1" id="selectedName"></h6>
-                                <small id="selectedRole"></small>
-                            </div>
-
-                            <p class="text-muted mb-1" id="pinPrompt" style="font-size:0.82rem;font-weight:500;">Select an account to enter PIN</p>
-
-                            <!-- Stays put until the next attempt, unlike the one-second toast -->
-                            <div id="loginError" class="alert alert-danger py-2 px-3 my-2 small"
-                                 role="alert" aria-live="polite" style="display:none;"></div>
-
-                            <!-- PIN Dots -->
-                            <div class="pin-dots-row">
-                                <?php for ($i = 0; $i < 4; $i++): ?>
-                                    <div class="pin-dot" id="pinDot<?= $i ?>"></div>
-                                <?php endfor; ?>
-                            </div>
-
-                            <!-- Keypad -->
-                            <div class="keypad-grid">
-                                <?php for ($i = 1; $i <= 9; $i++): ?>
-                                    <button type="button" class="keypad-btn key" data-num="<?= $i ?>"><?= $i ?></button>
-                                <?php endfor; ?>
-
-                                <!-- Empty spacer -->
-                                <div></div>
-
-                                <button type="button" class="keypad-btn key" data-num="0">0</button>
-                                <button type="button" id="backspace" class="keypad-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-backspace" viewBox="0 0 16 16">
-                                        <path d="M5.83 5.146a.5.5 0 0 0 0 .708L7.975 8l-2.147 2.146a.5.5 0 0 0 .707.708l2.147-2.147 2.146 2.147a.5.5 0 0 0 .707-.708L9.39 8l2.146-2.146a.5.5 0 0 0-.707-.708L8.683 7.293 6.536 5.146a.5.5 0 0 0-.707 0z" />
-                                        <path d="M13.683 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-7.08a2 2 0 0 1-1.519-.698L.241 8.65a1 1 0 0 1 0-1.302L5.084 1.7A2 2 0 0 1 6.603 1h7.08zm-7.08 1a1 1 0 0 0-.76.35L1 8l4.844 5.65a1 1 0 0 0 .759.35h7.08a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1h-7.08z" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <!-- Help Note -->
-                            <div class="mt-4">
-                                <p style="color:var(--text-muted);font-size:0.75rem;text-align:center;">
-                                    <i class="fas fa-lock me-1" style="color:var(--green-light);"></i>
-                                    <i>Forgot PIN? Please contact the store owner for assistance.</i>
-                                </p>
-                            </div>
-                        </div>
+                        <p class="lg-help"><i class="fas fa-lock" aria-hidden="true"></i>Forgot your PIN? Ask the store owner to reset it.</p>
                     </div>
 
-                    <!-- System Footer -->
-                    <div class="system-footer">
-                        <p class="mb-0">© <?php echo date('Y'); ?> <strong>Espenida's Pet &amp; Poultry Supply</strong> — All rights reserved.</p>
+                    <!-- Step 2: PIN for the chosen account -->
+                    <div class="lg-step pin-section" id="lgStepPin" tabindex="-1" hidden>
+                        <button type="button" class="lg-back" id="lgBack">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>All accounts
+                        </button>
+
+                        <div id="selectedAccountInfo">
+                            <span class="lg-avatar lg-avatar-lg" id="lgChosenAvatar" aria-hidden="true"></span>
+                            <h1 class="lg-title" id="selectedName"></h1>
+                            <p id="selectedRole"></p>
+                        </div>
+
+                        <p id="pinPrompt">Enter your 4-digit PIN</p>
+
+                        <div class="pin-dots-row" aria-hidden="true">
+                            <?php for ($i = 0; $i < 4; $i++): ?>
+                                <span class="pin-dot" id="pinDot<?= $i ?>"></span>
+                            <?php endfor; ?>
+                        </div>
+
+                        <!-- Stays put until the next attempt, unlike the one-second toast -->
+                        <div id="loginError" class="lg-error" role="alert" aria-live="polite" style="display:none;"></div>
+
+                        <div class="keypad-grid">
+                            <?php for ($i = 1; $i <= 9; $i++): ?>
+                                <button type="button" class="keypad-btn key" data-num="<?= $i ?>"><?= $i ?></button>
+                            <?php endfor; ?>
+                            <span></span>
+                            <button type="button" class="keypad-btn key" data-num="0">0</button>
+                            <button type="button" id="backspace" class="keypad-btn" aria-label="Delete last digit">
+                                <i class="fas fa-delete-left" aria-hidden="true"></i>
+                            </button>
+                        </div>
+
+                        <p class="lg-help"><i class="fas fa-lock" aria-hidden="true"></i>Forgot your PIN? Ask the store owner to reset it.</p>
                     </div>
                 </form>
-            </div>
+            </section>
         </div>
-    </div>
+    </main>
 
-    <script src="assets/js/LoginJS.js"></script>
+    <script src="assets/js/LoginJS.js?v=<?= filemtime(__DIR__ . '/assets/js/LoginJS.js') ?>"></script>
 </body>
 
 </html>

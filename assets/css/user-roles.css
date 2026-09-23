@@ -1,0 +1,535 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Users & roles modals (includes/user_roles_modal.php)
+   Scoped to .um-modal; loaded wherever the include is used.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.um-modal {
+    --um-brand: #2c5530;
+    --um-brand-strong: #1f3d23;
+    --um-brand-tint: #eaf0ea;
+    --um-accent: #8B4513;
+    --um-accent-tint: #f6ece3;
+    --um-ink: #16221a;
+    --um-muted: #61706a;
+    --um-subtle: #8b968f;
+    --um-line: #e4e7e4;
+    --um-line-strong: #cfd4cf;
+    --um-canvas: #f6f7f6;
+    --um-positive: #15803d;
+    --um-negative: #b42318;
+}
+
+.um-modal .modal-dialog.modal-lg {
+    max-width: 820px;
+}
+
+.um-form-modal .modal-dialog {
+    max-width: 480px;
+}
+
+.um-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+    color: var(--um-ink);
+}
+
+/* ─── Header ─── */
+.um-modal .um-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 14px 24px;
+    background: #fff;
+}
+
+.um-modal .um-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--um-ink);
+}
+
+.um-modal .um-sub {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--um-muted);
+}
+
+.um-modal .um-head .btn-close {
+    flex-shrink: 0;
+    margin: 2px 0 0;
+    font-size: 11px;
+    opacity: 0.5;
+}
+
+.um-modal .um-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* ─── Toolbar ─── */
+.um-modal .um-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 0 24px 14px;
+    border-bottom: 1px solid var(--um-line);
+}
+
+.um-modal .um-search {
+    position: relative;
+    flex: 1 1 220px;
+    margin: 0;
+}
+
+.um-modal .um-search i {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--um-subtle);
+    pointer-events: none;
+}
+
+.um-modal .um-search input,
+.um-modal .um-select,
+.um-modal .um-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: var(--um-ink);
+    background: #fff;
+    border: 1px solid var(--um-line-strong);
+    border-radius: 8px;
+    outline: none;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.um-modal .um-search input {
+    padding-left: 32px;
+}
+
+.um-modal .um-select {
+    width: auto;
+    min-width: 130px;
+    padding-right: 30px;
+    appearance: none;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2361706a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center;
+}
+
+.um-modal select.um-input {
+    appearance: none;
+    padding-right: 30px;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2361706a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 11px center;
+}
+
+.um-modal .um-search input:focus,
+.um-modal .um-select:focus,
+.um-modal .um-input:focus {
+    border-color: var(--um-brand);
+    box-shadow: 0 0 0 3px var(--um-brand-tint);
+}
+
+/* ─── Buttons ─── */
+.um-modal .um-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.um-modal .um-btn i {
+    font-size: 12px;
+}
+
+.um-modal .um-btn-primary {
+    background: var(--um-brand);
+    color: #fff;
+}
+
+.um-modal .um-btn-primary:hover {
+    background: var(--um-brand-strong);
+}
+
+.um-modal .um-btn-ghost {
+    background: #fff;
+    border-color: var(--um-line-strong);
+    color: var(--um-ink);
+}
+
+.um-modal .um-btn-ghost:hover {
+    background: var(--um-canvas);
+}
+
+.um-modal .um-icon-btn {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--um-muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.um-modal .um-toolbar .um-icon-btn {
+    height: 38px;
+    width: 38px;
+    border-color: var(--um-line-strong);
+}
+
+.um-modal .um-icon-btn:hover {
+    background: var(--um-canvas);
+    border-color: var(--um-line);
+    color: var(--um-brand);
+}
+
+.um-modal .um-icon-btn.um-danger:hover {
+    background: #fdeceb;
+    border-color: #f1c7c3;
+    color: var(--um-negative);
+}
+
+.um-modal .um-btn:focus-visible,
+.um-modal .um-icon-btn:focus-visible {
+    outline: 2px solid var(--um-brand);
+    outline-offset: 2px;
+}
+
+/* ─── Users table ─── */
+.um-modal .modal-body {
+    padding: 0;
+}
+
+.um-form-modal .modal-body {
+    padding: 4px 24px 8px;
+}
+
+.um-modal .um-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.um-modal .um-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 10px 16px;
+    background: var(--um-canvas);
+    border-bottom: 1px solid var(--um-line);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--um-muted);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.um-modal .um-table th:first-child,
+.um-modal .um-table td:first-child {
+    padding-left: 24px;
+}
+
+.um-modal .um-table th:last-child,
+.um-modal .um-table td:last-child {
+    padding-right: 20px;
+}
+
+.um-modal .um-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--um-line);
+    vertical-align: middle;
+}
+
+.um-modal .um-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.um-modal .um-table tbody tr:hover td {
+    background: #fafbfa;
+}
+
+.um-modal .um-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.um-modal .um-user-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.um-modal .um-name {
+    font-weight: 600;
+    color: var(--um-ink);
+}
+
+.um-modal .um-email {
+    font-size: 12.5px;
+    color: var(--um-muted);
+    overflow-wrap: anywhere;
+}
+
+.um-modal .um-you {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: var(--um-canvas);
+    border: 1px solid var(--um-line);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--um-muted);
+    vertical-align: 1px;
+}
+
+.um-modal .um-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    background: var(--um-brand-tint);
+    color: var(--um-brand);
+}
+
+.um-modal .um-avatar-owner {
+    background: var(--um-accent-tint);
+    color: var(--um-accent);
+}
+
+.um-modal .um-avatar-lg {
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
+}
+
+.um-modal .um-role {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--um-brand);
+}
+
+.um-modal .um-role-owner {
+    color: var(--um-accent);
+}
+
+.um-modal .um-muted {
+    color: var(--um-muted);
+}
+
+.um-modal .um-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.um-modal .um-status::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.um-modal .um-status.is-active { color: var(--um-positive); }
+.um-modal .um-status.is-inactive { color: var(--um-subtle); }
+
+.um-modal .um-actions {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.um-modal .um-actions .um-icon-btn + .um-icon-btn {
+    margin-left: 2px;
+}
+
+.um-modal .um-empty {
+    padding: 36px 16px !important;
+    text-align: center;
+    color: var(--um-muted);
+}
+
+/* ─── Forms ─── */
+.um-modal .um-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.um-modal .um-field {
+    margin-bottom: 14px;
+}
+
+.um-modal .um-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--um-ink);
+}
+
+.um-modal .um-optional {
+    font-weight: 400;
+    color: var(--um-subtle);
+}
+
+.um-modal .um-pin {
+    letter-spacing: 0.4em;
+    font-weight: 600;
+}
+
+.um-modal .um-hint {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--um-muted);
+    line-height: 1.4;
+}
+
+.um-modal .um-role-note {
+    margin: 0 0 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--um-canvas);
+    font-size: 12.5px;
+    color: var(--um-muted);
+    line-height: 1.45;
+}
+
+.um-modal .um-role-note:empty {
+    display: none;
+}
+
+.um-modal .um-section {
+    padding-top: 14px;
+    border-top: 1px solid var(--um-line);
+}
+
+.um-modal .um-section-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 650;
+    color: var(--um-ink);
+}
+
+.um-modal .um-section .um-hint {
+    margin: 2px 0 10px;
+}
+
+.um-modal .um-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 24px 20px;
+}
+
+/* ─── Small screens ─── */
+@media (max-width: 640px) {
+    .um-modal .modal-dialog {
+        margin: 10px;
+    }
+
+    .um-modal .um-toolbar {
+        padding: 0 16px 12px;
+    }
+
+    .um-modal .um-select {
+        flex: 1;
+    }
+
+    .um-modal .um-toolbar .um-btn-primary {
+        flex: 1 1 100%;
+    }
+
+    /* Position and status move under the name */
+    .um-modal .um-table thead {
+        display: none;
+    }
+
+    .um-modal .um-table tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--um-line);
+    }
+
+    .um-modal .um-table td {
+        padding: 0 !important;
+        border: none;
+    }
+
+    .um-modal .um-table td:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .um-modal .um-table td:nth-child(5) { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+    .um-modal .um-table td:nth-child(2),
+    .um-modal .um-table td:nth-child(3),
+    .um-modal .um-table td:nth-child(4) { display: inline; grid-column: 1; font-size: 12.5px; }
+    .um-modal .um-table td:nth-child(2) { grid-row: 2; padding-left: 48px !important; }
+    .um-modal .um-table td:nth-child(3),
+    .um-modal .um-table td:nth-child(4) { display: none; }
+
+    .um-form-modal .modal-body {
+        padding: 4px 16px 8px;
+    }
+
+    .um-modal .um-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
+/* Page stylesheets (dashboardCSS) give inputs their own position/padding; keep the search icon on top */
+.um-modal .um-toolbar .um-search i {
+    z-index: 2;
+}
+
+.um-modal .um-toolbar .um-search input {
+    position: relative;
+    z-index: 1;
+    padding-left: 32px !important;
+}
+
+/* Profile pictures in the user list and the Edit user header */
+.um-modal .um-avatar {
+    overflow: hidden;
+}
+
+.um-modal .um-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}

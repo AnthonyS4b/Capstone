@@ -1,149 +1,175 @@
 // assets/js/active_strategies.js
+// "Active promotions" modal (includes/active_promos_modal.php) — POS and Recommendations.
 
 function openActiveStrategiesModal() {
-    const modal = new bootstrap.Modal(document.getElementById('activeStrategiesModal'));
+    const el = document.getElementById('activeStrategiesModal');
+    if (!el) return;
     loadActiveStrategies();
-    modal.show();
+    bootstrap.Modal.getOrCreateInstance(el).show();
+}
+
+function promoPeso(n) {
+    return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function promoMessage(html) {
+    const list = document.getElementById('activeStrategiesTableBody');
+    if (list) list.innerHTML = html;
 }
 
 function loadActiveStrategies() {
-    const tbody = document.getElementById('activeStrategiesTableBody');
-    if (!tbody) return;
-
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>Loading active strategies...</td></tr>';
+    promoMessage('<div class="promo-empty"><div class="spinner-border spinner-border-sm" role="status"></div><p>Loading promotions…</p></div>');
+    const summary = document.getElementById('activePromosSummary');
+    if (summary) summary.textContent = 'Discounts currently applied at the POS.';
 
     $.ajax({
         url: 'ajax/ml_recommendation_ajax.php',
         type: 'GET',
         data: { action: 'get_active_strategies' },
         dataType: 'json',
-        success: function(res) {
+        success: function (res) {
             if (res.success) {
                 renderActiveStrategies(res.strategies);
             } else {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4">Error loading strategies: ${res.error || 'Unknown error'}</td></tr>`;
+                promoMessage(`<div class="promo-empty is-error"><p class="promo-empty-title">Couldn't load promotions</p><p>${escapeHtmlStr(res.error || 'Unknown error')}</p></div>`);
             }
         },
-        error: function() {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Failed to fetch active strategies from server.</td></tr>';
+        error: function () {
+            promoMessage('<div class="promo-empty is-error"><p class="promo-empty-title">Couldn\'t load promotions</p><p>The recommendation service did not respond. Try again in a moment.</p></div>');
         }
     });
+}
+
+// Time left in plain words, plus how far through its run the promotion is (0–100)
+function promoTiming(startedAt, endedAt) {
+    if (!endedAt) return { text: 'No end date', pct: null, soon: false };
+    const parse = v => new Date(String(v).replace(' ', 'T'));
+    const end = parse(endedAt);
+    const start = startedAt ? parse(startedAt) : null;
+    const now = new Date();
+    const msLeft = end - now;
+    const endLabel = end.toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+
+    let text;
+    if (msLeft <= 0) text = 'Ending now';
+    else if (msLeft < 36e5) text = `Ends in ${Math.max(1, Math.round(msLeft / 6e4))} min`;
+    else if (msLeft < 864e5) text = `Ends in ${Math.round(msLeft / 36e5)} h`;
+    else {
+        const days = Math.ceil(msLeft / 864e5);
+        text = `${days} day${days === 1 ? '' : 's'} left · ends ${endLabel}`;
+    }
+
+    let pct = null;
+    if (start && end > start) pct = Math.min(100, Math.max(0, ((now - start) / (end - start)) * 100));
+    return { text, pct, soon: msLeft < 864e5 };
 }
 
 function renderActiveStrategies(strategies) {
-    const tbody = document.getElementById('activeStrategiesTableBody');
-    if (!tbody) return;
+    const summary = document.getElementById('activePromosSummary');
 
     if (!strategies || strategies.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center text-muted py-5">
-                    <i class="fas fa-tags fa-3x mb-3 opacity-50"></i>
-                    <p>No active promotional strategies currently running.</p>
-                </td>
-            </tr>`;
+        if (summary) summary.textContent = 'Nothing running right now.';
+        promoMessage(`
+            <div class="promo-empty">
+                <span class="promo-empty-icon" aria-hidden="true"><i class="fas fa-tags"></i></span>
+                <p class="promo-empty-title">No active promotions</p>
+                <p>When you apply a strategy from Recommendations, its discount and time left show up here.</p>
+            </div>`);
         return;
     }
 
-    let html = '';
-    strategies.forEach(s => {
-        // Calculate remaining duration securely
-        let timeInfo = `<span class="badge bg-secondary">Unknown</span>`;
-        if (s.ended_at) {
-            const endDate = new Date(s.ended_at);
-            const now = new Date();
-            const diffTime = endDate - now;
-            if (diffTime > 0) {
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                timeInfo = `<span class="badge bg-success">${diffDays} days left</span>`;
-            } else {
-                timeInfo = `<span class="badge bg-warning text-dark">Expiring soon</span>`;
-            }
-        }
+    if (summary) {
+        summary.textContent = `${strategies.length} promotion${strategies.length === 1 ? '' : 's'} running · prices below are what the POS charges now`;
+    }
 
-        html += `
-            <tr>
-                <td class="align-middle fw-bold text-dark">${escapeHtmlStr(s.product_name)}</td>
-                <td class="align-middle">
-                    <div class="fw-semibold" style="color:#2c5530;">${escapeHtmlStr(s.strategy_name || s.strategy_id)}</div>
-                    <small class="text-muted">${Number(s.discount_applied)}% discount</small>
-                    ${s.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">With ${escapeHtmlStr(s.paired_product_name || 'a paired product')} — one discounted unit per pair</div>` : ''}
-                </td>
-                <td class="align-middle">
-                    <div class="${s.strategy_id === 'cross_sell_pairing' ? '' : 'text-decoration-line-through '}text-muted small">₱${Number(s.original_price).toFixed(2)}${s.strategy_id === 'cross_sell_pairing' ? ' regular' : ''}</div>
-                    <div class="fw-bold text-danger">₱${Number(s.discounted_price).toFixed(2)}${s.strategy_id === 'cross_sell_pairing' ? ' when paired' : ''}</div>
-                </td>
-                <td class="align-middle">${timeInfo}</td>
-                <td class="align-middle text-end">
-                    <button class="btn btn-sm btn-outline-danger" onclick="cancelActiveStrategy(${s.id}, '${escapeHtmlStr(s.product_name)}', this)">
-                        <i class="fas fa-times me-1"></i> Cancel
-                    </button>
-                </td>
-            </tr>
-        `;
-    });
+    const canCancel = window.activePromosCanCancel !== false;
+    promoMessage(strategies.map(s => {
+        const paired = s.strategy_id === 'cross_sell_pairing';
+        const timing = promoTiming(s.started_at, s.ended_at);
+        const discount = Number(s.discount_applied) || 0;
+        const thumb = s.image
+            ? `<img class="promo-thumb" src="${escapeHtmlStr(s.image)}" alt="" loading="lazy">`
+            : `<span class="promo-thumb promo-thumb-empty" aria-hidden="true"><i class="fas fa-box"></i></span>`;
 
-    tbody.innerHTML = html;
+        return `
+            <article class="promo-card">
+                ${thumb}
+                <div class="promo-main">
+                    <div class="promo-top">
+                        <span class="promo-product">${escapeHtmlStr(s.product_name)}</span>
+                        ${discount > 0 ? `<span class="promo-off">${discount}% off</span>` : ''}
+                    </div>
+                    <div class="promo-strategy">${escapeHtmlStr(s.strategy_name || s.strategy_id)}</div>
+                    ${paired ? `<div class="promo-note">When bought with ${escapeHtmlStr(s.paired_product_name || 'its paired product')} — one discounted unit per pair</div>` : ''}
+                    <div class="promo-price">
+                        <span class="promo-new">${promoPeso(s.discounted_price)}${paired ? ' <small>when paired</small>' : ''}</span>
+                        <span class="promo-old">${paired ? 'Regular ' : ''}${promoPeso(s.original_price)}</span>
+                    </div>
+                    <div class="promo-time ${timing.soon ? 'is-soon' : ''}">
+                        <span>${timing.text}</span>
+                        ${timing.pct !== null ? `<span class="promo-bar" aria-hidden="true"><span style="width:${timing.pct.toFixed(0)}%"></span></span>` : ''}
+                    </div>
+                </div>
+                ${canCancel ? `
+                <button type="button" class="promo-cancel" data-promo-id="${Number(s.id)}" data-promo-name="${escapeHtmlStr(s.product_name)}"
+                        onclick="cancelActiveStrategy(this.dataset.promoId, this.dataset.promoName, this)">End early</button>` : ''}
+            </article>`;
+    }).join(''));
 }
 
-function cancelActiveStrategy(historyId, productName, btnElement) {
-    if (!confirm(`Are you sure you want to cancel the active strategy for ${productName}? Its promotional pricing will end immediately.`)) {
-        return;
-    }
+function promoToast(type, title, message) {
+    if (typeof showToast === 'function') showToast(type, title, message);
+}
 
-    const oHtml = btnElement.innerHTML;
+async function cancelActiveStrategy(historyId, productName, btnElement) {
+    const ok = typeof confirmDialog === 'function'
+        ? await confirmDialog({
+            title: 'End this promotion?',
+            message: `${productName} goes back to its regular price right away.`,
+            confirmText: 'End promotion',
+            tone: 'danger',
+            icon: 'fa-tag'
+        })
+        : confirm(`End the promotion for ${productName}? Its regular price returns right away.`);
+    if (!ok) return;
+
+    const original = btnElement.innerHTML;
     btnElement.disabled = true;
-    btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btnElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span>';
+
+    const restore = () => { btnElement.disabled = false; btnElement.innerHTML = original; };
 
     $.ajax({
         url: 'ajax/ml_recommendation_ajax.php',
         type: 'POST',
-        data: { 
-            action: 'cancel_strategy',
-            id: historyId
-        },
+        data: { action: 'cancel_strategy', id: historyId },
         dataType: 'json',
-        success: function(res) {
+        success: function (res) {
             if (res.success) {
-                // Show generalized toast function or alert
-                if (typeof showToast === 'function') {
-                    showToast('success', 'Strategy Cancelled', res.message || 'Product price reverted to normal.');
-                } else {
-                    alert(res.message || 'Strategy cancelled successfully.');
-                }
-                
-                // Refresh lists
+                promoToast('success', 'Promotion ended', res.message || `${productName} is back to its regular price.`);
                 loadActiveStrategies();
-
-                // If on Reco page, refresh cards too
-                if (typeof loadRecommendations === 'function') {
-                    setTimeout(() => loadRecommendations(), 500);
-                }
-                // If on POS, refresh products
-                if (typeof loadProducts === 'function') {
-                    setTimeout(() => loadProducts(), 500);
-                }
+                // Refresh whatever page is underneath
+                if (typeof loadRecommendations === 'function') setTimeout(() => loadRecommendations(), 500);
+                if (typeof loadProducts === 'function') setTimeout(() => loadProducts(), 500);
             } else {
-                alert('Error: ' + (res.error || 'Failed to cancel strategy.'));
-                btnElement.disabled = false;
-                btnElement.innerHTML = oHtml;
+                promoToast('error', 'Could not end promotion', res.error || 'Please try again.');
+                restore();
             }
         },
-        error: function(xhr) {
+        error: function (xhr) {
             const response = xhr.responseJSON || {};
-            alert(response.error || response.message || 'Server error occurred while cancelling strategy.');
-            btnElement.disabled = false;
-            btnElement.innerHTML = oHtml;
+            promoToast('error', 'Could not end promotion', response.error || response.message || 'Server error. Please try again.');
+            restore();
         }
     });
 }
 
 function escapeHtmlStr(str) {
-    if (!str) return '';
+    if (str === null || str === undefined) return '';
     return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }

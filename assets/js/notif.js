@@ -47,43 +47,60 @@
     }
 
     // ── Render list ──────────────────────────────────────────────────────────
+    // Alerts that need someone to act come first; routine activity after.
+    const GROUPS = [
+        { label: 'Needs attention', types: ['critical', 'warning'] },
+        { label: 'Activity',        types: ['info', 'success'] },
+    ];
+
     function renderList() {
         // Remove existing items (keep the empty state element)
-        list.querySelectorAll('.notif-item').forEach(el => el.remove());
+        list.querySelectorAll('.notif-item, .notif-group').forEach(el => el.remove());
 
         if (notifications.length === 0) {
             emptyEl.style.display = 'flex';
-            footer.style.display  = 'none';
+            renderFooter();
             return;
         }
 
         emptyEl.style.display = 'none';
 
-        notifications.forEach(n => {
-            const item = document.createElement('div');
-            item.className = 'notif-item' + (n.read ? '' : ' unread');
-            item.dataset.id = n.id;
-            item.innerHTML = `
-                <div class="notif-icon type-${n.type}">
-                    <i class="fas ${n.icon}"></i>
-                </div>
-                <div class="notif-text">
-                    <div class="notif-title">${escHtml(n.title)}</div>
-                    <div class="notif-body">${escHtml(n.body)}</div>
-                    <div class="notif-time"><i class="fas fa-clock me-1"></i>${escHtml(n.time)}</div>
-                </div>`;
+        GROUPS.forEach(group => {
+            const items = notifications.filter(n => group.types.includes(n.type)
+                || (group.label === 'Activity' && !GROUPS[0].types.includes(n.type) && !group.types.includes(n.type)));
+            if (!items.length) return;
 
-            item.addEventListener('click', () => markRead(n.id));
-            list.appendChild(item);
+            const heading = document.createElement('div');
+            heading.className = 'notif-group';
+            heading.textContent = `${group.label} · ${items.length}`;
+            list.appendChild(heading);
+
+            items.forEach(n => {
+                const item = document.createElement('div');
+                item.className = 'notif-item' + (n.read ? '' : ' unread');
+                item.dataset.id = n.id;
+                item.setAttribute('role', 'button');
+                item.tabIndex = 0;
+                item.innerHTML = `
+                    <div class="notif-icon type-${escHtml(n.type)}" aria-hidden="true">
+                        <i class="fas ${escHtml(n.icon)}"></i>
+                    </div>
+                    <div class="notif-text">
+                        <div class="notif-title">${escHtml(n.title)}</div>
+                        <div class="notif-body">${escHtml(n.body)}</div>
+                        <div class="notif-time">${escHtml(n.time)}</div>
+                    </div>
+                    <span class="notif-dot" aria-label="Unread"></span>`;
+
+                item.addEventListener('click', () => markRead(n.id));
+                item.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); markRead(n.id); }
+                });
+                list.appendChild(item);
+            });
         });
 
-        const unread = countUnread();
-        if (unread > 0) {
-            footer.style.display  = 'block';
-            footerTxt.textContent = unread + ' unread notification' + (unread !== 1 ? 's' : '');
-        } else {
-            footer.style.display  = 'none';
-        }
+        renderFooter();
     }
 
     // ── Mark single read ─────────────────────────────────────────────────────
@@ -122,12 +139,20 @@
 
     function renderFooter() {
         const unread = countUnread();
-        if (unread > 0) {
-            footer.style.display  = 'block';
-            footerTxt.textContent = unread + ' unread notification' + (unread !== 1 ? 's' : '');
-        } else {
-            footer.style.display  = 'none';
+        if (footer) footer.style.display = 'none';
+
+        // "Notifications  3 new" in the header; Mark all read only when useful
+        const titleEl = panel.querySelector('.notif-panel-header > span');
+        if (titleEl) {
+            let count = titleEl.querySelector('.notif-count');
+            if (!count) {
+                count = document.createElement('span');
+                count.className = 'notif-count';
+                titleEl.appendChild(count);
+            }
+            count.textContent = unread > 0 ? `${unread} new` : '';
         }
+        if (markAllBtn) markAllBtn.hidden = unread === 0;
     }
 
     function countUnread() {
@@ -150,7 +175,21 @@
     }
 
     // ── Toggle panel ─────────────────────────────────────────────────────────
+    // Opens leftwards from the bell by default; flip to open rightwards when
+    // that would run under the sidebar or off screen (e.g. the POS header).
+    function placePanel() {
+        panel.classList.remove('align-left');
+        if (window.innerWidth <= 768) return; // fixed full-width panel on phones
+        const sidebar = document.getElementById('sidebar');
+        const sidebarRight = sidebar && getComputedStyle(sidebar).position !== 'fixed'
+            ? sidebar.getBoundingClientRect().right : 0;
+        if (panel.getBoundingClientRect().left < sidebarRight + 8) {
+            panel.classList.add('align-left');
+        }
+    }
+
     function openPanel() {
+        placePanel();
         panel.classList.add('open');
         bellBtn.setAttribute('aria-expanded', 'true');
     }
@@ -193,7 +232,8 @@
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // ── Public API (optional, for adding runtime notifications) ──────────────

@@ -9,6 +9,9 @@ security_start_session();
 security_require_login();
 security_require_post_csrf();
 
+// Top level on purpose: database.php keeps its settings in globals
+require_once dirname(__DIR__) . '/config/database.php';
+
 define('ML_API_URL', 'http://127.0.0.1:5000');
 define('ML_API_TIMEOUT', 30);
 
@@ -55,6 +58,35 @@ function call_ml_api($endpoint, $method = 'GET', $data = null) {
 }
 
 /**
+ * Add each product's image path to the recommendations. The ML API does not
+ * return images, so they are looked up here in one query. Failures are
+ * non-fatal: the page falls back to a placeholder.
+ */
+function attach_product_images(array $recs) {
+    $ids = array_values(array_unique(array_filter(array_map(
+        fn($r) => (int)($r['product_id'] ?? 0), $recs
+    ))));
+    if (!$ids) return $recs;
+
+    try {
+        $pdo = getDBConnection();
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $pdo->prepare("SELECT id, image FROM products WHERE id IN ($placeholders)");
+        $stmt->execute($ids);
+        $images = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+    } catch (Throwable $e) {
+        error_log('attach_product_images: ' . $e->getMessage());
+        return $recs;
+    }
+
+    foreach ($recs as &$r) {
+        $r['image'] = $images[(int)($r['product_id'] ?? 0)] ?? null;
+    }
+    unset($r);
+    return $recs;
+}
+
+/**
  * Get all recommendations — tries ML model first, falls back to DB rules
  */
 if (isset($_GET['action']) && $_GET['action'] === 'get_all_recommendations') {
@@ -70,9 +102,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_all_recommendations') {
     }
 
     if ($result['success']) {
+        $recs = attach_product_images($result['recommendations'] ?? []);
         echo json_encode([
             'success'         => true,
-            'recommendations' => $result['recommendations'] ?? [],
+            'recommendations' => $recs,
             'total'           => count($result['recommendations'] ?? []),
             'source'          => $result['source'] ?? 'ml_model',
             'cached_at'       => date('Y-m-d H:i:s'),
@@ -276,7 +309,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_active_strategies') {
     if ($result['success']) {
         echo json_encode([
             'success' => true,
-            'strategies' => $result['strategies'] ?? []
+            'strategies' => attach_product_images($result['strategies'] ?? [])
         ]);
     } else {
         http_response_code(500);

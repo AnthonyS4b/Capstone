@@ -1,3 +1,17 @@
+// Escape text before it goes into innerHTML
+function escHtml(str) {
+    return String(str ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Names of the rows on screen, so confirm dialogs can say what they act on
+const archivedNames = { product: new Map(), category: new Map() };
+function archivedProductName(id) { return archivedNames.product.get(String(id)) || 'This product'; }
+function archivedCategoryName(id) { return archivedNames.category.get(String(id)) || 'This category'; }
+
+function archiveEmptyRow(cols, title, text) {
+    return `<tr><td colspan="${cols}" class="inv-empty-cell"><p class="inv-empty-title">${escHtml(title)}</p><p>${escHtml(text)}</p></td></tr>`;
+}
+
 // Show loading spinner
 function showLoading() {
     document.getElementById('loadingSpinner').style.display = 'flex';
@@ -120,51 +134,46 @@ function displayArchivedCategories(categories) {
     if (!tbody) return;
 
     if (!categories || categories.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-4">
-                    <div class="empty-state">
-                        <i class="fas fa-layer-group"></i>
-                        <h5>No Archived Categories</h5>
-                        <p class="text-muted">Categories you archive will appear here.</p>
-                    </div>
-                </td>
-            </tr>`;
+        tbody.innerHTML = archiveEmptyRow(5, 'No archived categories', 'Categories you archive will appear here.');
         return;
     }
 
-    let html = '';
-    categories.forEach(cat => {
+    archivedNames.category = new Map(categories.map(c => [String(c.id), c.name]));
+    tbody.innerHTML = categories.map(cat => {
         const archivedDate = cat.formatted_deleted_at || new Date(cat.deleted_at).toLocaleString();
-        const color = cat.color || '#4a6fa5';
-        html += `
+        const color = /^#[0-9a-f]{3,8}$/i.test(cat.color || '') ? cat.color : '#2c5530';
+        const count = parseInt(cat.product_count, 10) || 0;
+        return `
             <tr>
                 <td>
-                    <div class="product-info">
-                        <div class="product-icon" style="background:${color}">
-                            <i class="fas ${cat.icon || 'fa-paw'}"></i>
-                        </div>
-                        <div>
-                            <strong>${cat.name}</strong>
-                        </div>
+                    <div class="inv-product">
+                        <span class="inv-cat-icon inv-cat-icon-sm" style="--cat:${color}"><i class="fas ${escHtml(cat.icon || 'fa-paw')}"></i></span>
+                        <span class="inv-name">${escHtml(cat.name)}</span>
                     </div>
                 </td>
-                <td>${cat.description ? cat.description.substring(0, 40) + (cat.description.length > 40 ? '...' : '') : '<span class="text-muted">—</span>'}</td>
-                <td><span class="category-badge">${cat.product_count || 0} product(s)</span></td>
-                <td><span class="deleted-date"><i class="fas fa-clock me-1"></i>${archivedDate}</span></td>
-                <td>
-                    <button class="btn-icon restore" onclick="restoreCategory(${cat.id})" title="Restore Category and eligible products">
-                        <i class="fas fa-undo-alt"></i>
+                <td class="inv-muted-cell">${cat.description ? escHtml(cat.description) : '—'}</td>
+                <td class="inv-num">${count}</td>
+                <td class="inv-muted-cell">${escHtml(archivedDate)}</td>
+                <td class="inv-actions">
+                    <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreCategory(${cat.id})" title="Restore the category and its eligible products">
+                        <i class="fas fa-undo-alt"></i>Restore
                     </button>
                 </td>
             </tr>`;
-    });
-    tbody.innerHTML = html;
+    }).join('');
 }
 
 // Restore entire category
 function restoreCategory(categoryId) {
-    if (confirm('Restore this category? Products with no past transactions will be returned to inventory. Products with transaction history will remain in archive.')) {
+    confirmDialog({
+        title: 'Restore category?',
+        message: `${archivedCategoryName(categoryId)} will return to inventory.`,
+        detail: 'Its products with no past sales come back too. Products with sales history stay in the archive.',
+        confirmText: 'Restore',
+        tone: 'primary',
+        icon: 'fa-undo-alt'
+    }).then(ok => {
+        if (!ok) return;
         showLoading();
         $.ajax({
             url: ajaxUrl,
@@ -186,7 +195,7 @@ function restoreCategory(categoryId) {
                 showToast('error', 'Error', 'Failed to restore category');
             }
         });
-    }
+    });
 }
 
 // Load archived products
@@ -220,25 +229,10 @@ function loadArchivedProducts() {
             }
             showError(errorMsg);
             showToast('error', 'Connection Error', errorMsg);
-            
-            // Show sample data for testing UI
-            displaySampleData();
+            const tbody = document.getElementById('archiveTableBody');
+            if (tbody) tbody.innerHTML = archiveEmptyRow(6, 'Could not load the archive', errorMsg);
         }
     });
-}
-
-// Display sample data for testing
-function displaySampleData() {
-    const sampleProducts = [
-        {id: 1, name: 'Premium Dog Food', category_name: 'Dog Food', price: 1250.00, stock: 0, formatted_deleted_at: 'March 15, 2025 02:30 PM'},
-        {id: 2, name: 'Chick Starter Mash', category_name: 'Poultry Feed', price: 850.00, stock: 0, formatted_deleted_at: 'March 14, 2025 10:15 AM'}
-    ];
-    displayArchivedProducts(sampleProducts);
-    
-    document.getElementById('totalArchived').textContent = '2';
-    document.getElementById('restorable').textContent = '2';
-    document.getElementById('oldestArchive').textContent = 'Mar 14';
-    document.getElementById('storageUsed').textContent = '2 KB';
 }
 
 // Load archive statistics
@@ -259,80 +253,69 @@ function loadArchiveStats() {
 // Update statistics display
 function updateStats(stats) {
     document.getElementById('totalArchived').textContent = stats.total_archived || 0;
-    document.getElementById('restorable').textContent = stats.total_archived || 0;
-    
-    if (stats.oldest_archive) {
-        const date = new Date(stats.oldest_archive);
-        document.getElementById('oldestArchive').textContent = date.toLocaleDateString();
-    } else {
-        document.getElementById('oldestArchive').textContent = '-';
+    const oldest = document.getElementById('oldestArchive');
+    if (oldest) {
+        oldest.textContent = stats.oldest_archive
+            ? new Date(stats.oldest_archive).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '—';
     }
-    
-    const storageKB = (stats.total_archived || 0) * 1;
-    document.getElementById('storageUsed').textContent = storageKB + ' KB';
 }
 
 // Display archived products
 function displayArchivedProducts(products) {
     const tbody = document.getElementById('archiveTableBody');
-    
+    if (!tbody) return;
+
     if (!products || products.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center py-4">
-                    <div class="empty-state">
-                        <i class="fas fa-box-open"></i>
-                        <h5>No Archived Products</h5>
-                        <p class="text-muted">The archive is empty. Products you delete will appear here.</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+        tbody.innerHTML = archiveEmptyRow(6, 'The archive is empty', 'Products you archive will appear here.');
         return;
     }
-    
-    let html = '';
-    products.forEach(product => {
+
+    archivedNames.product = new Map(products.map(p => [String(p.id), p.name]));
+    tbody.innerHTML = products.map(product => {
         const deletedDate = product.formatted_deleted_at || new Date(product.deleted_at).toLocaleString();
-        const price = parseFloat(product.price).toFixed(2);
-        const categoryColor = product.category_color || '#4a6fa5';
-        
-        html += `
+        const price = (parseFloat(product.price) || 0).toFixed(2);
+        const thumb = product.image
+            ? `<img src="${escHtml(product.image)}" alt="" class="inv-thumb" loading="lazy">`
+            : `<span class="inv-thumb inv-thumb-empty"><i class="fas fa-box"></i></span>`;
+        const sub = [product.sku, product.description].filter(Boolean).map(escHtml).join(' · ');
+        return `
             <tr>
                 <td>
-                    <div class="product-info">
-                        <div class="product-icon" style="background: ${categoryColor}">
-                            <i class="fas fa-box"></i>
-                        </div>
-                        <div>
-                            <strong>${product.name}</strong>
-                            <br>
-                            <small class="text-muted">${product.description ? product.description.substring(0, 30) + '...' : 'No description'}</small>
+                    <div class="inv-product">
+                        ${thumb}
+                        <div class="inv-product-text">
+                            <span class="inv-name">${escHtml(product.name)}</span>
+                            ${sub ? `<span class="inv-sub">${sub}</span>` : ''}
                         </div>
                     </div>
                 </td>
-                <td><span class="category-badge">${product.category_name || 'Uncategorized'}</span></td>
-                <td>₱${price}</td>
-                <td>${product.stock}</td>
-                <td><span class="deleted-date"><i class="fas fa-clock me-1"></i>${deletedDate}</span></td>
-                <td>
-                    <button class="btn-icon restore" onclick="restoreProduct(${product.id})" title="Restore Product">
-                        <i class="fas fa-undo-alt"></i>
+                <td class="inv-muted-cell">${escHtml(product.category_name || 'Uncategorized')}</td>
+                <td class="inv-num">₱${price}</td>
+                <td class="inv-num">${parseInt(product.stock, 10) || 0}</td>
+                <td class="inv-muted-cell">${escHtml(deletedDate)}</td>
+                <td class="inv-actions">
+                    <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(${product.id})" title="Restore to inventory">
+                        <i class="fas fa-undo-alt"></i>Restore
                     </button>
-                    ${isOwner ? `<button class="btn-icon delete" onclick="permanentDelete(${product.id})" title="Delete Permanently">
+                    ${isOwner ? `<button class="btn-icon delete" onclick="permanentDelete(${product.id})" title="Delete permanently">
                         <i class="fas fa-trash-alt"></i>
                     </button>` : ''}
                 </td>
-            </tr>
-        `;
-    });
-    
-    tbody.innerHTML = html;
+            </tr>`;
+    }).join('');
 }
 
 // Restore product
 function restoreProduct(productId) {
-    if (confirm('Restore this product to active inventory?')) {
+    confirmDialog({
+        title: 'Restore product?',
+        message: `${archivedProductName(productId)} will return to active inventory.`,
+        confirmText: 'Restore',
+        tone: 'primary',
+        icon: 'fa-undo-alt'
+    }).then(ok => {
+        if (!ok) return;
         showLoading();
         $.ajax({
             url: ajaxUrl,
@@ -353,12 +336,19 @@ function restoreProduct(productId) {
                 showToast('error', 'Error', 'Failed to restore product');
             }
         });
-    }
+    });
 }
 
 // Permanent delete
 function permanentDelete(productId) {
-    if (confirm('WARNING: This will permanently delete the product. This action cannot be undone!')) {
+    confirmDialog({
+        title: 'Delete permanently?',
+        message: `${archivedProductName(productId)} will be deleted for good.`,
+        detail: 'This cannot be undone.',
+        confirmText: 'Delete',
+        tone: 'danger'
+    }).then(ok => {
+        if (!ok) return;
         showLoading();
         $.ajax({
             url: ajaxUrl,
@@ -379,12 +369,19 @@ function permanentDelete(productId) {
                 showToast('error', 'Error', 'Failed to delete product');
             }
         });
-    }
+    });
 }
 
 // Empty archive
 function emptyArchive() {
-    if (confirm('WARNING: This will permanently delete ALL archived products. This action cannot be undone!')) {
+    confirmDialog({
+        title: 'Empty the archive?',
+        message: 'Every archived product will be deleted for good.',
+        detail: 'This cannot be undone.',
+        confirmText: 'Delete all',
+        tone: 'danger'
+    }).then(ok => {
+        if (!ok) return;
         showLoading();
         $.ajax({
             url: ajaxUrl,
@@ -405,7 +402,7 @@ function emptyArchive() {
                 showToast('error', 'Error', 'Failed to empty archive');
             }
         });
-    }
+    });
 }
 
 // Refresh archive

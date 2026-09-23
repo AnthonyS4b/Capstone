@@ -437,12 +437,13 @@ try {
             
         case 'get_transactions':
             $page   = isset($_POST['page'])   ? max(1, (int)$_POST['page'])   : 1;
-            $limit  = isset($_POST['limit'])  ? max(1, (int)$_POST['limit'])  : 50;
+            $limit  = isset($_POST['limit'])  ? min(10000, max(1, (int)$_POST['limit'])) : 50;
             $offset = ($page - 1) * $limit;
-            $search    = (!empty($_POST['search']))    ? '%' . $_POST['search'] . '%' : null;
-            $date_from = (!empty($_POST['date_from'])) ? $_POST['date_from']          : null;
-            $date_to   = (!empty($_POST['date_to']))   ? $_POST['date_to']            : null;
-            $status    = (isset($_POST['status']) && $_POST['status'] !== 'all') ? $_POST['status'] : null;
+            $search    = trim((string)($_POST['search'] ?? ''));
+            $is_date   = fn($d) => is_string($d) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d);
+            $date_from = $is_date($_POST['date_from'] ?? null) ? $_POST['date_from'] : null;
+            $date_to   = $is_date($_POST['date_to'] ?? null)   ? $_POST['date_to']   : null;
+            $status    = in_array($_POST['status'] ?? '', ['completed', 'voided'], true) ? $_POST['status'] : null;
 
             $where  = [];
             $params = [];
@@ -452,16 +453,35 @@ try {
                 $params[':session_user_id'] = (int)$_SESSION['user_id'];
             }
 
-            if ($search) {
-                $where[] = "(t.id LIKE :search OR s.cashier_name LIKE :search)";
-                $params[':search'] = $search;
+            // IDs are shown as TRX-000123, so accept that form, a bare number, or part of either.
+            // A half-typed "TRX-" prefix on its own filters nothing yet.
+            if ($search !== '' && !preg_match('/^t(r(x-?)?)?$/i', $search)) {
+                $like = '%' . addcslashes($search, '%_\\') . '%';
+                $or = [];
+                if (preg_match('/^(?:trx-?)?(\d+)$/i', $search, $m)) {
+                    // Digits: the transaction number, and from 6 digits up also a GCash
+                    // reference (6 digits at the POS, 10 on older sales). Shorter numbers
+                    // stay ID-only so "15" does not pull in every reference containing 15.
+                    $or[] = "LPAD(t.id, 6, '0') LIKE :search_id";
+                    $params[':search_id'] = '%' . $m[1] . '%';
+                    if (strlen($m[1]) >= 6 && stripos($search, 'trx') !== 0) {
+                        $or[] = 's.gcash_reference LIKE :search_ref';
+                        $or[] = 's.notes LIKE :search_note';
+                        $params[':search_ref']  = '%' . $m[1] . '%';
+                        $params[':search_note'] = '%GCash Ref:%' . $m[1] . '%';
+                    }
+                } else {
+                    $or[] = 's.cashier_name LIKE :search_name';
+                    $params[':search_name'] = $like;
+                }
+                $where[] = '(' . implode(' OR ', $or) . ')';
             }
             if ($date_from) {
-                $where[] = "DATE(t.created_at) >= :date_from";
-                $params[':date_from'] = $date_from;
+                $where[] = "t.created_at >= :date_from";
+                $params[':date_from'] = $date_from . ' 00:00:00';
             }
             if ($date_to) {
-                $where[] = "DATE(t.created_at) <= :date_to";
+                $where[] = "t.created_at < DATE_ADD(:date_to, INTERVAL 1 DAY)";
                 $params[':date_to'] = $date_to;
             }
             if ($status) {
@@ -609,79 +629,138 @@ try {
             }
             
             $pdo->beginTransaction();
-            
+
             try {
+                // Lock the sale before looking at its status. A second void request
+                // (double click, two tabs) waits here, then finds it already voided,
+                // so stock can never be put back twice.
+                $checkStmt = $pdo->prepare("
+                    SELECT t.created_at, s.status
+                    FROM transactions t
+                    LEFT JOIN sales s ON s.transaction_id = t.id
+                    WHERE t.id = ?
+                    FOR UPDATE
+                ");
+                $checkStmt->execute([$id]);
+                $sale = $checkStmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$sale) {
+                    throw new Exception('Transaction not found');
+                }
+                if (($sale['status'] ?? 'completed') !== 'completed') {
+                    throw new Exception('Only completed transactions can be voided (this one is ' . $sale['status'] . ')');
+                }
+
                 // Get transaction items with product names for logging
                 $stmt = $pdo->prepare("
-                    SELECT ti.*, p.name as product_name 
+                    SELECT ti.*, p.name as product_name
                     FROM transaction_items ti
                     LEFT JOIN products p ON ti.product_id = p.id
                     WHERE ti.transaction_id = ?
                 ");
                 $stmt->execute([$id]);
                 $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                
+
                 if (empty($items)) {
                     throw new Exception('Transaction items not found');
                 }
-                
-                // Check current status
-                $checkStmt = $pdo->prepare("SELECT status FROM sales WHERE transaction_id = ?");
-                $checkStmt->execute([$id]);
-                $currentStatus = $checkStmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($currentStatus && $currentStatus['status'] === 'voided') {
-                    throw new Exception('Transaction is already voided');
-                }
-                
-                // Update sales status
-                $updateStmt = $pdo->prepare("
-                    UPDATE sales 
-                    SET status = 'voided' 
-                    WHERE transaction_id = ?
-                ");
+
+                $updateStmt = $pdo->prepare("UPDATE sales SET status = 'voided' WHERE transaction_id = ?");
                 $updateStmt->execute([$id]);
-                
+
                 // Restore stock and LOG ACTIVITY
                 $stockStmt = $pdo->prepare("
-                    UPDATE products 
-                    SET stock = stock + ?, 
+                    UPDATE products
+                    SET stock = stock + ?,
                         updated_by = ?,
                         updated_at = NOW()
                     WHERE id = ?
                 ");
-                
+
+                // The sale took units nearest-expiry first from batches that existed then,
+                // and a batch it touched has updated_at at or after the sale. Return the
+                // units to the best match so products.stock and the batches stay equal.
+                // If that batch has expired since, the returned units reopen it and the
+                // expiry sweep (includes/inventory_expiry.php) writes them off and logs it.
+                $batchPick = $pdo->prepare("
+                    SELECT id, batch_no FROM product_batches
+                    WHERE product_id = :pid AND date_added <= DATE(:sold_at)
+                    ORDER BY (updated_at >= :sold_at2) DESC,
+                             CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END,
+                             expiration_date ASC, date_added ASC, id ASC
+                    LIMIT 1
+                    FOR UPDATE
+                ");
+                $batchReturn = $pdo->prepare("
+                    UPDATE product_batches
+                    SET stock = stock + ?, status = 'active'
+                    WHERE id = ?
+                ");
+                $batchNew = $pdo->prepare("
+                    INSERT INTO product_batches (product_id, batch_no, stock, date_added, expiration_date)
+                    VALUES (?, ?, ?, CURDATE(), NULL)
+                ");
+                $expirySync = $pdo->prepare("
+                    SELECT date_added, expiration_date FROM product_batches
+                    WHERE product_id = ? AND stock > 0 AND status = 'active'
+                    ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC
+                    LIMIT 1
+                ");
+                $productExpiry = $pdo->prepare("UPDATE products SET expiration_date = ?, date_added = ? WHERE id = ?");
+
                 $logStmt = $pdo->prepare("
-                    INSERT INTO inventory_history (product_id, product_name, user_id, action, changes, created_at) 
+                    INSERT INTO inventory_history (product_id, product_name, user_id, action, changes, created_at)
                     VALUES (?, ?, ?, 'void', ?, NOW())
                 ");
-                
+
                 foreach ($items as $item) {
-                    // Update stock
-                    $stockStmt->execute([$item['quantity'], $user_id, $item['product_id']]);
-                    
-                    // Log the void action
-                    $changes = "Stock restored (+{$item['quantity']}) - Transaction #{$id} voided via Sales UI";
+                    $qty = (int)$item['quantity'];
+                    $stockStmt->execute([$qty, $user_id, $item['product_id']]);
+
+                    $batchPick->execute([
+                        ':pid'      => $item['product_id'],
+                        ':sold_at'  => $sale['created_at'],
+                        ':sold_at2' => $sale['created_at'],
+                    ]);
+                    $batch = $batchPick->fetch(PDO::FETCH_ASSOC);
+                    if ($batch) {
+                        $batchReturn->execute([$qty, $batch['id']]);
+                        $batchNote = 'batch ' . $batch['batch_no'];
+                    } else {
+                        // No batch left from before the sale: keep the units in a batch of their own
+                        $batchNo = 'B-VOID-' . $id . '-' . $item['product_id'];
+                        $batchNew->execute([$item['product_id'], $batchNo, $qty]);
+                        $batchNote = 'new batch ' . $batchNo;
+                    }
+
+                    // A returned batch may now be the nearest-expiring one
+                    $expirySync->execute([$item['product_id']]);
+                    if ($next = $expirySync->fetch(PDO::FETCH_ASSOC)) {
+                        $productExpiry->execute([$next['expiration_date'], $next['date_added'], $item['product_id']]);
+                    }
+
+                    $changes = "Stock restored (+{$qty}) to {$batchNote} - Transaction #{$id} voided via Sales UI";
                     $logStmt->execute([$item['product_id'], $item['product_name'], $user_id, $changes]);
                 }
-                
+
                 $pdo->commit();
-                
+
                 echo json_encode([
                     'success' => true,
                     'message' => 'Transaction voided successfully'
                 ]);
-                
+
             } catch (Exception $e) {
                 $pdo->rollBack();
                 error_log("VOID ERROR: " . $e->getMessage());
+                $already = strpos($e->getMessage(), 'Only completed') === 0;
                 echo json_encode([
                     'success' => false,
-                    'message' => 'Failed to void the transaction.'
+                    'message' => $already ? 'This transaction has already been voided.' : 'Failed to void the transaction.'
                 ]);
             }
             break;
-            
+
         case 'get_stats':
             security_require_role(['owner']);
             $statsStmt = $pdo->query("

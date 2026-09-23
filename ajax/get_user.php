@@ -12,8 +12,15 @@
         $pdo = getDBConnection();
         
         // Fetch all users
-        $stmt = $pdo->query("SELECT id, first_name, last_name, email, role, position, created_at FROM users ORDER BY id DESC");
+        $stmt = $pdo->query("SELECT id, first_name, last_name, email, role, position, avatar, is_active, created_at FROM users ORDER BY id DESC");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Only hand out photo paths that point at a real file in the avatar folder
+        foreach ($users as &$u) {
+            $a = $u['avatar'] ?? null;
+            $u['avatar'] = ($a && strpos($a, 'assets/uploads/avatars/') === 0 && is_file(dirname(__DIR__) . '/' . $a)) ? $a : null;
+        }
+        unset($u);
         
         echo json_encode([
             'success' => true,

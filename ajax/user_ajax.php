@@ -19,7 +19,7 @@
             }
             
             $pin = $_POST['pin'] ?? '';
-            $limitKey = security_client_key('owner_pin', (string)$_SESSION['user_id']);
+            $limitKey = security_pin_limit_key($_SESSION['user_id']);
             $limit = security_rate_limit($limitKey, 5, 300);
             if (!$limit['allowed']) {
                 security_json_error('Too many incorrect attempts. Try again in a few minutes.', 429);
@@ -115,6 +115,14 @@
                 exit();
             }
 
+            // Same wrong-PIN counter as login and switch account
+            $limitKey = security_pin_limit_key($_SESSION['user_id']);
+            $limit = security_rate_limit($limitKey, 5, 300);
+            if (!$limit['allowed']) {
+                echo json_encode(['success' => false, 'message' => 'Too many incorrect attempts. Try again in a few minutes.']);
+                exit();
+            }
+
             try {
                 $pdo  = getDBConnection();
                 $stmt = $pdo->prepare("SELECT pin FROM users WHERE id = ?");
@@ -126,9 +134,15 @@
                     exit();
                 }
                 if (!password_verify($current_pin, $user['pin'])) {
-                    echo json_encode(['success' => false, 'message' => 'Current PIN is incorrect']);
+                    security_record_failure($limitKey);
+                    // $limit['attempts'] is the count before this try; this one just failed.
+                    $remaining = max(0, 5 - (int)($limit['attempts'] ?? 0) - 1);
+                    echo json_encode(['success' => false, 'message' => $remaining > 0
+                        ? 'Current PIN is incorrect. ' . $remaining . ' attempt' . ($remaining === 1 ? '' : 's') . ' remaining.'
+                        : 'Current PIN is incorrect.']);
                     exit();
                 }
+                security_clear_failures($limitKey);
 
                 $hashed_pin = password_hash($new_pin, PASSWORD_DEFAULT);
                 $update = $pdo->prepare("UPDATE users SET pin = ? WHERE id = ?");

@@ -11,6 +11,73 @@ class ProductController {
     }
     
     /**
+     * Make the active batches add up to products.stock.
+     * Excess batch units are removed nearest-expiry first (the order they would have sold in);
+     * a shortfall becomes a new adjustment batch. Call inside a transaction.
+     * Returns a log line describing the change, or null when already in sync.
+     */
+    private function reconcileBatchStock($productId, $expiryForShortfall = null) {
+        $pStmt = $this->conn->prepare("SELECT stock FROM products WHERE id = :id FOR UPDATE");
+        $pStmt->execute([':id' => $productId]);
+        $productStock = (int)$pStmt->fetchColumn();
+
+        $sStmt = $this->conn->prepare("SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = :id AND status = 'active'");
+        $sStmt->execute([':id' => $productId]);
+        $batchStock = (int)$sStmt->fetchColumn();
+
+        $diff = $batchStock - $productStock;
+        if ($diff === 0) {
+            return null;
+        }
+
+        if ($diff > 0) {
+            $batches = $this->conn->prepare("SELECT id, stock FROM product_batches WHERE product_id = :id AND status = 'active' AND stock > 0 ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC FOR UPDATE");
+            $batches->execute([':id' => $productId]);
+            $upd = $this->conn->prepare("UPDATE product_batches SET stock = stock - :qty WHERE id = :bid");
+
+            $remaining = $diff;
+            foreach ($batches->fetchAll(PDO::FETCH_ASSOC) as $batch) {
+                if ($remaining <= 0) break;
+                $deduct = min((int)$batch['stock'], $remaining);
+                $upd->execute([':qty' => $deduct, ':bid' => $batch['id']]);
+                $remaining -= $deduct;
+            }
+            $this->conn->prepare("UPDATE product_batches SET status = 'depleted' WHERE product_id = :id AND stock = 0 AND status = 'active'")
+                ->execute([':id' => $productId]);
+
+            return "Batches synced to stock: -{$diff} units removed from batches (nearest expiry first)";
+        }
+
+        $shortfall = -$diff;
+        $this->conn->prepare("INSERT INTO product_batches (product_id, batch_no, stock, date_added, expiration_date) VALUES (:pid, :bno, :stk, :dadd, :exp)")
+            ->execute([
+                ':pid' => $productId,
+                ':bno' => "B-ADJ-" . time() . "-" . $productId,
+                ':stk' => $shortfall,
+                ':dadd' => date('Y-m-d'),
+                ':exp' => $expiryForShortfall
+            ]);
+
+        return "Batches synced to stock: +{$shortfall} units added as an adjustment batch";
+    }
+
+    /**
+     * Point products.expiration_date / date_added at the nearest-expiring active batch (FEFO).
+     */
+    private function syncProductExpiryFromBatches($productId) {
+        $syncStmt = $this->conn->prepare("SELECT date_added, expiration_date FROM product_batches
+                    WHERE product_id = :pid AND stock > 0 AND status = 'active'
+                    ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC
+                    LIMIT 1");
+        $syncStmt->execute([':pid' => $productId]);
+        $nextBatch = $syncStmt->fetch(PDO::FETCH_ASSOC);
+        if ($nextBatch) {
+            $this->conn->prepare("UPDATE products SET expiration_date = :exp, date_added = :da WHERE id = :id")
+                ->execute([':exp' => $nextBatch['expiration_date'], ':da' => $nextBatch['date_added'], ':id' => $productId]);
+        }
+    }
+
+    /**
      * Log activity to inventory_history table
      */
     private function logActivity($productId, $action, $changes, $productName = null) {
@@ -305,7 +372,31 @@ class ProductController {
     }
     
     // Create product
+    /**
+     * Reject negative or non-numeric prices and stock before anything is saved.
+     * The form blocks these too, but requests can come from anywhere.
+     */
+    private function validateProductNumbers($data) {
+        $isMoney = fn($v) => is_numeric($v) && preg_match('/^\d+(\.\d{1,2})?$/', (string)$v);
+        $price = $data['price'] ?? '';
+        if (!$isMoney($price) || (float)$price <= 0) {
+            return 'Selling price must be a number greater than 0.';
+        }
+        $cost = $data['cost_price'] ?? '';
+        if ($cost !== '' && $cost !== null && !$isMoney($cost)) {
+            return 'Cost price must be 0 or a positive number.';
+        }
+        $stock = $data['stock'] ?? 0;
+        if (!preg_match('/^\d+$/', (string)$stock)) {
+            return 'Stock must be a whole number of 0 or more.';
+        }
+        return null;
+    }
+
     public function createProduct($data) {
+        if ($error = $this->validateProductNumbers($data)) {
+            return ['success' => false, 'message' => $error];
+        }
         try {
             // Generate SKU if not provided
             $sku = !empty($data['sku']) ? $data['sku'] : 'PRD' . time() . rand(100, 999);
@@ -474,6 +565,9 @@ class ProductController {
 
     // Update product
     public function updateProduct($id, $data) {
+        if ($error = $this->validateProductNumbers($data)) {
+            return ['success' => false, 'message' => $error];
+        }
         try {
             // Get category name for the category field
             $categoryName = '';
@@ -536,7 +630,8 @@ class ProductController {
             $stmt->bindParam(':category', $categoryName, PDO::PARAM_STR);
             $stmt->bindParam(':updated_by', $updated_by, PDO::PARAM_INT);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            
+
+            $this->conn->beginTransaction();
             if ($stmt->execute()) {
                 // Sync expiration date to the initial batch to ensure data consistency
                 $batchStmt = $this->conn->prepare("UPDATE product_batches SET expiration_date = :expiration_date WHERE product_id = :id AND batch_no LIKE 'B-INIT-%'");
@@ -544,15 +639,24 @@ class ProductController {
                 $batchStmt->bindParam(':id', $id, PDO::PARAM_INT);
                 $batchStmt->execute();
 
+                // The edit form sets stock directly — keep the batches in step with it
+                $batchChange = $this->reconcileBatchStock($id, $expiration_date);
+                $this->syncProductExpiryFromBatches($id);
+
                 // LOG ACTIVITY
-                $this->logActivity($id, 'edit', 'Product details updated', $data['name']);
-                
+                $this->logActivity($id, 'edit', 'Product details updated' . ($batchChange ? " ({$batchChange})" : ''), $data['name']);
+
+                $this->conn->commit();
                 return ['success' => true, 'message' => 'Product updated successfully'];
             } else {
+                $this->conn->rollBack();
                 return ['success' => false, 'message' => 'Failed to update product'];
             }
-            
+
         } catch (Exception $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
             error_log("Error in updateProduct: " . $e->getMessage());
             return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
@@ -560,6 +664,11 @@ class ProductController {
     
     // Update stock and status
     public function updateStock($id, $quantity, $type = 'add', $status = null, $batchData = null) {
+        // A stock change needs a positive whole number; "-5", "5.5" or "--22" are rejected
+        // instead of being silently treated as a status-only update.
+        if (in_array($type, ['add', 'remove'], true) && !preg_match('/^[1-9]\d*$/', trim((string)$quantity))) {
+            return ['success' => false, 'message' => 'Quantity must be a whole number greater than 0.'];
+        }
         try {
             $quantity = (int)$quantity;
             $hasValidStatus = ($status !== null && in_array($status, ['active', 'inactive']));
@@ -580,8 +689,15 @@ class ProductController {
                 return ['success' => true, 'message' => 'No changes made'];
             }
             
+            // Never create batches for a product that does not exist or is archived
+            $exists = $this->conn->prepare("SELECT 1 FROM products WHERE id = :id AND deleted_at IS NULL");
+            $exists->execute([':id' => $id]);
+            if (!$exists->fetchColumn()) {
+                return ['success' => false, 'message' => 'Product not found.'];
+            }
+
             $this->conn->beginTransaction();
-            
+
             // ── Stock update (add) ──
             if ($type === 'add') {
                 $batchAction = $batchData['batch_action'] ?? 'new';
@@ -673,7 +789,7 @@ class ProductController {
                     $this->conn->prepare("UPDATE product_batches SET stock = stock - :qty WHERE id = :bid")->execute([':qty'=>$quantity, ':bid'=>$batchId]);
                 } else {
                     // Auto FIFO removal
-                    $batches = $this->conn->prepare("SELECT id, stock FROM product_batches WHERE product_id = :id AND stock > 0 ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC FOR UPDATE");
+                    $batches = $this->conn->prepare("SELECT id, stock FROM product_batches WHERE product_id = :id AND stock > 0 AND status = 'active' ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC FOR UPDATE");
                     $batches->execute([':id' => $id]);
                     
                     $remainingToRemove = $quantity;
@@ -704,7 +820,10 @@ class ProductController {
                 
                 // Deplete empty batches
                 $this->conn->prepare("UPDATE product_batches SET status = 'depleted' WHERE product_id = :id AND stock = 0 AND status != 'depleted'")->execute([':id'=>$id]);
-                
+
+                // A depleted batch may have been the nearest-expiring one
+                $this->syncProductExpiryFromBatches($id);
+
                 // LOG ACTIVITY
                 $changeText = "-{$quantity} units removed";
                 if ($hasValidStatus) $changeText .= ", status set to $status";

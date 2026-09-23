@@ -4,19 +4,19 @@
         if (window.toastShowing) {
             return;
         }
-        
+
         window.toastShowing = true;
-        
+
         const toastContainer = document.getElementById('toastContainer');
         if (!toastContainer) {
             console.error('Toast container not found');
             window.toastShowing = false;
             return;
         }
-        
+
         // Clear any existing toasts
         toastContainer.innerHTML = '';
-        
+
         // Icon mapping
         const icons = {
             success: 'fa-check-circle',
@@ -24,10 +24,10 @@
             warning: 'fa-exclamation-triangle',
             info: 'fa-info-circle'
         };
-        
+
         const toastId = 'toast-' + Date.now();
         const icon = icons[type] || 'fa-bell';
-        
+
         // Map type to Bootstrap color classes
         const bgColor = {
             success: 'bg-success',
@@ -35,7 +35,7 @@
             warning: 'bg-warning',
             info: 'bg-info'
         }[type] || 'bg-secondary';
-        
+
         const toastHtml = `
             <div id="${toastId}" class="toast align-items-center text-white ${bgColor} border-0 mb-2 show" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
@@ -48,11 +48,11 @@
                 <div class="toast-timer"></div>
             </div>
         `;
-        
+
         toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-        
+
         const toastElement = document.getElementById(toastId);
-        
+
         // Auto remove after 1 second
         setTimeout(function() {
             if (toastElement && toastElement.parentNode) {
@@ -65,19 +65,19 @@
     // ========== LOADING ANIMATION ==========
     document.addEventListener('DOMContentLoaded', function() {
         // Check if there's an error OR if we arrived here from logout
-        const hasError = document.body.innerHTML.includes('Login Failed') || 
+        const hasError = document.body.innerHTML.includes('Login Failed') ||
                         document.querySelector('.bg-danger') !== null;
         const isLoggedOut = new URLSearchParams(window.location.search).get('logged_out') === '1';
-        
+
         const loadingAnimation = document.getElementById('loading-animation');
-        
+
         if (hasError || isLoggedOut) {
             if (loadingAnimation) {
                 loadingAnimation.style.display = 'none';
             }
             return;
         }
-        
+
         // Run loading animation only on a fresh page open (not after logout)
         if (loadingAnimation && !loadingAnimation.classList.contains('hidden')) {
             const progressBar = document.getElementById('progress-bar');
@@ -85,24 +85,24 @@
             const logoFill = document.querySelector('.logo-fill');
             const startTime = Date.now();
             const minDisplayTime = 2000;
-            
+
             let progress = 0;
             const interval = setInterval(() => {
                 if (progress < 100) {
                     progress += 1;
                     if (progressBar) progressBar.style.width = progress + '%';
                     if (percentage) percentage.textContent = progress + '%';
-                    
+
                     if (logoFill) {
                         logoFill.style.clipPath = `polygon(0 0, ${progress}% 0, ${progress}% 100%, 0 100%)`;
                     }
-                    
+
                     if (progress === 100) {
                         clearInterval(interval);
-                        
+
                         const elapsedTime = Date.now() - startTime;
                         const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-                        
+
                         setTimeout(() => {
                             if (loadingAnimation) {
                                 loadingAnimation.classList.add('hidden');
@@ -128,7 +128,7 @@
     function updateKeypadState() {
         const keypadButtons = document.querySelectorAll('.keypad-btn');
         const accountSelected = isAccountSelected();
-        
+
         keypadButtons.forEach(button => {
             if (accountSelected) {
                 // Account is selected - ENABLE buttons
@@ -152,6 +152,9 @@
                 }
             }
         }
+        if (currentPin.length > 0) {
+            document.querySelector('.pin-dots-row')?.classList.remove('is-error');
+        }
     }
 
     // Reset PIN
@@ -169,6 +172,14 @@
         }
         resetPin();
         setKeypadBusy(false);
+
+        // Restart the shake even when two wrong PINs come in a row
+        const dots = document.querySelector('.pin-dots-row');
+        if (dots) {
+            dots.classList.remove('is-error');
+            void dots.offsetWidth;
+            dots.classList.add('is-error');
+        }
     }
 
     function clearLoginError() {
@@ -244,28 +255,45 @@
         const pinPrompt = document.getElementById('pinPrompt');
         const selectedName = document.getElementById('selectedName');
         const selectedRole = document.getElementById('selectedRole');
-        
+        const chosenAvatar = document.getElementById('lgChosenAvatar');
+        const stepPick = document.getElementById('lgStepPick');
+        const stepPin = document.getElementById('lgStepPin');
+
+        // Two steps: pick an account, then enter its PIN
+        function showStep(step) {
+            if (!stepPick || !stepPin) return;
+            stepPick.hidden = step !== 'pick';
+            stepPin.hidden = step !== 'pin';
+            if (step === 'pin') stepPin.focus({ preventScroll: true });
+
+            // A long account list may have been scrolled; start the new step at its top
+            const panel = document.querySelector('.lg-panel');
+            if (panel && panel.getBoundingClientRect().top < 0) {
+                panel.scrollIntoView({ block: 'start' });
+            }
+        }
+
         // Initially update keypad state (should be disabled since no account selected)
         updateKeypadState();
-        
+
         // Add click handlers to number buttons
         document.querySelectorAll('.key').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // If button is disabled, do nothing (SILENTLY IGNORE)
                 if (this.hasAttribute('disabled')) {
                     return;
                 }
-                
+
                 // Process PIN entry
                 if (currentPin.length < maxPinLength) {
                     const num = this.getAttribute('data-num');
                     if (num !== null) {
                         currentPin += num;
                         updatePinDots();
-                        
+
                         if (currentPin.length === maxPinLength) {
                             submitPin();
                         }
@@ -273,88 +301,117 @@
                 }
             });
         });
-        
+
         // Add click handler to backspace button
         const backspaceBtn = document.getElementById('backspace');
         if (backspaceBtn) {
             backspaceBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // If button is disabled, do nothing (SILENTLY IGNORE)
                 if (this.hasAttribute('disabled')) {
                     return;
                 }
-                
+
                 currentPin = currentPin.slice(0, -1);
                 updatePinDots();
             });
         }
-        
+
         // Add click handlers to account cards
         accountCards.forEach(card => {
             card.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Remove selected class from all cards
                 accountCards.forEach(c => c.classList.remove('selected'));
-                
+
                 // Add selected class to clicked card
                 this.classList.add('selected');
-                
+
                 // Get user data
                 const userId = this.getAttribute('data-user-id');
                 const userName = this.getAttribute('data-user-name');
                 const userRole = this.getAttribute('data-user-role');
                 const userPosition = this.getAttribute('data-user-position');
-                
+
                 // Set user ID
                 userIdInput.value = userId;
-                
+
                 // Update display
                 selectedName.textContent = userName;
-                selectedRole.textContent = userPosition + ' · ' + 
+                selectedRole.textContent = userPosition ||
                     (userRole === 'owner' ? 'Owner' : 'Employee');
-                
+
+                // Same photo (or initials) as the tile that was picked
+                const tileAvatar = this.querySelector('.lg-avatar');
+                if (chosenAvatar && tileAvatar) {
+                    chosenAvatar.innerHTML = tileAvatar.innerHTML;
+                    chosenAvatar.classList.toggle('is-owner', userRole === 'owner');
+                }
+
                 selectedAccountInfo.style.display = 'block';
-                pinPrompt.textContent = 'Enter PIN to continue';
-                
+                pinPrompt.textContent = 'Enter your 4-digit PIN';
+
                 // Reset PIN
                 resetPin();
                 clearLoginError();
-                
+
                 // Update keypad state (should ENABLE buttons because account is selected)
                 updateKeypadState();
-                
-                showToast('info', 'Account Selected', 'Welcome, ' + userName + '! Please enter your PIN.');
+
+                showStep('pin');
             });
         });
-        
+
+        // Back to the account list
+        function backToAccounts() {
+            if (loginInFlight) return;
+            const chosen = document.querySelector('.account-card.selected');
+            accountCards.forEach(c => c.classList.remove('selected'));
+            userIdInput.value = '';
+            resetPin();
+            clearLoginError();
+            document.querySelector('.pin-dots-row')?.classList.remove('is-error');
+            updateKeypadState();
+            showStep('pick');
+            if (chosen) chosen.focus({ preventScroll: true });
+        }
+
+        document.getElementById('lgBack')?.addEventListener('click', backToAccounts);
+
         // Keyboard input handler
         document.addEventListener('keydown', function(e) {
             // Don't handle keys if typing in an input field
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                 return;
             }
-            
-            // Check if account is selected
+
+            // No account chosen yet: leave keys alone so Enter/Space pick a focused tile
             if (!isAccountSelected()) {
-                // If no account selected, ignore all key presses SILENTLY
-                if (e.key >= '0' && e.key <= '9' || e.key === 'Backspace' || e.key === 'Enter') {
-                    e.preventDefault();
-                    // NO TOAST - just ignore
-                }
                 return;
             }
-            
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                backToAccounts();
+                return;
+            }
+
+            // Enter on a focused non-digit button (e.g. "All accounts") activates it
+            if (e.key === 'Enter' && e.target.closest('button') && !e.target.closest('.keypad-btn')) {
+                return;
+            }
+
             // Account is selected, process key presses
             if (e.key >= '0' && e.key <= '9') {
                 e.preventDefault();
                 if (currentPin.length < maxPinLength) {
                     currentPin += e.key;
                     updatePinDots();
-                    
+
                     if (currentPin.length === maxPinLength) {
                         submitPin();
                     }
@@ -369,6 +426,20 @@
             }
         });
     });
+
+    // Till clock on the brand panel
+    (function () {
+        const time = document.getElementById('lgTime');
+        const date = document.getElementById('lgDate');
+        if (!time || !date) return;
+        function tick() {
+            const now = new Date();
+            time.textContent = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            date.textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        }
+        tick();
+        setInterval(tick, 15000);
+    })();
 
     // Add window load handler to ensure correct state
     window.addEventListener('load', function() {

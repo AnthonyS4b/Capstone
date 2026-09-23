@@ -1,0 +1,310 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Active promotions modal (includes/active_promos_modal.php)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.promo-modal {
+    --pr-brand: #2c5530;
+    --pr-accent: #8B4513;
+    --pr-accent-tint: #f6ece3;
+    --pr-ink: #16221a;
+    --pr-muted: #61706a;
+    --pr-subtle: #8b968f;
+    --pr-line: #e4e7e4;
+    --pr-line-strong: #cfd4cf;
+    --pr-canvas: #f6f7f6;
+    --pr-negative: #b42318;
+    --pr-warning: #b45309;
+}
+
+.promo-modal .modal-dialog {
+    max-width: 560px;
+}
+
+.promo-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+    color: var(--pr-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.promo-modal .promo-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 20px 14px 24px;
+    border-bottom: 1px solid var(--pr-line);
+}
+
+.promo-modal .promo-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.promo-modal .promo-sub {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--pr-muted);
+}
+
+.promo-modal .promo-head .btn-close {
+    flex-shrink: 0;
+    margin: 2px 0 0;
+    font-size: 11px;
+    opacity: 0.5;
+}
+
+.promo-modal .modal-body {
+    padding: 0;
+    background: var(--pr-canvas);
+}
+
+.promo-modal .promo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+}
+
+/* One promotion */
+.promo-modal .promo-card {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid var(--pr-line);
+    border-radius: 12px;
+    background: #fff;
+}
+
+.promo-modal .promo-thumb {
+    width: 52px;
+    height: 52px;
+    border-radius: 8px;
+    border: 1px solid var(--pr-line);
+    background: #fff;
+    object-fit: contain;
+}
+
+.promo-modal .promo-thumb-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--pr-canvas);
+    color: var(--pr-subtle);
+}
+
+.promo-modal .promo-main {
+    min-width: 0;
+}
+
+.promo-modal .promo-top {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.promo-modal .promo-product {
+    font-size: 14.5px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.promo-modal .promo-off {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--pr-accent-tint);
+    color: var(--pr-accent);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.promo-modal .promo-strategy {
+    margin-top: 1px;
+    font-size: 13px;
+    color: var(--pr-muted);
+}
+
+.promo-modal .promo-note {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--pr-brand);
+}
+
+.promo-modal .promo-price {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.promo-modal .promo-new {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--pr-ink);
+}
+
+.promo-modal .promo-new small {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--pr-muted);
+}
+
+.promo-modal .promo-old {
+    font-size: 13px;
+    color: var(--pr-subtle);
+    text-decoration: line-through;
+}
+
+.promo-modal .promo-time {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--pr-muted);
+}
+
+.promo-modal .promo-time.is-soon {
+    color: var(--pr-warning);
+    font-weight: 600;
+}
+
+.promo-modal .promo-bar {
+    flex: 1;
+    max-width: 140px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--pr-line);
+    overflow: hidden;
+}
+
+.promo-modal .promo-bar > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--pr-brand);
+}
+
+.promo-modal .promo-time.is-soon .promo-bar > span {
+    background: var(--pr-warning);
+}
+
+/* End early: quiet until hovered */
+.promo-modal .promo-cancel {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--pr-line-strong);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--pr-ink);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.promo-modal .promo-cancel:hover {
+    border-color: #f1c7c3;
+    background: #fdeceb;
+    color: var(--pr-negative);
+}
+
+.promo-modal .promo-cancel:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Empty / loading / error */
+.promo-modal .promo-empty {
+    padding: 36px 24px;
+    text-align: center;
+    color: var(--pr-muted);
+    font-size: 13.5px;
+}
+
+.promo-modal .promo-empty p {
+    margin: 0 auto;
+    max-width: 340px;
+}
+
+.promo-modal .promo-empty .spinner-border {
+    color: var(--pr-brand);
+    margin-bottom: 8px;
+}
+
+.promo-modal .promo-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border: 1px solid var(--pr-line);
+    color: var(--pr-subtle);
+    font-size: 18px;
+}
+
+.promo-modal .promo-empty-title {
+    margin-bottom: 4px !important;
+    font-size: 15px;
+    font-weight: 650;
+    color: var(--pr-ink);
+}
+
+.promo-modal .promo-empty.is-error .promo-empty-title {
+    color: var(--pr-negative);
+}
+
+.promo-modal .promo-foot {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 20px 16px;
+    border-top: 1px solid var(--pr-line);
+    background: #fff;
+}
+
+.promo-modal .promo-btn {
+    height: 40px;
+    padding: 0 18px;
+    border: 1px solid var(--pr-line-strong);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--pr-ink);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.promo-modal .promo-btn:hover {
+    background: var(--pr-canvas);
+}
+
+@media (max-width: 480px) {
+    .promo-modal .modal-dialog {
+        margin: 10px;
+    }
+
+    .promo-modal .promo-card {
+        grid-template-columns: 44px minmax(0, 1fr);
+    }
+
+    .promo-modal .promo-thumb {
+        width: 44px;
+        height: 44px;
+    }
+
+    .promo-modal .promo-cancel {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}

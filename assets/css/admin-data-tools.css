@@ -1,77 +1,316 @@
-.data-tools-header {
-    background: linear-gradient(135deg, #2c5530, #3d7042);
+/* ═══════════════════════════════════════════════════════════════════
+   Backup & export (admin_data_tools.php)
+   Tokens come from dashboardCSS.css (loaded first).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.dt-page {
+    font-variant-numeric: tabular-nums;
+}
+
+.dt-page .dt-header {
+    background: var(--brand);
     color: #fff;
-    border-radius: 16px;
-    padding: 24px 28px;
-    margin-bottom: 22px;
-    box-shadow: 0 10px 28px rgba(44, 85, 48, .18);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
 }
 
-.data-tools-header h1 { margin: 0 0 6px; font-size: 1.55rem; font-weight: 800; }
-.data-tools-header p { margin: 0; opacity: .88; }
-
-.data-tools-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: 18px;
+.dt-page .dt-header h1 {
+    margin: 0 0 4px;
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: #fff;
 }
 
-.data-tool-card {
+.dt-page .dt-header p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+/* Cards */
+.dt-page .dt-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.dt-page .dt-card h2 {
+    margin: 0 0 2px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.dt-page .dt-card p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+}
+
+.dt-page .dt-card code {
+    padding: 0 4px;
+    border-radius: 4px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-size: 12.5px;
+}
+
+.dt-page .dt-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    color: var(--ink-muted);
+    font-size: 16px;
+}
+
+.dt-page .dt-icon-brand {
+    width: 48px;
+    height: 48px;
+    background: var(--brand-tint);
+    color: var(--brand);
+    font-size: 20px;
+}
+
+/* ─── Full backup ─── */
+.dt-page .dt-backup-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+}
+
+.dt-page .dt-backup-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.dt-page .dt-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+}
+
+.dt-page .dt-facts strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.dt-page .dt-notes {
+    padding: 12px 24px 14px;
+    border-top: 1px solid var(--line);
+    background: #fafbfa;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+}
+
+.dt-page .dt-notes p {
+    font-size: 12.5px;
+}
+
+.dt-page .dt-notes p i {
+    margin-right: 8px;
+    color: var(--brand);
+}
+
+.dt-page .dt-notes details {
+    margin-top: 8px;
+}
+
+.dt-page .dt-notes summary {
+    display: inline;
+    font-weight: 600;
+    color: var(--brand);
+    cursor: pointer;
+}
+
+.dt-page .dt-notes summary:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.dt-page .dt-notes ol {
+    margin: 8px 0 0;
+    padding-left: 20px;
+    line-height: 1.6;
+    color: var(--ink);
+}
+
+/* ─── CSV exports ─── */
+.dt-page .dt-card-head {
+    padding: 18px 24px 12px;
+    border-bottom: 1px solid var(--line);
+}
+
+.dt-page .dt-exports {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dt-page .dt-exports li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+}
+
+.dt-page .dt-exports li + li {
+    border-top: 1px solid var(--line);
+}
+
+.dt-page .dt-export-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.dt-page .dt-export-text strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.dt-page .dt-export-text span {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+}
+
+.dt-page .dt-count {
+    min-width: 88px;
+    font-size: 12.5px;
+    color: var(--ink-subtle);
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* ─── Buttons ─── */
+.dt-page form.dt-download {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.dt-page .dt-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 116px;
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
     background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    padding: 22px;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, .06);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.data-tool-card form { margin: 0; flex: 0 0 auto; }
+.dt-page .dt-btn i {
+    font-size: 12px;
+    color: var(--ink-muted);
+}
 
-/* Keep link elements visually identical to the dashboard sidebar buttons. */
+.dt-page .dt-btn:hover:not(:disabled) {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.dt-page .dt-btn:hover:not(:disabled) i {
+    color: var(--brand);
+}
+
+.dt-page .dt-btn-primary {
+    height: 42px;
+    padding: 0 18px;
+    border-color: var(--brand);
+    background: var(--brand);
+    color: #fff;
+    font-size: 14px;
+}
+
+.dt-page .dt-btn-primary i {
+    color: #fff;
+}
+
+.dt-page .dt-btn-primary:hover:not(:disabled) {
+    background: var(--brand-strong);
+    border-color: var(--brand-strong);
+    color: #fff;
+}
+
+.dt-page .dt-btn-primary:hover:not(:disabled) i {
+    color: #fff;
+}
+
+.dt-page .dt-btn:disabled {
+    opacity: 0.65;
+    cursor: progress;
+}
+
+.dt-page .dt-btn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+/* Sidebar links on this page render like the other sidebar buttons */
 .sidebar a.profile-btn,
 .sidebar a.recommendation-btn,
 .sidebar a.logout-btn {
     text-decoration: none;
 }
 
-.sidebar .dropdown-toggle.active {
-    background: #f1f5f9;
-    color: #0f172a;
+@media (max-width: 720px) {
+    .dt-page .dt-backup-main {
+        flex-wrap: wrap;
+        padding: 16px;
+    }
+
+    .dt-page .dt-backup-main form.dt-download,
+    .dt-page .dt-backup-main .dt-btn {
+        width: 100%;
+    }
+
+    .dt-page .dt-notes,
+    .dt-page .dt-card-head {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dt-page .dt-exports li {
+        flex-wrap: wrap;
+        padding: 14px 16px;
+    }
+
+    .dt-page .dt-exports .dt-icon {
+        display: none;
+    }
+
+    .dt-page .dt-export-text {
+        flex-basis: 100%;
+    }
+
+    .dt-page .dt-count {
+        min-width: 0;
+        text-align: left;
+        flex: 1;
+    }
 }
-
-.data-tool-card.backup-card { border-top: 4px solid #8B4513; }
-.data-tool-card.export-card { border-top: 4px solid #2c5530; }
-.data-tool-card h2 { color: #1e293b; font-size: 1.1rem; font-weight: 800; margin: 0 0 6px; }
-.data-tool-card > p { color: #64748b; font-size: .86rem; margin-bottom: 18px; }
-
-.tool-option {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 13px 0;
-    border-top: 1px solid #eef2f7;
-}
-
-.tool-option:first-of-type { border-top: 0; }
-.tool-option strong { display: block; color: #334155; font-size: .88rem; }
-.tool-option small { display: block; color: #64748b; margin-top: 2px; }
-
-.btn-data-download {
-    border: 0;
-    border-radius: 8px;
-    padding: 9px 13px;
-    min-width: 112px;
-    color: #fff;
-    background: #2c5530;
-    font-size: .78rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.backup-card .btn-data-download { background: #8B4513; }
-.btn-data-download:hover { filter: brightness(.9); }
-.security-note { margin-top: 18px; padding: 13px 15px; border-radius: 9px; background: #f8fafc; color: #475569; font-size: .8rem; line-height: 1.5; }
-
-@media (max-width: 900px) { .data-tools-grid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .tool-option { align-items: stretch; flex-direction: column; } .btn-data-download { width: 100%; } }

@@ -120,3 +120,103 @@
             #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
             #receiptPrintArea { position: fixed; left: 0; top: 0; width: 100%; }
         }
+/* ================================================
+   My Transactions — responsive table + pagination
+   ================================================ */
+.my-tx-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.my-tx-table td,
+.my-tx-table th {
+    white-space: nowrap;
+}
+
+.my-tx-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.my-tx-count {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.my-tx-pagination .page-link {
+    color: #2c5530;
+    min-width: 34px;
+    text-align: center;
+}
+
+.my-tx-pagination .page-item.active .page-link {
+    background: #2c5530;
+    border-color: #2c5530;
+    color: #fff;
+}
+
+/* Phones & small tablets: each transaction becomes a compact card */
+@media (max-width: 768px) {
+    .my-tx-container {
+        padding: 14px;
+    }
+
+    .my-tx-scroll {
+        overflow-x: visible;
+    }
+
+    .my-tx-table thead {
+        display: none;
+    }
+
+    .my-tx-table,
+    .my-tx-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .my-tx-table tr {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 6px 12px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .my-tx-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        white-space: normal;
+        font-size: 13px;
+    }
+
+    /* Row 1: ID (left) · amount (right) */
+    .my-tx-table td[data-label="Transaction"] { grid-column: 1; grid-row: 1; }
+    .my-tx-table td[data-label="Amount"]      { grid-column: 2; grid-row: 1; text-align: right; }
+    /* Row 2: date + time (left) · status (right) */
+    .my-tx-table td[data-label="Date"]        { grid-column: 1; grid-row: 2; color: #64748b; font-size: 12px; }
+    .my-tx-table td[data-label="Status"]      { grid-column: 2; grid-row: 2; text-align: right; }
+    .my-tx-table td[data-label="Time"]        { grid-column: 1; grid-row: 3; font-size: 12px; }
+    /* Row 3/4: items (left) · receipt button (right) */
+    .my-tx-table td[data-label="Items"]       { grid-column: 1; grid-row: 4; }
+    .my-tx-table td[data-label="Receipt"]     { grid-column: 2; grid-row: 3 / span 2; align-self: end; text-align: right; }
+
+    .my-tx-table .btn-view-receipt {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .my-tx-pagination {
+        flex-direction: column;
+        align-items: center;
+    }
+}

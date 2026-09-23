@@ -6,13 +6,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const roleModal = document.getElementById('roleManagementModal');
     if (roleModal) {
-        roleModal.addEventListener('show.bs.modal', refreshUserList);
+        roleModal.addEventListener('show.bs.modal', () => refreshUserList(true));
     }
-    
-    // Set up auto-refresh for user list (every 30 seconds)
+
+    // Keep the list fresh while it is open — silently, and only when visible
     if (isUserManagementOwner()) {
-        setInterval(refreshUserList, 30000);
+        setInterval(() => {
+            if (roleModal && roleModal.classList.contains('show')) refreshUserList(true);
+        }, 30000);
     }
+
+    // PIN fields: digits only
+    document.querySelectorAll('.um-pin').forEach(input => input.addEventListener('input', () => {
+        const digits = input.value.replace(/\D/g, '').slice(0, 4);
+        if (digits !== input.value) input.value = digits;
+    }));
+
+    // Role explanation under the role pickers
+    document.getElementById('newRole')?.addEventListener('change', e => updateRoleNote('newRoleNote', e.target.value));
     
     // Set up search and filter listeners
     setupFilterListeners();
@@ -80,7 +91,7 @@ function filterUsers() {
         if (!noResultsRow) {
             const newRow = document.createElement('tr');
             newRow.id = 'noResultsRow';
-            newRow.innerHTML = '<td colspan="7" class="text-center py-4"><i class="fas fa-search fa-3x mb-3 text-muted"></i><p class="text-muted">No users match your filters</p></td>';
+            newRow.innerHTML = '<td colspan="5" class="um-empty">No users match your search</td>';
             tableBody.appendChild(newRow);
         }
     } else if (noResultsRow) {
@@ -89,10 +100,9 @@ function filterUsers() {
 }
 
 // Refresh user list from database
-function refreshUserList() {
+function refreshUserList(silent = false) {
     if (!isUserManagementOwner()) return;
-    
-    showToast('info', 'Refreshing', 'Updating user list...');
+    silent = silent === true;
     
     const baseApiUrl = getUserManagementBaseUrl();
     const url = baseApiUrl + 'ajax/get_user.php';
@@ -120,7 +130,8 @@ function refreshUserList() {
         console.log('User data received:', data);
         if (data.success) {
             updateUsersTable(data.users);
-            showToast('success', 'Updated', 'User list refreshed');
+            filterUsers();
+            if (!silent) showToast('success', 'Updated', 'User list refreshed');
         } else {
             showToast('error', 'Error', data.message || 'Failed to refresh users');
         }
@@ -132,58 +143,82 @@ function refreshUserList() {
 }
 
 // Update users table with new data
+// Users currently listed, by id (edit/delete look details up here instead of
+// passing names through onclick strings, which broke on apostrophes)
+const umUsers = new Map();
+
+function umInitials(first, last) {
+    return ((first || '').charAt(0) + (last || '').charAt(0)).toUpperCase() || '?';
+}
+
+// Profile picture if the user has one, otherwise their initials
+function umAvatarInner(user) {
+    return user && user.avatar
+        ? `<img src="${escapeHtml(user.avatar)}" alt="">`
+        : escapeHtml(umInitials(user?.first_name, user?.last_name));
+}
+
 function updateUsersTable(users) {
     const tableBody = document.getElementById('usersTableBody');
     if (!tableBody) return;
-    
+
+    umUsers.clear();
+    (users || []).forEach(u => umUsers.set(String(u.id), u));
+
+    const summary = document.getElementById('umSummary');
+    if (summary && users) {
+        const owners = users.filter(u => u.role === 'owner').length;
+        summary.textContent = `${users.length} user${users.length === 1 ? '' : 's'} · ${owners} owner${owners === 1 ? '' : 's'}, ${users.length - owners} employee${users.length - owners === 1 ? '' : 's'}`;
+    }
+
     if (!users || users.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4"><i class="fas fa-users fa-3x mb-3 text-muted"></i><p class="text-muted">No users found</p></td></tr>';
+        tableBody.innerHTML = '<tr><td colspan="5" class="um-empty">No users yet</td></tr>';
         return;
     }
-    
-    let html = '';
-    users.forEach(user => {
-        const roleClass = user.role === 'owner' ? 'danger' : 'info';
-        const roleIcon = user.role === 'owner' ? 'crown' : 'user';
-        const nameLower = (user.first_name + ' ' + user.last_name).toLowerCase();
-        
-        html += `
-            <tr data-user-id="${user.id}" data-role="${user.role}" data-name="${escapeHtml(nameLower)}">
-                <td><span class="badge bg-secondary">#${user.id}</span></td>
+
+    const me = String(getCurrentUserId());
+    tableBody.innerHTML = users.map(user => {
+        const name = `${user.first_name} ${user.last_name}`;
+        const isMe = String(user.id) === me;
+        const active = user.is_active === undefined || Number(user.is_active) === 1;
+        return `
+            <tr data-user-id="${user.id}" data-role="${escapeHtml(user.role)}" data-name="${escapeHtml((name + ' ' + (user.email || '')).toLowerCase())}">
                 <td>
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-user-circle fa-2x me-2 text-${roleClass}"></i>
-                        <div>
-                            <strong>${escapeHtml(user.first_name)} ${escapeHtml(user.last_name)}</strong>
-                            <br>
-                            <small class="text-muted">ID: ${user.id}</small>
+                    <div class="um-user">
+                        <span class="um-avatar um-avatar-${user.role === 'owner' ? 'owner' : 'employee'}" aria-hidden="true">${umAvatarInner(user)}</span>
+                        <div class="um-user-text">
+                            <span class="um-name">${escapeHtml(name)}${isMe ? ' <span class="um-you">You</span>' : ''}</span>
+                            <span class="um-email">${escapeHtml(user.email || '')}</span>
                         </div>
                     </div>
                 </td>
-                <td>${escapeHtml(user.email)}</td>
-                <td>
-                    <span class="badge bg-${roleClass} role-badge">
-                        <i class="fas fa-${roleIcon} me-1"></i>
-                        ${capitalizeFirst(user.role)}
-                    </span>
-                </td>
-                <td>${escapeHtml(user.position || 'N/A')}</td>
-                <td><span class="badge bg-success">Active</span></td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" onclick="editUserRole(${user.id}, '${escapeHtml(user.first_name)}', '${escapeHtml(user.last_name)}', '${escapeHtml(user.email)}', '${user.role}', '${escapeHtml(user.position || '')}')">
-                        <i class="fas fa-edit"></i>
+                <td><span class="um-role um-role-${user.role === 'owner' ? 'owner' : 'employee'}">${capitalizeFirst(user.role)}</span></td>
+                <td class="um-muted">${user.position ? escapeHtml(user.position) : '—'}</td>
+                <td><span class="um-status ${active ? 'is-active' : 'is-inactive'}">${active ? 'Active' : 'Inactive'}</span></td>
+                <td class="um-actions">
+                    <button type="button" class="um-icon-btn" onclick="editUserById(${user.id})" title="Edit ${escapeHtml(name)}" aria-label="Edit ${escapeHtml(name)}">
+                        <i class="fas fa-pen"></i>
                     </button>
-                    ${user.id != getCurrentUserId() ? `
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(${user.id}, '${escapeHtml(user.first_name)} ${escapeHtml(user.last_name)}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    ` : ''}
+                    ${isMe ? '' : `
+                    <button type="button" class="um-icon-btn um-danger" onclick="deleteUserById(${user.id})" title="Delete ${escapeHtml(name)}" aria-label="Delete ${escapeHtml(name)}">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>`}
                 </td>
-            </tr>
-        `;
-    });
-    
-    tableBody.innerHTML = html;
+            </tr>`;
+    }).join('');
+}
+
+function editUserById(id) {
+    const u = umUsers.get(String(id));
+    if (!u) return;
+    editUserRole(u.id, u.first_name, u.last_name, u.email, u.role, u.position || '');
+    const avatarEl = document.getElementById('editUserAvatar');
+    if (avatarEl) avatarEl.innerHTML = umAvatarInner(u);
+}
+
+function deleteUserById(id) {
+    const u = umUsers.get(String(id));
+    if (u) deleteUser(u.id, `${u.first_name} ${u.last_name}`);
 }
 
 // Helper function to escape HTML
@@ -224,6 +259,7 @@ function addNewUser() {
         // Set default role to employee
         const roleSelect = document.getElementById('newRole');
         if (roleSelect) roleSelect.value = 'employee';
+        updateRoleNote('newRoleNote', 'employee');
     }
     
     // Remove any existing modal backdrops
@@ -380,6 +416,11 @@ function editUserRole(userId, firstName, lastName, email, currentRole, currentPo
     
     if (userIdInput) userIdInput.value = userId;
     if (userNameEl) userNameEl.textContent = firstName + ' ' + lastName;
+    const avatarEl = document.getElementById('editUserAvatar');
+    if (avatarEl) {
+        avatarEl.textContent = umInitials(firstName, lastName);
+        avatarEl.className = 'um-avatar um-avatar-lg um-avatar-' + (currentRole === 'owner' ? 'owner' : 'employee');
+    }
     if (userEmailEl) userEmailEl.textContent = email;
     if (roleSelect) roleSelect.value = currentRole;
     if (positionInput) positionInput.value = currentPosition || '';
@@ -404,25 +445,19 @@ function editUserRole(userId, firstName, lastName, email, currentRole, currentPo
 }
 
 // Update permission checkboxes based on role
+// What each role can reach — shown under the role picker
+const ROLE_NOTES = {
+    owner: 'Owners have full access: sales reports, recommendations, user roles and backups.',
+    employee: 'Employees can use the POS and inventory. Sales reports, recommendations and admin tools stay hidden.'
+};
+
+function updateRoleNote(elementId, role) {
+    const el = document.getElementById(elementId);
+    if (el) el.textContent = ROLE_NOTES[role] || '';
+}
+
 function updatePermissionCheckboxes(role) {
-    const permReports = document.getElementById('permReports');
-    const permInventory = document.getElementById('permInventory');
-    
-    if (!permReports || !permInventory) return;
-    
-    // Reset
-    permReports.disabled = false;
-    permInventory.disabled = false;
-    permReports.checked = false;
-    permInventory.checked = false;
-    
-    // Set based on role
-    if (role === 'owner') {
-        permReports.checked = true;
-        permInventory.checked = true;
-        permReports.disabled = true;
-        permInventory.disabled = true;
-    }
+    updateRoleNote('editRoleNote', role);
 }
 
 // Save role changes (role + position, and optionally reset PIN)
@@ -502,12 +537,17 @@ function closeEditModalAndRefresh(userId) {
 }
 
 // Delete user
-function deleteUser(userId, userName) {
-    if (!confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
-        return;
-    }
-    
-    showToast('warning', 'Deleting', `Removing user ${userName}...`);
+async function deleteUser(userId, userName) {
+    const ok = typeof confirmDialog === 'function'
+        ? await confirmDialog({
+            title: 'Delete user?',
+            message: `${userName} will no longer be able to sign in.`,
+            detail: 'Their past sales stay on record. This cannot be undone.',
+            confirmText: 'Delete user',
+            tone: 'danger'
+        })
+        : confirm(`Delete ${userName}? This cannot be undone.`);
+    if (!ok) return;
     
     const baseApiUrl = getUserManagementBaseUrl();
     const endpoint = baseApiUrl + 'ajax/delete_user.php';

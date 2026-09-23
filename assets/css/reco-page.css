@@ -1,0 +1,1361 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Recommendations page (reco.php only)
+   Built on the tokens in dashboardCSS.css. reco.css is shared by other
+   pages, so everything here is scoped under .reco-page.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.reco-page {
+    --rp-critical: var(--negative);
+    --rp-warning: var(--warning);
+    --rp-monitor: #1d5f8a;
+    --rp-low: var(--positive);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ─── Header ─── */
+.reco-page .rp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: var(--brand);
+    color: #fff;
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+
+.reco-page .rp-header h1 {
+    font-size: 1.35rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+}
+
+.reco-page .rp-header p {
+    margin: 0;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.78);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+}
+
+.reco-page .rp-engine {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.reco-page .rp-engine .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #f87171;
+    box-shadow: none;
+}
+
+.reco-page .rp-engine .status-dot.connected {
+    background: #4ade80;
+    box-shadow: none;
+}
+
+.reco-page .rp-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── Buttons ─── */
+.reco-page .rp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--r-sm);
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.reco-page .rp-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.reco-page .rp-btn-light {
+    background: #fff;
+    color: var(--brand);
+}
+
+.reco-page .rp-btn-light:hover:not(:disabled) {
+    background: var(--brand-tint);
+}
+
+.reco-page .rp-btn-ghost {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.reco-page .rp-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.reco-page .rp-btn-primary {
+    background: var(--brand);
+    color: #fff;
+}
+
+.reco-page .rp-btn-primary:hover:not(:disabled) {
+    background: var(--brand-strong);
+}
+
+.reco-page .rp-btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.reco-page .rp-link {
+    background: none;
+    border: none;
+    padding: 6px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    cursor: pointer;
+}
+
+.reco-page .rp-link:hover {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ─── Summary figures: one panel, divided, no icon tiles ─── */
+.reco-page .rp-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    margin-bottom: 20px;
+}
+
+.reco-page .rp-kpi {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 16px 20px;
+    min-width: 0;
+}
+
+.reco-page .rp-kpi + .rp-kpi {
+    border-left: 1px solid var(--line);
+}
+
+.reco-page .rp-kpi-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+}
+
+.reco-page .rp-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 650;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+.reco-page .rp-kpi-note {
+    font-size: 12px;
+    color: var(--ink-subtle);
+}
+
+/* ─── Toolbar ─── */
+.reco-page .rp-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.reco-page .rp-tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.reco-page .rp-tabs .filter-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    box-shadow: none;
+    transform: none;
+}
+
+.reco-page .rp-tabs .filter-btn:hover {
+    color: var(--ink);
+    background: none;
+}
+
+.reco-page .rp-tabs .filter-btn.active {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+    font-weight: 600;
+    background: none;
+}
+
+.reco-page .rp-count {
+    display: inline-block;
+    min-width: 20px;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    text-align: center;
+}
+
+.reco-page .rp-count:empty {
+    display: none;
+}
+
+.reco-page .rp-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reco-page .rp-search {
+    position: relative;
+    margin: 0;
+}
+
+.reco-page .rp-search i {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--ink-subtle);
+    pointer-events: none;
+}
+
+.reco-page .rp-search input {
+    width: 240px;
+    padding: 7px 12px 7px 32px;
+    font-size: 13px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.reco-page .rp-search input:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-tint);
+}
+
+.reco-page .rp-view {
+    display: inline-flex;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.reco-page .rp-view .view-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    color: var(--ink-subtle);
+    font-size: 13px;
+    box-shadow: none;
+}
+
+.reco-page .rp-view .view-toggle-btn + .view-toggle-btn {
+    border-left: 1px solid var(--line-strong);
+}
+
+.reco-page .rp-view .view-toggle-btn.active {
+    background: var(--brand-tint);
+    color: var(--brand);
+}
+
+/* ─── Results panel ─── */
+.reco-page .rp-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+}
+
+.reco-page .rp-panel-meta {
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--line);
+}
+
+/* One grid template shared by the header row and every item row */
+.reco-page .rp-row {
+    display: grid;
+    grid-template-columns:
+        minmax(230px, 2.2fr) /* product + photo */
+        minmax(110px, 1fr)   /* risk */
+        90px                 /* price */
+        64px                 /* stock */
+        90px                 /* days */
+        84px                 /* sales */
+        minmax(200px, 2.2fr) /* recommendation */
+        128px;               /* actions */
+    gap: 16px;
+    align-items: center;
+    padding: 12px 16px;
+}
+
+.reco-page .rp-head {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: var(--canvas);
+    border-bottom: 1px solid var(--line);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-muted);
+    letter-spacing: 0.02em;
+}
+
+.reco-page .rp-head[hidden] {
+    display: none;
+}
+
+.reco-page .rp-list.list-view .rp-item + .rp-item {
+    border-top: 1px solid var(--line);
+}
+
+.reco-page .rp-list.list-view .rp-item:hover {
+    background: #fafbfa;
+}
+
+.reco-page .rp-cell {
+    min-width: 0;
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.reco-page .rp-num {
+    text-align: right;
+}
+
+.reco-page .rp-cell.rp-num {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.reco-page .is-warn {
+    color: var(--warning);
+    font-weight: 600;
+}
+
+.reco-page .is-bad {
+    color: var(--negative);
+    font-weight: 600;
+}
+
+.reco-page .rp-sub {
+    font-size: 11px;
+    color: var(--ink-subtle);
+    font-weight: 400;
+}
+
+/* Product: photo + name block */
+.reco-page .rp-product {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.reco-page .rp-product-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.reco-page .rp-thumb {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line);
+    background: #fff;
+    object-fit: contain;
+}
+
+.reco-page .rp-thumb-empty {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--canvas);
+    color: var(--ink-subtle);
+    font-size: 16px;
+}
+
+.reco-page .rp-name {
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.reco-page .rp-cat {
+    font-size: 12px;
+    color: var(--ink-muted);
+}
+
+.reco-page .rp-expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--negative);
+}
+
+.reco-page .rp-expiry i {
+    font-size: 10px;
+}
+
+/* Risk: label once, meter for the score */
+.reco-page .rp-risk {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.reco-page .rp-risk-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.reco-page .rp-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.reco-page .rp-meter {
+    display: block;
+    width: 100%;
+    max-width: 96px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+}
+
+.reco-page .rp-meter > span {
+    display: block;
+    height: 100%;
+    background: currentColor;
+    border-radius: inherit;
+}
+
+.reco-page .risk-critical .rp-risk { color: var(--rp-critical); }
+.reco-page .risk-warning  .rp-risk { color: var(--rp-warning); }
+.reco-page .risk-monitor  .rp-risk { color: var(--rp-monitor); }
+.reco-page .risk-low      .rp-risk { color: var(--rp-low); }
+
+.reco-page .rp-risk .rp-sub {
+    color: var(--ink-subtle);
+}
+
+/* Recommendation */
+.reco-page .rp-reco {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.reco-page .rp-reco-name {
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.reco-page .rp-offer {
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+}
+
+.reco-page .rp-offer::before {
+    content: '· ';
+    color: var(--ink-subtle);
+}
+
+.reco-page .rp-reco-note {
+    font-size: 12px;
+    color: var(--ink-muted);
+    line-height: 1.4;
+}
+
+/* Actions */
+.reco-page .rp-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ─── Empty / loading ─── */
+.reco-page .rp-empty {
+    padding: 48px 16px;
+    text-align: center;
+    color: var(--ink-muted);
+    font-size: 13px;
+}
+
+.reco-page .rp-empty p {
+    margin: 0;
+}
+
+.reco-page .rp-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px !important;
+}
+
+.reco-page .rp-empty .loading-spinner {
+    margin: 0 auto 12px;
+}
+
+/* ─── Card view ─── */
+.reco-page .rp-list.card-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 12px;
+    padding: 12px;
+    background: var(--canvas);
+}
+
+.reco-page .rp-list.card-view .rp-empty {
+    grid-column: 1 / -1;
+}
+
+.reco-page .rp-list.card-view .rp-item {
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-areas:
+        "product product product risk"
+        "price   stock   days    sales"
+        "reco    reco    reco    reco"
+        "actions actions actions actions";
+    gap: 12px;
+    align-items: start;
+    padding: 14px 16px;
+}
+
+.reco-page .rp-list.card-view .rp-item {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+}
+
+.reco-page .card-view .rp-product{ grid-area: product; }
+.reco-page .card-view .rp-risk{ grid-area: risk; align-items: flex-end; text-align: right; }
+.reco-page .card-view .rp-reco{ grid-area: reco; padding-top: 10px; border-top: 1px solid var(--line); }
+.reco-page .card-view .rp-actions{ grid-area: actions; justify-content: flex-end; }
+
+/* Metric cells get their label above the value in card layouts */
+.reco-page .card-view .rp-cell.rp-num{
+    align-items: flex-start;
+    text-align: left;
+}
+
+.reco-page .card-view .rp-cell.rp-num::before{
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-subtle);
+    margin-bottom: 2px;
+}
+
+.reco-page .card-view .rp-meter{
+    width: 72px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1280px) {
+    .reco-page .rp-row {
+        grid-template-columns:
+            minmax(210px, 2fr)
+            minmax(100px, 1fr)
+            84px
+            56px
+            72px
+            76px
+            minmax(170px, 2fr)
+            116px;
+        gap: 12px;
+    }
+}
+
+/* Below this the table no longer fits: every row becomes a card */
+@media (max-width: 1100px) {
+    .reco-page .rp-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .reco-page .rp-kpi:nth-child(3) {
+        border-left: none;
+    }
+
+    .reco-page .rp-kpi:nth-child(n + 3) {
+        border-top: 1px solid var(--line);
+    }
+
+    .reco-page .rp-head {
+        display: none;
+    }
+
+    .reco-page .rp-list.list-view .rp-item {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas:
+            "product product product risk"
+            "price   stock   days    sales"
+            "reco    reco    reco    reco"
+            "actions actions actions actions";
+        gap: 12px;
+        align-items: start;
+        padding: 14px 16px;
+    }
+
+    .reco-page .list-view .rp-product { grid-area: product; }
+    .reco-page .list-view .rp-risk { grid-area: risk; align-items: flex-end; text-align: right; }
+    .reco-page .list-view .rp-reco { grid-area: reco; padding-top: 10px; border-top: 1px solid var(--line); }
+    .reco-page .list-view .rp-actions { grid-area: actions; }
+
+    .reco-page .list-view .rp-cell.rp-num {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .reco-page .list-view .rp-cell.rp-num::before {
+        content: attr(data-label);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--ink-subtle);
+        margin-bottom: 2px;
+    }
+
+    .reco-page .list-view .rp-meter {
+        width: 72px;
+    }
+}
+
+@media (max-width: 768px) {
+    .reco-page .rp-header {
+        padding: 16px;
+    }
+
+    .reco-page .rp-header-actions {
+        width: 100%;
+    }
+
+    .reco-page .rp-header-actions .rp-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .reco-page .rp-kpi {
+        padding: 12px 14px;
+    }
+
+    .reco-page .rp-kpi-value {
+        font-size: 1.2rem;
+    }
+
+    .reco-page .rp-toolbar,
+    .reco-page .rp-toolbar-right {
+        width: 100%;
+    }
+
+    .reco-page .rp-tabs {
+        width: 100%;
+    }
+
+    .reco-page .rp-search {
+        flex: 1;
+    }
+
+    .reco-page .rp-search input {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .reco-page .rp-list.list-view .rp-item,
+    .reco-page .rp-list.card-view .rp-item {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas:
+            "product product"
+            "risk    risk"
+            "price   stock"
+            "days    sales"
+            "reco    reco"
+            "actions actions";
+    }
+
+    .reco-page .rp-risk {
+        align-items: flex-start !important;
+        text-align: left !important;
+        flex-direction: row !important;
+        flex-wrap: wrap;
+        gap: 4px 10px !important;
+    }
+
+    .reco-page .rp-actions .rp-btn {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Recommendation modals: #forecastModal (details) and #applyModal
+   Content comes from Reco.js unchanged; this only restyles it.
+   The modals sit outside .reco-page, so they are scoped by .rp-modal.
+   ═══════════════════════════════════════════════════════════════════ */
+.rp-modal {
+    --m-brand: #2c5530;
+    --m-brand-strong: #1f3d23;
+    --m-brand-tint: #eaf0ea;
+    --m-accent: #8B4513;
+    --m-accent-tint: #f6ece3;
+    --m-ink: #16221a;
+    --m-muted: #61706a;
+    --m-subtle: #8b968f;
+    --m-line: #e4e7e4;
+    --m-line-strong: #cfd4cf;
+    --m-canvas: #f6f7f6;
+    --m-positive: #15803d;
+    --m-positive-tint: #e7f4ec;
+    --m-negative: #b42318;
+    --m-negative-tint: #fdeceb;
+    --m-warning: #b45309;
+    --m-warning-tint: #fdf2e3;
+}
+
+.rp-modal .modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(22, 34, 26, 0.28);
+    color: var(--m-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+#applyModal.rp-modal .modal-dialog {
+    max-width: 540px;
+}
+
+/* Header / footer chrome */
+.rp-modal .rp-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px 12px 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--m-line);
+}
+
+.rp-modal .rp-modal-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+/* Forecast: small label; the product name inside the body is the real title */
+.rp-modal .rp-modal-kicker {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--m-muted);
+}
+
+.rp-modal .rp-modal-head .btn-close {
+    font-size: 11px;
+    opacity: 0.5;
+}
+
+.rp-modal .modal-body {
+    padding: 18px 24px 20px;
+}
+
+.rp-modal .rp-modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 24px 16px;
+    border-top: 1px solid var(--m-line);
+    background: #fff;
+}
+
+.rp-modal .rp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 14px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.rp-modal .rp-btn-primary {
+    background: var(--m-brand);
+    color: #fff;
+}
+
+.rp-modal .rp-btn-primary:hover:not(:disabled) {
+    background: var(--m-brand-strong);
+}
+
+.rp-modal .rp-btn-primary:disabled {
+    opacity: 0.6;
+}
+
+.rp-modal .rp-btn-ghost-dark {
+    background: #fff;
+    border-color: var(--m-line-strong);
+    color: var(--m-ink);
+}
+
+.rp-modal .rp-btn-ghost-dark:hover {
+    background: var(--m-canvas);
+}
+
+/* ─── Product heading + tabs ─── */
+#forecastModal .forecast-header-info h4 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 2px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#forecastModal .forecast-header-info .badge-priority {
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+#forecastModal .forecast-subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: var(--m-muted);
+}
+
+/* Tabs stay visible while the long tabs scroll */
+#forecastModal .forecast-tabs {
+    position: sticky;
+    top: -18px;
+    z-index: 3;
+    margin: 14px -24px 0;
+    padding: 0 24px;
+    background: #fff;
+    border-bottom: 1px solid var(--m-line);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+#forecastModal .forecast-tab {
+    padding: 10px 14px;
+    margin-bottom: -1px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--m-muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#forecastModal .forecast-tab:hover {
+    color: var(--m-ink);
+}
+
+#forecastModal .forecast-tab.active {
+    color: var(--m-brand);
+    font-weight: 650;
+    border-bottom-color: var(--m-brand);
+}
+
+#forecastModal .forecast-tab-content {
+    padding-top: 18px;
+}
+
+/* Section headings used across tabs */
+#forecastModal .chart-title,
+#forecastModal .section-subtitle,
+#forecastModal .forecast-tab-content h5,
+#forecastModal .forecast-tab-content h6 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--m-ink);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* ─── Tab 1: forecast ─── */
+#forecastModal .chart-container {
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    box-shadow: none;
+    background: #fff;
+}
+
+#forecastModal .forecast-legend {
+    font-size: 12.5px;
+    color: var(--m-muted);
+}
+
+#forecastModal .month-boxes {
+    gap: 10px;
+}
+
+#forecastModal .month-box {
+    padding: 12px 14px;
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+    text-align: left;
+}
+
+#forecastModal .month-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--m-muted);
+}
+
+#forecastModal .month-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#forecastModal .month-change {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+#forecastModal .month-change.positive { color: var(--m-positive); }
+#forecastModal .month-change.negative { color: var(--m-negative); }
+
+/* ─── Tab 2: strategy plans ─── */
+#forecastModal .ctx-pill {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--m-canvas);
+    border: 1px solid var(--m-line);
+    color: var(--m-muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#forecastModal .strategy-plan-card {
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#forecastModal .strategy-plan-card:hover {
+    border-color: var(--m-line-strong);
+}
+
+#forecastModal .strategy-plan-card.selected,
+#forecastModal .strategy-plan-card.active,
+#forecastModal .strategy-plan-card[aria-pressed="true"] {
+    border-color: var(--m-brand);
+    box-shadow: inset 0 0 0 1px var(--m-brand);
+    background: #fff;
+}
+
+#forecastModal .strategy-plan-card:focus-visible {
+    outline: 2px solid var(--m-brand);
+    outline-offset: 2px;
+}
+
+#forecastModal .strategy-plan-rank {
+    background: var(--m-canvas);
+    color: var(--m-muted);
+    border: 1px solid var(--m-line);
+    font-weight: 700;
+}
+
+#forecastModal .strategy-plan-card.selected .strategy-plan-rank,
+#forecastModal .strategy-plan-card.active .strategy-plan-rank,
+#forecastModal .strategy-plan-card[aria-pressed="true"] .strategy-plan-rank {
+    background: var(--m-brand);
+    border-color: var(--m-brand);
+    color: #fff;
+}
+
+#forecastModal .strategy-plan-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#forecastModal .strategy-selected-label {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--m-brand-tint);
+    color: var(--m-brand);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* "Why this works": a quiet note, not a warning */
+#forecastModal .strategy-why {
+    background: var(--m-canvas);
+    border: none;
+    border-left: 3px solid var(--m-brand);
+    border-radius: 0 8px 8px 0;
+    color: var(--m-ink);
+    font-size: 13px;
+}
+
+#forecastModal .steps-title,
+#forecastModal .actions-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#forecastModal .steps-list {
+    font-size: 13px;
+    color: var(--m-ink);
+    line-height: 1.55;
+}
+
+#forecastModal .strategy-impact {
+    background: var(--m-positive-tint);
+    border: none;
+    border-radius: 8px;
+}
+
+#forecastModal .impact-label {
+    color: var(--m-muted);
+    font-size: 13px;
+}
+
+#forecastModal .impact-value {
+    color: var(--m-positive);
+    font-weight: 700;
+}
+
+/* ─── Tab 3: profit ─── */
+#forecastModal .price-box {
+    padding: 14px;
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+    text-align: left;
+}
+
+#forecastModal .price-box.highlight {
+    border-color: var(--m-brand);
+    box-shadow: inset 0 0 0 1px var(--m-brand);
+    background: #fff;
+}
+
+#forecastModal .price-box.cost-box {
+    background: var(--m-canvas);
+    border-color: var(--m-line);
+}
+
+#forecastModal .price-box-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--m-muted);
+}
+
+#forecastModal .price-box-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#forecastModal .price-box-sub {
+    font-size: 12px;
+    color: var(--m-muted);
+}
+
+#forecastModal .profitability-banner {
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+#forecastModal .profit-table,
+#forecastModal .stock-impact-table {
+    font-size: 13px;
+    border-collapse: collapse;
+}
+
+#forecastModal .profit-table th,
+#forecastModal .stock-impact-table th {
+    background: var(--m-canvas);
+    color: var(--m-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0;
+    text-transform: none;
+    border-bottom: 1px solid var(--m-line);
+}
+
+#forecastModal .profit-table td,
+#forecastModal .stock-impact-table td {
+    border-bottom: 1px solid var(--m-line);
+    color: var(--m-ink);
+}
+
+#forecastModal .profit-table tr.baseline-row td {
+    background: #fafbfa;
+    color: var(--m-muted);
+}
+
+#forecastModal .text-profit { color: var(--m-positive) !important; }
+#forecastModal .text-loss { color: var(--m-negative) !important; }
+
+/* ─── Tab 4: model details ─── */
+#forecastModal .detail-card {
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+}
+
+#forecastModal .detail-row {
+    font-size: 13.5px;
+    border-bottom-color: var(--m-line);
+}
+
+#forecastModal .feature-name {
+    font-size: 13px;
+    color: var(--m-ink);
+}
+
+#forecastModal .feature-bar-wrap {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--m-line);
+}
+
+/* One colour for every factor: the length carries the meaning */
+#forecastModal .feature-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--m-brand) !important;
+}
+
+#forecastModal .feature-pct {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+/* ─── Apply modal: strategy choices ─── */
+#applyModal #applyContent > h6 {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--m-ink);
+}
+
+#applyModal #applyContent > h6 strong {
+    font-weight: 700;
+}
+
+#applyModal .strategies-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#applyModal .strategy-option {
+    position: relative;
+    margin: 0;
+    padding: 12px 14px 12px 44px;
+    border: 1px solid var(--m-line);
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Radio circle so the choice reads as "pick one" */
+#applyModal .strategy-option::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 15px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid var(--m-line-strong);
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#applyModal .strategy-option:hover {
+    border-color: var(--m-line-strong);
+}
+
+#applyModal .strategy-option.selected {
+    border-color: var(--m-brand);
+    box-shadow: inset 0 0 0 1px var(--m-brand);
+    background: #fff;
+}
+
+#applyModal .strategy-option.selected::before {
+    border-color: var(--m-brand);
+    box-shadow: inset 0 0 0 4px #fff;
+    background: var(--m-brand);
+}
+
+#applyModal .strategy-option-header {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 8px;
+}
+
+#applyModal .strategy-option-header strong {
+    margin-right: auto;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--m-ink);
+}
+
+#applyModal .priority-badge {
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+}
+
+#applyModal .discount-pill {
+    padding: 1px 9px;
+    border-radius: 999px;
+    background: var(--m-accent-tint) !important;
+    color: var(--m-accent) !important;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#applyModal .strategy-option-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    margin-top: 4px;
+    font-size: 12.5px;
+    color: var(--m-muted);
+}
+
+#applyModal .strategy-option-price {
+    margin-top: 4px;
+    font-size: 13px !important;
+    font-weight: 600;
+    color: var(--m-ink) !important;
+}
+
+#applyModal .form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--m-ink);
+}
+
+#applyModal .form-control,
+#applyModal .form-select {
+    border: 1px solid var(--m-line-strong);
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: none;
+}
+
+#applyModal .form-control:focus,
+#applyModal .form-select:focus {
+    border-color: var(--m-brand);
+    box-shadow: 0 0 0 3px var(--m-brand-tint);
+}
+
+@media (max-width: 576px) {
+    .rp-modal .modal-dialog {
+        margin: 10px;
+    }
+
+    .rp-modal .modal-body {
+        padding: 16px;
+    }
+
+    #forecastModal .forecast-tabs {
+        margin: 12px -16px 0;
+        padding: 0 16px;
+        top: -16px;
+    }
+}

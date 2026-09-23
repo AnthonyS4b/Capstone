@@ -125,38 +125,31 @@ try {
     error_log('Notification: low-stock query failed — ' . $e->getMessage());
 }
 
-// ─── 4. Expired products — already past expiration date ────────────────
+// ─── 4. Expired stock removed — written off automatically in the last 7 days ─
+// Expired batches leave inventory on their own (includes/inventory_expiry.php),
+// so products no longer sit in an "expired" state; report the write-offs instead.
 try {
     $expiredStmt = $pdo->query("
-        SELECT
-            p.name            AS product,
-            p.expiration_date AS exp_date,
-            DATEDIFF(CURDATE(), p.expiration_date) AS days_past
-        FROM products p
-        WHERE p.deleted_at IS NULL
-          AND p.archived_at IS NULL
-          AND p.expiration_date IS NOT NULL
-          AND p.expiration_date < CURDATE()
-        ORDER BY p.expiration_date ASC
+        SELECT h.id, h.product_name, h.changes, h.created_at
+        FROM inventory_history h
+        WHERE h.action = 'expired'
+          AND h.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        ORDER BY h.created_at DESC
         LIMIT 6
     ");
-    $expired_products = $expiredStmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($expired_products as $ep) {
-        $daysPast = (int)$ep['days_past'];
-        $dateStr  = date('M d, Y', strtotime($ep['exp_date']));
+    foreach ($expiredStmt->fetchAll(PDO::FETCH_ASSOC) as $ex) {
         $_notif_alerts[] = [
-            'id'   => 'expired-' . preg_replace('/\W/', '-', strtolower($ep['product'])),
+            'id'   => 'expired-removed-' . (int)$ex['id'],
             'type' => 'critical',
             'icon' => 'fa-calendar-times',
-            'title'=> $ep['product'],
-            'body' => 'Expired ' . $daysPast . ' day' . ($daysPast != 1 ? 's' : '') . ' ago ('. $dateStr .')',
-            'time' => 'Expired',
+            'title'=> $ex['product_name'] ?: 'Expired stock',
+            'body' => preg_replace('/^Expired stock removed: -/', 'Removed ', (string)$ex['changes']),
+            'time' => date('M d', strtotime($ex['created_at'])),
             'read' => false,
         ];
     }
 } catch (PDOException $e) {
-    error_log('Notification: expired-products query failed — ' . $e->getMessage());
+    error_log('Notification: expired-stock query failed — ' . $e->getMessage());
 }
 
 // ─── 5. Expiring soon — within 30 days ─────────────────────────────────

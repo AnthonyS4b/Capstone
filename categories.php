@@ -33,10 +33,10 @@ if ($toast_message) {
 <html lang="en">
 
 <head>
-    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico?v=20260923">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=20260923">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=20260923">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/images/apple-touch-icon.png?v=20260923">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(security_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
@@ -45,14 +45,16 @@ if ($toast_message) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="assets/css/reco.css">
-    <link rel="stylesheet" href="assets/css/categories.css">
+    <link rel="stylesheet" href="assets/css/categories.css?v=<?= filemtime(__DIR__ . '/assets/css/categories.css') ?>">
     <link rel="stylesheet" href="assets/css/transitions.css">
-    <link rel="stylesheet" href="assets/css/notif.css">
+    <link rel="stylesheet" href="assets/css/notif.css?v=<?= filemtime(__DIR__ . '/assets/css/notif.css') ?>">
     <link rel="stylesheet" href="assets/css/responsive.css">
-    <script src="assets/js/responsive.js"></script>
+    <link rel="stylesheet" href="assets/css/inventory-ui.css?v=<?= filemtime(__DIR__ . '/assets/css/inventory-ui.css') ?>">
+    <script src="assets/js/responsive.js?v=<?= filemtime(__DIR__ . '/assets/js/responsive.js') ?>"></script>
+    <link rel="stylesheet" href="assets/css/sidebar.css?v=<?= filemtime(__DIR__ . '/assets/css/sidebar.css') ?>">
 </head>
 
-<body class="page-loading" onload="document.body.classList.remove('page-loading')">
+<body class="page-loading inv-ui" onload="document.body.classList.remove('page-loading')">
     <button class="mobile-menu-btn" id="mobileMenuBtn">
         <i class="fas fa-bars"></i>
     </button>
@@ -64,97 +66,14 @@ if ($toast_message) {
 
     <div class="toast-container" id="toastContainer"></div>
 
-    <!-- SIDEBAR — UNCHANGED -->
-    <div class="sidebar" id="sidebar">
-        <div class="store-brand">
-            <div class="logo-container">
-                <img src="assets/images/sidebar.jpg" alt="Espenida's Logo" class="store-logo-img">
-            </div>
-            <div class="store-name">
-                <span class="store-name-main">Espenida's</span>
-                <span class="store-name-sub">PET & POULTRY SUPPLY</span>
-            </div>
-        </div>
-
-        <button class="collapse-btn" id="collapseBtn">
-            <i class="fas fa-chevron-left" id="collapseIcon"></i>
-            <span>Espenida Store</span>
-        </button>
-
-        <div class="sidebar-user-info">
-            <div class="user-avatar-small">
-                <?php echo strtoupper(substr($first_name, 0, 1) . substr($last_name, 0, 1)); ?>
-            </div>
-            <div class="user-details-small">
-                <h4><?php echo htmlspecialchars($first_name . ' ' . $last_name); ?></h4>
-                <span><?php echo htmlspecialchars($position ?: ucfirst($role)); ?></span>
-            </div>
-        </div>
-
-        <div class="section-title"><span>DASHBOARD</span></div>
-        <a href="dashboard.php" class="dashboard-link">
-            <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-        </a>
-
-        <div class="section-title"><span>POINT OF SALE</span></div>
-        <div class="dropdown">
-            <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-cash-register"></i><span>Point of Sale</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="PosUI_db.php"><i class="fas fa-cash-register"></i>Point of Sale</a>
-                </li>
-                <?php if ($is_owner): ?>
-                <li><a class="dropdown-item" href="sales_transactions.php"><i class="fas fa-history"></i>Sales
-                        Transactions</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-
-        <div class="section-title"><span>INVENTORY MANAGEMENT</span></div>
-        <div class="dropdown">
-            <button class="dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-box"></i><span>Inventory Management</span>
-            </button>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="categories.php"><i class="fa-solid fa-layer-group"></i>Inventory</a></li> 
-                <li><a class="dropdown-item" href="Archive_products.php"><i class="fa-solid fa-box-archive"></i> Archive</a></li> 
-                <li><a class="dropdown-item" href="Inventory_management.php"><i class="fa-solid fa-arrow-trend-down"></i>Log History</a></li> 
-            </ul>
-        </div>
-
-        <?php if ($is_owner): ?>
-        <div class="section-title"><span>RECOMMENDATIONS</span></div>
-        <button class="recommendation-btn" id="recommendationBtn">
-            <i class="fas fa-lightbulb"></i><span>Recommendations</span>
-        </button>
-        <?php endif; ?>
-
-        <?php if ($is_owner): ?>
-            <div class="section-title"><span>SYSTEM & ADMIN</span></div>
-            <div class="dropdown">
-                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-user"></i><span>System & Admin</span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#roleManagementModal" data-bs-toggle="modal" data-bs-target="#roleManagementModal"><i class="fas fa-lock"></i> User Roles</a></li>
-                    <li><a class="dropdown-item" href="admin_data_tools.php"><i class="fas fa-database"></i> Backup &amp; Export</a></li>
-                </ul>
-            </div>
-        <?php endif; ?>
-
-        <div class="spacer"></div>
-        <button class="logout-btn" id="logoutBtn">
-            <i class="fas fa-sign-out-alt"></i><span>Log out</span>
-        </button>
-    </div>
+    <?php include __DIR__ . '/includes/sidebar.php'; ?>
 
     <!-- MAIN CONTENT AREA -->
     <div class="main-content">
         <div class="welcome-banner">
             <div class="welcome-text">
-                <h1><i class="fas fa-paw me-2"></i>Inventory</h1>
-                <p>Manage your pet & poultry product categories and inventory</p>
+                <h1>Inventory</h1>
+                <p>Pick a category to see and manage its products.</p>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <!-- Notification Bell -->
@@ -185,17 +104,17 @@ if ($toast_message) {
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"><i class="fas fa-layer-group me-2" style="color: #4a6fa5;"></i>All Categories</h5>
-            <div>
-                <a href="archive_products.php" class="btn btn-outline-secondary btn-sm me-2">
-                    <i class="fas fa-box-archive me-1"></i>View Archive
+        <div class="inv-toolbar">
+            <h2 class="inv-section-title">Categories</h2>
+            <div class="inv-toolbar-actions">
+                <a href="archive_products.php" class="inv-btn inv-btn-quiet">
+                    <i class="fas fa-box-archive"></i>Archive
                 </a>
-                <button class="btn btn-outline-danger btn-sm me-2" onclick="showExpiredProducts()">
-                    <i class="fas fa-exclamation-triangle me-1"></i>Expired Products
+                <button class="inv-btn inv-btn-quiet inv-btn-danger-text" onclick="showExpiredProducts()">
+                    <i class="fas fa-hourglass-end"></i>Expired products
                 </button>
-                <button class="btn btn-primary btn-sm" onclick="openCategoryModal()">
-                    <i class="fas fa-plus-circle me-1"></i>New Category
+                <button class="inv-btn inv-btn-primary" onclick="openCategoryModal()">
+                    <i class="fas fa-plus"></i>New category
                 </button>
             </div>
         </div>
@@ -212,12 +131,11 @@ if ($toast_message) {
         <div class="products-section mt-4" id="productsSection" style="display: none;">
             <div class="section-header">
                 <h5>
-                    <i class="fas fa-box me-2" style="color: #4a6fa5;"></i>
-                    Products in <span id="selectedCategoryName">Category</span>
+                    <span id="selectedCategoryName">Category</span>
                     <span id="selectedCategoryBadge" class="category-badge" style="display: none;"></span>
                 </h5>
-                <button id="addProductBtn" class="btn btn-sm btn-primary" onclick="openProductModal()">
-                    <i class="fas fa-plus me-1"></i>Add Product to <span id="addProductCategoryName">Category</span>
+                <button id="addProductBtn" class="inv-btn inv-btn-primary" onclick="openProductModal()">
+                    <i class="fas fa-plus"></i>Add product<span id="addProductCategoryName" hidden>Category</span>
                 </button>
             </div>
 
@@ -225,23 +143,21 @@ if ($toast_message) {
                 <table class="product-table">
                     <thead>
                         <tr>
-                            <th style="width:7%;">Image</th>
-                            <th style="width:18%;">Product</th>
+                            <th style="width:26%;">Product</th>
                             <th style="width:9%;">Unit</th>
-                            <th style="width:9%;">Cost Price</th>
-                            <th style="width:9%;">Selling Price</th>
-                            <th style="width:9%;">Stock</th>
-                            <th style="width:9%;">Days In</th>
-                            <th style="width:10%;">Expiry</th>
-                            <th style="width:10%;">Status</th>
-                            <th style="width:10%;">Actions</th>
+                            <th class="inv-num" style="width:9%;">Cost</th>
+                            <th class="inv-num" style="width:9%;">Price</th>
+                            <th class="inv-num" style="width:7%;">Stock</th>
+                            <th class="inv-num" style="width:8%;">In stock</th>
+                            <th style="width:12%;">Expiry</th>
+                            <th style="width:8%;">Status</th>
+                            <th style="width:12%;"><span class="visually-hidden">Actions</span></th>
                         </tr>
                     </thead>
                     <tbody id="productsTableBody">
                         <tr>
-                            <td colspan="10" class="text-center py-4">
-                                <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
-                                <p class="text-muted">Select a category to view its products</p>
+                            <td colspan="9" class="inv-empty-cell">
+                                <p>Select a category to view its products</p>
                             </td>
                         </tr>
                     </tbody>
@@ -305,66 +221,33 @@ if ($toast_message) {
     </div>
 
     <!-- Product Modal — original + ADDED: unit, cost_price, expiration, smart stock/barcode -->
-    <div class="modal fade" id="productModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade inv-form-modal" id="productModal" tabindex="-1" aria-labelledby="productModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable inv-form-wide">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="productModalTitle">
-                        <i class="fas fa-box me-2"></i>Add New Product
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="inv-form-head">
+                    <div>
+                        <h2 class="inv-form-title" id="productModalTitle">Add product</h2>
+                        <p class="inv-form-sub">Fields marked <span class="inv-req">*</span> are required.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="productForm">
+                    <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
                         <input type="hidden" id="productId">
 
-                        <div class="mb-3">
-                            <label class="form-label">Category <span class="text-danger">*</span></label>
-                            <select class="form-select" id="productCategory" required onchange="onCategoryChange()">
-                                <option value="">Select Category</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Product Name <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="productName" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" id="productDescription" rows="2"></textarea>
-                        </div>
-
-                        <!-- Product Image Upload -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-camera me-1" style="color:#8B4513;"></i>
-                                Product Image
-                                <span class="text-muted" style="font-size:11px;">(JPG, PNG, WebP — max 2MB)</span>
-                            </label>
-                            <input type="hidden" id="productImage" value="">
-                            <div class="image-upload-zone" id="imageUploadZone">
-                                <div class="image-preview" id="imagePreview" style="display:none;">
-                                    <img id="imagePreviewImg" src="" alt="Product preview">
-                                    <button type="button" class="image-remove-btn" onclick="removeProductImage()" title="Remove image">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                        <!-- Basics -->
+                        <section class="inv-form-section">
+                            <div class="inv-form-grid">
+                                <div class="inv-field">
+                                    <label class="form-label" for="productCategory">Category <span class="inv-req">*</span></label>
+                                    <select class="form-select" id="productCategory" required onchange="onCategoryChange()">
+                                        <option value="">Select category</option>
+                                    </select>
                                 </div>
-                                <div class="image-upload-placeholder" id="imageUploadPlaceholder">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>Drag & drop or <span class="text-primary">browse</span></p>
-                                    <small>JPG, PNG, WebP — max 2MB</small>
-                                </div>
-                                <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
-                            </div>
-                        </div>
-
-                        <!-- Unit / Measurement — Two-field approach -->
-                        <input type="hidden" id="productUnit" value="">
-                        <div class="mb-3">
-                            <label class="form-label">Unit / Measurement <span class="text-danger">*</span></label>
-                            <div class="row g-2 align-items-start">
-                                <div class="col-md-12">
+                                <div class="inv-field">
+                                    <!-- Unit / Measurement — the select sets the hidden productUnit -->
+                                    <input type="hidden" id="productUnit" value="">
+                                    <label class="form-label" for="productUnitType">Sold by <span class="inv-req">*</span></label>
                                     <select class="form-select" id="productUnitType" required onchange="onUnitTypeChange()">
                                         <option value="">Select unit…</option>
                                         <option value="Per Piece">Per Piece</option>
@@ -380,187 +263,203 @@ if ($toast_message) {
                                     </select>
                                 </div>
                             </div>
-                            <div id="unitPreview" class="unit-preview mt-2" style="display:none;"></div>
-                            <div id="unitHint" class="unit-hint mt-1" style="display:none;"></div>
-                        </div>
+                            <div id="unitPreview" class="unit-preview" style="display:none;"></div>
+                            <div id="unitHint" class="unit-hint" style="display:none;"></div>
 
-                        <div class="row">
-                            <!-- ADDED: Cost Price -->
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Cost Price (₱)</label>
-                                <input type="number" class="form-control" id="productCostPrice" step="0.01" min="0"
-                                    placeholder="0.00">
-                                <small class="text-muted">Supplier cost</small>
+                            <div class="inv-field">
+                                <label class="form-label" for="productName">Product name <span class="inv-req">*</span></label>
+                                <input type="text" class="form-control" id="productName" required autocomplete="off">
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Selling Price (₱) <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="productPrice" step="0.01" min="0"
-                                    required>
+                            <div class="inv-field">
+                                <label class="form-label" for="productDescription">Description <span class="inv-optional">optional</span></label>
+                                <textarea class="form-control" id="productDescription" rows="2"></textarea>
                             </div>
-                            <!-- Stock: hidden for weight (auto=1), shown for packaged/medicine -->
-                            <div class="col-md-4 mb-3" id="stockFieldWrapper" style="display:none;">
-                                <label class="form-label">Stock <span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" id="productStock" min="1">
-                                <small class="text-muted">Units in stock</small>
-                            </div>
-                        </div>
+                        </section>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">SKU (Stock Keeping Unit)</label>
-                                <input type="text" class="form-control" id="productSku" placeholder="e.g., DOG-001">
-                                <small class="text-muted">Leave empty to auto-generate</small>
+                        <!-- Photo -->
+                        <section class="inv-form-section">
+                            <h3 class="inv-form-section-title">Photo <span class="inv-optional">JPG, PNG or WebP · up to 2 MB</span></h3>
+                            <input type="hidden" id="productImage" value="">
+                            <div class="image-upload-zone" id="imageUploadZone">
+                                <div class="image-preview" id="imagePreview" style="display:none;">
+                                    <img id="imagePreviewImg" src="" alt="Product preview">
+                                    <button type="button" class="image-remove-btn" onclick="removeProductImage()" title="Remove photo" aria-label="Remove photo">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="image-upload-placeholder" id="imageUploadPlaceholder">
+                                    <i class="fas fa-image"></i>
+                                    <p><span class="inv-link">Choose a photo</span> or drag it here</p>
+                                </div>
+                                <input type="file" id="imageFileInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
                             </div>
-                            <!-- Barcode: optional for weight, required for packaged/medicine -->
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">
-                                    Barcode
-                                    <span id="barcodeRequiredStar" class="text-danger" style="display:none;"> *</span>
-                                    <span id="barcodeOptionalTag" class="text-muted" style="font-size:11px;">
-                                        (optional)</span>
-                                </label>
-                                <input type="text" class="form-control" id="productBarcode"
-                                    placeholder="Scan or enter barcode">
-                                <small class="text-muted">For scanner use</small>
-                            </div>
-                        </div>
+                        </section>
 
-                        <!-- ADDED: Expiration Date — hidden for accessories -->
-                        <div class="mb-3" id="expirationRow">
-                            <label class="form-label">
-                                <i class="fas fa-calendar-times me-1 text-warning"></i>
-                                Expiration Date
-                                <span class="text-muted" style="font-size:11px;">(leave blank if no expiration)</span>
-                            </label>
-                            <div class="row">
-                                <div class="col-md-6">
+                        <!-- Price & stock -->
+                        <section class="inv-form-section">
+                            <h3 class="inv-form-section-title">Price &amp; stock</h3>
+                            <div class="inv-form-grid inv-form-grid-3">
+                                <div class="inv-field">
+                                    <label class="form-label" for="productCostPrice">Cost <span class="inv-optional">optional</span></label>
+                                    <div class="inv-money">
+                                        <span>₱</span>
+                                        <input type="text" class="form-control" id="productCostPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="inv-field">
+                                    <label class="form-label" for="productPrice">Selling price <span class="inv-req">*</span></label>
+                                    <div class="inv-money">
+                                        <span>₱</span>
+                                        <input type="text" class="form-control" id="productPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00" required>
+                                    </div>
+                                </div>
+                                <!-- Stock: hidden for weight (auto=1), shown for packaged/medicine -->
+                                <div class="inv-field" id="stockFieldWrapper" style="display:none;">
+                                    <label class="form-label" for="productStock">Stock <span class="inv-req">*</span></label>
+                                    <input type="text" class="form-control" id="productStock" inputmode="numeric" data-numeric="int" maxlength="7" autocomplete="off" placeholder="0">
+                                </div>
+                            </div>
+                            <p class="inv-hint" id="marginHint" aria-live="polite"></p>
+                        </section>
+
+                        <!-- Codes -->
+                        <section class="inv-form-section">
+                            <h3 class="inv-form-section-title">Codes</h3>
+                            <div class="inv-form-grid">
+                                <div class="inv-field">
+                                    <label class="form-label" for="productSku">SKU</label>
+                                    <input type="text" class="form-control" id="productSku" placeholder="e.g. DOG-001" autocomplete="off">
+                                    <span class="inv-hint">Leave empty to generate one</span>
+                                </div>
+                                <!-- Barcode: optional for weight, required for packaged/medicine -->
+                                <div class="inv-field">
+                                    <label class="form-label" for="productBarcode">
+                                        Barcode<span id="barcodeRequiredStar" class="inv-req" style="display:none;"> *</span>
+                                        <span id="barcodeOptionalTag" class="inv-optional">optional</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="productBarcode" placeholder="Scan or type" autocomplete="off">
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Dates -->
+                        <section class="inv-form-section">
+                            <h3 class="inv-form-section-title">Dates</h3>
+                            <div class="inv-form-grid">
+                                <!-- Expiration: hidden for accessories -->
+                                <div class="inv-field" id="expirationRow">
+                                    <label class="form-label" for="productExpiration">Expires <span class="inv-optional">optional</span></label>
                                     <input type="date" class="form-control" id="productExpiration">
+                                    <div id="expirationWarning" class="inv-hint" style="display:none;"></div>
                                 </div>
-                                <div class="col-md-6 d-flex align-items-center">
-                                    <div id="expirationWarning" style="font-size:12px; display:none;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ADDED: Date Added for ML Tracking -->
-                        <div class="mb-3">
-                            <label class="form-label">
-                                <i class="fas fa-calendar-plus me-1 text-info"></i>
-                                Date Added
-                                <span class="text-muted" style="font-size:11px;">(for ML tracking &mdash; defaults to
-                                    today)</span>
-                            </label>
-                            <div class="row">
-                                <div class="col-md-6">
+                                <div class="inv-field">
+                                    <label class="form-label" for="productDateAdded">Received</label>
                                     <input type="date" class="form-control" id="productDateAdded">
-                                </div>
-                                <div class="col-md-6 d-flex align-items-center">
-                                    <small class="text-muted"><i class="fas fa-info-circle me-1"></i>Used to calculate
-                                        "Days In Stock" for recommendations</small>
+                                    <span class="inv-hint">Counts the days in stock used by recommendations</span>
                                 </div>
                             </div>
-                        </div>
+                        </section>
 
+                        <button type="submit" hidden></button>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveProduct()">Save Product</button>
+                <div class="inv-form-foot">
+                    <button type="button" class="inv-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="inv-btn inv-btn-primary" onclick="saveProduct()">Save product</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Stock Update Modal — UNCHANGED -->
-    <div class="modal fade" id="stockModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade inv-form-modal" id="stockModal" tabindex="-1" aria-labelledby="stockModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-boxes me-2"></i>Manage Stock & Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="inv-form-head">
+                    <div class="inv-form-head-text">
+                        <h2 class="inv-form-title" id="stockModalTitle">Manage stock</h2>
+                        <p class="inv-form-sub" id="stockProductName"></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="stockForm">
+                    <form id="stockForm" onsubmit="event.preventDefault(); updateStock();">
                         <input type="hidden" id="stockProductId">
-                        <div class="mb-3">
-                            <label class="form-label">Product</label>
-                            <p class="form-control-static fw-bold" id="stockProductName"></p>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                <label class="form-label">Current Stock</label>
-                                <p class="form-control-static" id="currentStock"></p>
+
+                        <!-- Summary: stock on hand + sellable status -->
+                        <div class="inv-stock-summary">
+                            <div>
+                                <span class="inv-summary-label">In stock</span>
+                                <span class="inv-summary-value" id="currentStock"></span>
                             </div>
-                            <div class="col-6">
-                                <label class="form-label">Status</label>
+                            <div class="inv-field inv-status-field">
+                                <label class="form-label" for="stockProductStatus">Status</label>
                                 <select class="form-select" id="stockProductStatus">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
+                                    <option value="active">Active — sold in POS</option>
+                                    <option value="inactive">Inactive — hidden from POS</option>
                                 </select>
                             </div>
                         </div>
-                        <hr>
-                        <div class="mb-3">
-                            <label class="form-label">Stock Action</label>
+
+                        <div class="inv-field">
+                            <label class="form-label" for="stockAction">What do you want to do?</label>
                             <select class="form-select" id="stockAction">
-                                <option value="add">Add Stock</option>
-                                <option value="remove">Remove Stock</option>
-                                <option value="none">None (Update Status Only)</option>
+                                <option value="add">Add stock</option>
+                                <option value="remove">Remove stock</option>
+                                <option value="none">Only change status</option>
                             </select>
                         </div>
-                        
-                        <div id="displayBatchesContainer" class="mb-3" style="display: none;">
-                            <label class="form-label text-muted fw-bold small mb-2"><i class="fas fa-box"></i> Current batches (SELL FIRST = top):</label>
-                            <div id="batchesList" class="d-flex flex-column gap-2 bg-light p-2 rounded" style="max-height: 200px; overflow-y: auto;">
-                                <!-- Batches will be injected here -->
-                            </div>
-                        </div>
 
-                        <div class="mb-3" id="stockQtyContainer">
-                            <label class="form-label" id="qtyLabel" style="font-weight: 600;">Adjustment <span class="text-muted fw-normal" style="font-size:12px;">(+restock / -deduct)</span></label>
-                            <input type="number" class="form-control" id="stockQuantity" min="1" placeholder="Enter quantity">
+                        <div class="inv-field" id="stockQtyContainer">
+                            <label class="form-label" id="qtyLabel" for="stockQuantity">Quantity</label>
+                            <input type="text" class="form-control" id="stockQuantity" inputmode="numeric" data-numeric="int" maxlength="7" autocomplete="off" placeholder="How many units?">
                         </div>
 
                         <div id="batchOptionsContainer" style="display: none;">
-                            <div class="d-flex gap-2 mb-3">
+                            <div class="inv-segmented" role="radiogroup" aria-label="Batch">
                                 <input type="radio" class="btn-check" name="batchAction" id="batchActionNew" value="new" checked>
-                                <label class="btn btn-outline-primary flex-fill" for="batchActionNew">New Batch</label>
-
+                                <label for="batchActionNew">New batch</label>
                                 <input type="radio" class="btn-check" name="batchAction" id="batchActionExisting" value="existing">
-                                <label class="btn btn-outline-success flex-fill" for="batchActionExisting">Same Batch</label>
+                                <label for="batchActionExisting">Add to existing batch</label>
                             </div>
-                            
-                            <div class="mb-3" id="existingBatchContainer" style="display: none;">
-                                <label class="form-label">Select Batch</label>
+
+                            <div class="inv-field" id="existingBatchContainer" style="display: none;">
+                                <label class="form-label" for="existingBatchSelect">Batch</label>
                                 <select class="form-select" id="existingBatchSelect">
                                     <option value="">Loading batches...</option>
                                 </select>
                             </div>
-                            
-                            <div id="newBatchContainer" class="p-3 mb-3 rounded" style="background-color: #f4f6fb; border-left: 4px solid #6b88c4;">
-                                <h6><b>New Batch &mdash; FIFO tracked separately</b></h6>
-                                <p class="text-muted small mb-3">This restock will be a separate batch. The system sells the nearest-expiry / oldest batch first.</p>
-                                
-                                <div class="mb-3" id="batchExpirationRow">
-                                    <label class="form-label" style="font-size: 13px; font-weight: 600; color: #5a6b8c;">Expiry date of this new batch <span class="text-muted fw-normal">(leave blank if none)</span></label>
+
+                            <div id="newBatchContainer" class="inv-field">
+                                <div id="batchExpirationRow">
+                                    <label class="form-label" for="batchExpirationDate">Expiry of this delivery <span class="inv-optional">optional</span></label>
                                     <input type="date" class="form-control" id="batchExpirationDate">
+                                    <span class="inv-hint">Tracked as its own batch — the one expiring soonest is sold first.</span>
                                 </div>
                                 <input type="hidden" id="batchDateAdded" value="<?php echo date('Y-m-d'); ?>">
                             </div>
                         </div>
 
-                        <div class="mb-3" id="removeBatchContainer" style="display: none;">
-                            <label class="form-label fw-bold">Remove From Batch</label>
+                        <div class="inv-field" id="removeBatchContainer" style="display: none;">
+                            <label class="form-label" for="removeBatchSelect">Take from</label>
                             <select class="form-select" id="removeBatchSelect">
                                 <option value="auto">Automatic FIFO (Oldest First)</option>
                             </select>
                         </div>
 
+                        <!-- Batches on hand -->
+                        <div id="displayBatchesContainer" class="inv-batches" style="display: none;">
+                            <h3 class="inv-form-section-title">Batches on hand <span class="inv-optional">sold top to bottom · click one to change its expiry</span></h3>
+                            <div id="batchesList"></div>
+                            <div id="batchMismatchWarning" class="alert alert-warning py-2 px-3 mt-2 mb-0 small" role="alert" style="display: none;"></div>
+                        </div>
+
+                        <button type="submit" hidden></button>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="updateStock()">Update Stock</button>
+                <div class="inv-form-foot">
+                    <button type="button" class="inv-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="inv-btn inv-btn-primary" onclick="updateStock()">Save</button>
                 </div>
             </div>
         </div>
@@ -575,9 +474,11 @@ if ($toast_message) {
         const currentUser = { id: '<?php echo $user_id; ?>' };
         <?php include 'includes/notifications.php'; ?>
     </script>
-    <script src="assets/js/categories.js"></script>
-    <script src="assets/js/userManagement.js?v=20260814-1"></script>
-    <script src="assets/js/notif.js"></script>
+    <script src="assets/js/numeric-input.js?v=<?= filemtime(__DIR__ . '/assets/js/numeric-input.js') ?>"></script>
+    <script src="assets/js/confirm-dialog.js?v=<?= filemtime(__DIR__ . '/assets/js/confirm-dialog.js') ?>"></script>
+    <script src="assets/js/categories.js?v=<?= filemtime(__DIR__ . '/assets/js/categories.js') ?>"></script>
+    <script src="assets/js/userManagement.js?v=<?= filemtime(__DIR__ . '/assets/js/userManagement.js') ?>"></script>
+    <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {

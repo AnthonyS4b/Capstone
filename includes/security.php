@@ -2,6 +2,10 @@
 
 /** Shared authentication and request-security helpers. */
 
+// The store runs on Philippine time. XAMPP's php.ini defaults to Europe/Berlin,
+// which put PHP's dates 6 hours behind MySQL's (Asia/Singapore, also UTC+8).
+date_default_timezone_set('Asia/Manila');
+
 function security_start_session(): void
 {
     if (session_status() === PHP_SESSION_NONE) {
@@ -15,6 +19,7 @@ function security_start_session(): void
         ]);
         session_start();
     }
+    security_sync_session_user();
 }
 
 function security_csrf_token(): string
@@ -79,6 +84,17 @@ function security_client_key(string $scope, string $subject = ''): string
 {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     return hash('sha256', $scope . '|' . $ip . '|' . $subject);
+}
+
+/**
+ * One wrong-PIN counter per account, shared by every place a PIN is typed:
+ * login, switch account, change my PIN and the owner PIN check. Separate
+ * counters used to add up (5 tries on the login page plus 5 on Switch account).
+ * The id is normalised so "4" and "04" cannot open separate counters.
+ */
+function security_pin_limit_key($userId): string
+{
+    return security_client_key('pin', (string)(int)$userId);
 }
 
 function security_rate_limit(string $key, int $maxAttempts, int $windowSeconds): array
@@ -147,3 +163,62 @@ function security_write_rate_entry($handle, array $entry): void
     fwrite($handle, json_encode($entry));
     fflush($handle);
 }
+
+/**
+ * Re-read the signed-in account from the database once per request.
+ *
+ * The session is a copy taken at sign-in. Without this, an owner demoted to
+ * employee kept owner access, and a deleted account kept working, until they
+ * signed out. Name and position changes now show up straight away too.
+ *
+ * Pages start their own session before loading this file, so it runs from the
+ * bottom of the file as well as from security_start_session().
+ */
+function security_sync_session_user(): void
+{
+    static $synced = false;
+    if ($synced || session_status() !== PHP_SESSION_ACTIVE || empty($_SESSION['user_id'])) return;
+    $synced = true;
+
+    require_once __DIR__ . '/../config/database.php';
+    require_once __DIR__ . '/promotion_pricing.php';
+    require_once __DIR__ . '/inventory_expiry.php';
+
+    try {
+        $pdo = getDBConnection();
+        $st = $pdo->prepare('SELECT first_name, last_name, email, role, position, is_active FROM users WHERE id = ?');
+        $st->execute([(int)$_SESSION['user_id']]);
+        $user = $st->fetch(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        // A database hiccup should not sign everyone out
+        error_log('security_sync_session_user: ' . $e->getMessage());
+        return;
+    }
+
+    if (!$user || (int)$user['is_active'] !== 1) {
+        // Deleted or deactivated: this session no longer belongs to anyone
+        $_SESSION = [];
+        session_regenerate_id(true);
+        return;
+    }
+
+    foreach (['first_name', 'last_name', 'email', 'role', 'position'] as $field) {
+        $_SESSION[$field] = $user[$field];
+    }
+
+    // Promotions that have run out give the regular price back before anything reads a price
+    try {
+        promotions_expire_due($pdo);
+    } catch (Throwable $e) {
+        error_log('promotions_expire_due: ' . $e->getMessage());
+    }
+
+    // Expired batches leave inventory so the fresh stock behind them can be sold
+    try {
+        inventory_expire_batches($pdo);
+    } catch (Throwable $e) {
+        error_log('inventory_expire_batches: ' . $e->getMessage());
+    }
+}
+
+security_sync_session_user();

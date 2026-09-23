@@ -1,0 +1,387 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Shared sidebar (includes/sidebar.php)
+   Loaded last on every page with a sidebar. Older stylesheets still carry
+   their own .sidebar rules, so everything here is scoped to .sidebar.sb.
+   Position/offset is left to responsive.css (mobile slide-in).
+   ═══════════════════════════════════════════════════════════════════ */
+
+.sidebar.sb {
+    --sb-brand: #2c5530;
+    --sb-brand-tint: #eaf0ea;
+    --sb-ink: #16221a;
+    --sb-muted: #61706a;
+    --sb-subtle: #8b968f;
+    --sb-line: #e4e7e4;
+    --sb-hover: #f3f5f3;
+    --sb-danger: #b42318;
+
+    width: 244px;
+    min-width: 244px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    background: #fff;
+    border-right: 1px solid var(--sb-line);
+    box-shadow: none;
+    color: var(--sb-ink);
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    transition: width 0.2s ease, min-width 0.2s ease;
+}
+
+/* ─── Brand ─── */
+.sidebar.sb .sb-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px 14px 16px;
+    border-bottom: 1px solid var(--sb-line);
+    margin: 0;
+}
+
+.sidebar.sb .sb-brand-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+    text-decoration: none;
+    color: inherit;
+}
+
+.sidebar.sb .sb-logo {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+
+.sidebar.sb .sb-brand-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.2;
+}
+
+.sidebar.sb .sb-brand-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sb-brand);
+}
+
+.sidebar.sb .sb-brand-sub {
+    font-size: 11px;
+    color: var(--sb-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.sb .sb-collapse {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    margin: 0;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sb-subtle);
+    font-size: 12px;
+    cursor: pointer;
+    transform: none;
+}
+
+.sidebar.sb .sb-collapse:hover {
+    background: var(--sb-hover);
+    border-color: var(--sb-line);
+    color: var(--sb-ink);
+}
+
+.sidebar.sb .sb-collapse i {
+    margin: 0;
+    font-size: 12px;
+}
+
+/* ─── Navigation ─── */
+.sidebar.sb .sb-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 10px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sb-line) transparent;
+}
+
+.sidebar.sb .sb-group + .sb-group {
+    margin-top: 14px;
+}
+
+.sidebar.sb .sb-group-label {
+    padding: 0 10px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--sb-subtle);
+    white-space: nowrap;
+}
+
+.sidebar.sb .sb-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    height: 36px;
+    margin: 1px 0;
+    padding: 0 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--sb-muted);
+    font-size: 13.5px;
+    font-weight: 500;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: none;
+    transform: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sidebar.sb .sb-link i {
+    width: 18px;
+    flex-shrink: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--sb-subtle);
+    transition: color 0.12s ease;
+}
+
+.sidebar.sb .sb-link span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.sb .sb-link:hover {
+    background: var(--sb-hover);
+    color: var(--sb-ink);
+}
+
+.sidebar.sb .sb-link:hover i {
+    color: var(--sb-ink);
+}
+
+.sidebar.sb .sb-link.active {
+    background: var(--sb-brand-tint);
+    color: var(--sb-brand);
+    font-weight: 600;
+}
+
+.sidebar.sb .sb-link.active i {
+    color: var(--sb-brand);
+}
+
+.sidebar.sb .sb-link:focus-visible,
+.sidebar.sb .sb-collapse:focus-visible {
+    outline: 2px solid var(--sb-brand);
+    outline-offset: 1px;
+}
+
+/* ─── Footer: who is signed in + account actions ─── */
+.sidebar.sb .sb-footer {
+    padding: 10px;
+    border-top: 1px solid var(--sb-line);
+}
+
+.sidebar.sb .sb-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px 8px;
+    min-width: 0;
+}
+
+.sidebar.sb .sb-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sb-brand-tint);
+    color: var(--sb-brand);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sidebar.sb .sb-user-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.sidebar.sb .sb-user-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sb-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.sb .sb-user-role {
+    font-size: 11.5px;
+    color: var(--sb-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar.sb .sb-footer .logout-btn:hover {
+    background: #fdeceb;
+    color: var(--sb-danger);
+}
+
+.sidebar.sb .sb-footer .logout-btn:hover i {
+    color: var(--sb-danger);
+}
+
+/* ─── Collapsed (icon rail) ─── */
+.sidebar.sb.collapsed {
+    width: 68px;
+    min-width: 68px;
+    padding: 0;
+}
+
+.sidebar.sb.collapsed .sb-brand {
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 0 10px;
+}
+
+.sidebar.sb.collapsed .sb-brand-link {
+    flex: none;
+    justify-content: center;
+}
+
+.sidebar.sb.collapsed .sb-brand-text,
+.sidebar.sb.collapsed .sb-link span,
+.sidebar.sb.collapsed .sb-user-text {
+    display: none;
+}
+
+.sidebar.sb.collapsed .sb-nav {
+    padding: 10px 12px;
+}
+
+/* Group labels become thin dividers */
+.sidebar.sb.collapsed .sb-group-label {
+    height: 1px;
+    padding: 0;
+    margin: 0 6px 8px;
+    background: var(--sb-line);
+    font-size: 0;
+}
+
+.sidebar.sb.collapsed .sb-link {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+}
+
+.sidebar.sb.collapsed .sb-footer {
+    padding: 10px 12px;
+}
+
+.sidebar.sb.collapsed .sb-user {
+    justify-content: center;
+    padding: 4px 0 8px;
+}
+
+/* ─── Tablet / phone ─── */
+@media (max-width: 1024px) {
+    .sidebar.sb:not(.collapsed) {
+        width: 224px;
+        min-width: 224px;
+    }
+}
+
+@media (max-width: 768px) {
+    /* The drawer is always full width; collapse makes no sense here */
+    .sidebar.sb,
+    .sidebar.sb.collapsed {
+        width: 260px;
+        min-width: 260px;
+    }
+
+    .sidebar.sb .sb-collapse {
+        display: none !important;
+    }
+}
+
+/* The floating menu button would sit on top of the open drawer's logo;
+   the dimmed backdrop closes the drawer instead. */
+@media (max-width: 768px) {
+    body:has(.sidebar.sb.mobile-open) .mobile-menu-btn {
+        display: none;
+    }
+}
+
+/* Profile picture in the avatar circle */
+.sidebar.sb .sb-avatar {
+    overflow: hidden;
+}
+
+.sidebar.sb .sb-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Close (×) for the phone drawer; hidden on larger screens */
+.sidebar.sb .sb-close {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .sidebar.sb .sb-close {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        margin: 0;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--sb-line);
+        border-radius: 8px;
+        background: #fff;
+        color: var(--sb-muted);
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .sidebar.sb .sb-close:hover,
+    .sidebar.sb .sb-close:focus-visible {
+        background: var(--sb-hover);
+        color: var(--sb-ink);
+        outline: none;
+    }
+}
+
+/* While a modal is open the floating menu button would sit on top of it */
+@media (max-width: 768px) {
+    body.modal-open .mobile-menu-btn {
+        display: none;
+    }
+}
