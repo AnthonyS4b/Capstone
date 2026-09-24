@@ -118,10 +118,10 @@ if ($toast_message) unset($_SESSION['toast_message']);
             // Label, icon tone and element id for each readout. Matches the
             // card structure used on the dashboard.
             $txn_stats = [
-                ['id' => 'totalTransactions', 'tone' => 'count',   'icon' => 'fa-receipt',      'label' => 'Total Transactions', 'value' => '0'],
-                ['id' => 'totalSales',        'tone' => 'revenue', 'icon' => 'fa-peso-sign',    'label' => 'Total Sales',        'value' => '₱0'],
-                ['id' => 'todaySales',        'tone' => 'today',   'icon' => 'fa-calendar-day', 'label' => "Today's Sales",      'value' => '₱0'],
-                ['id' => 'avgTransaction',    'tone' => 'average', 'icon' => 'fa-chart-line',   'label' => 'Average Transaction','value' => '₱0'],
+                ['id' => 'totalTransactions', 'tone' => 'count',   'icon' => 'fa-receipt',      'label' => 'Total Transactions', 'value' => '0',  'note' => 'All time · voided excluded', 'note_icon' => 'fa-clock-rotate-left'],
+                ['id' => 'totalSales',        'tone' => 'revenue', 'icon' => 'fa-peso-sign',    'label' => 'Total Sales',        'value' => '₱0', 'note' => 'All-time revenue',            'note_icon' => 'fa-coins'],
+                ['id' => 'todaySales',        'tone' => 'today',   'icon' => 'fa-calendar-day', 'label' => "Today's Sales",      'value' => '₱0', 'note' => date('l, M j'),                'note_icon' => 'fa-calendar'],
+                ['id' => 'avgTransaction',    'tone' => 'average', 'icon' => 'fa-chart-line',   'label' => 'Average Transaction','value' => '₱0', 'note' => 'Per sale, all time',          'note_icon' => 'fa-scale-balanced'],
             ];
             foreach ($txn_stats as $card): ?>
             <div class="stat-card">
@@ -129,7 +129,11 @@ if ($toast_message) unset($_SESSION['toast_message']);
                     <span class="stat-label"><?php echo $card['label']; ?></span>
                     <span class="stat-icon <?php echo $card['tone']; ?>"><i class="fa-solid <?php echo $card['icon']; ?>"></i></span>
                 </div>
-                <div class="stat-value" id="<?php echo $card['id']; ?>"><?php echo $card['value']; ?></div>
+                <div class="stat-value is-loading" id="<?php echo $card['id']; ?>"><?php echo $card['value']; ?></div>
+                <div class="stat-change is-flat">
+                    <i class="fa-solid <?php echo $card['note_icon']; ?>"></i>
+                    <span><?php echo htmlspecialchars($card['note']); ?></span>
+                </div>
             </div>
             <?php endforeach; ?>
         </div>

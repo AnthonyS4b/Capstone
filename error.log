@@ -2865,3 +2865,111 @@
 
 )
 
+[24-Sep-2026 22:13:40 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 5
+    [name] => IndieTag 'Playful Paws' Smart ID Tag
+    [description] => 
+    [price] => 499
+    [cost_price] => 300
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => PET-70316795
+    [barcode] => 56483513
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 22:13:40 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 92
+    [data] => Array
+        (
+            [id] => 92
+            [sku] => PET-70316795
+            [barcode] => 56483513
+            [unit] => Per Piece
+            [cost_price] => 300
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 22:14:51 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 5
+    [name] => Ollie Pet Bed PLAIN
+    [description] => 
+    [price] => 1250
+    [cost_price] => 900
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => PET-38908193
+    [barcode] => 67353753
+    [image] => assets/uploads/products/prod_1790259291_c64a2958.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 22:14:56 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 93
+    [data] => Array
+        (
+            [id] => 93
+            [sku] => PET-38908193
+            [barcode] => 67353753
+            [unit] => Per Piece
+            [cost_price] => 900
+            [image] => assets/uploads/products/prod_1790259291_c64a2958.webp
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 22:16:22 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 5
+    [name] => Alessi Petnic Pet Travel Organizer
+    [description] => 
+    [price] => 6300
+    [cost_price] => 5000
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => PET-35690610
+    [barcode] => 35486835
+    [image] => assets/uploads/products/prod_1790259382_28c0ff4f.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 22:16:39 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 94
+    [data] => Array
+        (
+            [id] => 94
+            [sku] => PET-35690610
+            [barcode] => 35486835
+            [unit] => Per Piece
+            [cost_price] => 5000
+            [image] => assets/uploads/products/prod_1790259382_28c0ff4f.webp
+            [expiration_date] => 
+        )
+
+)
+

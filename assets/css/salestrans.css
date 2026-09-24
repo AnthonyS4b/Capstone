@@ -877,3 +877,23 @@ body {
     #transactionModal.tx-modal .modal-dialog { margin: 12px; }
     #transactionModal.tx-modal .tx-btn { padding: 0 12px; }
 }
+
+/* ── Stat cards ─────────────────────────────────────────────────────────── */
+#statsContainer .stat-value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    /* Long all-time totals shrink instead of overflowing the card */
+    font-size: clamp(20px, 1.9vw, 28px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: opacity 0.2s ease;
+}
+
+#statsContainer .stat-value.is-loading {
+    opacity: 0.35;
+}
+
+#statsContainer .stat-change {
+    margin-top: 2px;
+}

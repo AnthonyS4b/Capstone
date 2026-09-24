@@ -145,10 +145,18 @@ function loadStats() {
         success  : function (response) {
             if (response.success && response.data) {
                 const s = response.data;
-                document.getElementById('totalTransactions').textContent = s.total_transactions || 0;
-                document.getElementById('totalSales').textContent        = '₱' + parseFloat(s.total_sales || 0).toFixed(2);
-                document.getElementById('todaySales').textContent        = '₱' + parseFloat(s.today_sales || 0).toFixed(2);
-                document.getElementById('avgTransaction').textContent    = '₱' + parseFloat(s.avg_transaction || 0).toFixed(2);
+                // Thousands separators so large totals are readable (₱37,381,674.50)
+                const peso = v => '₱' + Number(v || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const set  = (id, text) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.textContent = text;
+                    el.classList.remove('is-loading');
+                };
+                set('totalTransactions', Number(s.total_transactions || 0).toLocaleString('en-PH'));
+                set('totalSales',        peso(s.total_sales));
+                set('todaySales',        peso(s.today_sales));
+                set('avgTransaction',    peso(s.avg_transaction));
             }
         }
     });
