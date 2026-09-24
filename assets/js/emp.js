@@ -175,7 +175,10 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(() => showReceiptError('Network error — could not load receipt.'));
     }
 
+    let lastReceipt = null;   // the sale shown in the modal, for printing
+
     function renderReceipt(tx, trxId) {
+        lastReceipt = { tx, trxId };
         // ── Meta info ──
         const dateStr = new Date(tx.created_at).toLocaleString('en-PH', {
             year: 'numeric', month: 'short', day: 'numeric',
@@ -268,8 +271,29 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('receiptNotesText').textContent = '';
     }
 
+    // Print only the receipt, in the thermal-roll layout shared with the POS
+    // (window.print() here used to print the whole dashboard page)
     function printReceipt() {
-        window.print();
+        if (!lastReceipt || typeof Receipt === 'undefined') return;
+        const { tx, trxId } = lastReceipt;
+        const ref = tx.gcash_reference
+            || ((tx.notes || '').includes('GCash Ref:') ? tx.notes.replace('GCash Ref:', '').trim() : '');
+        Receipt.print(Receipt.html({
+            number:    String(trxId || '').replace(/^#/, ''),
+            date:      tx.created_at,
+            cashier:   tx.cashier_name,
+            items:     (Array.isArray(tx.items) ? tx.items : []).map(i => ({
+                           name: i.product_name || i.name || 'Item',
+                           price: i.price,
+                           quantity: i.quantity
+                       })),
+            total:     tx.total_amount,
+            payment:   tx.amount_paid,
+            change:    tx.change_amount,
+            method:    tx.payment_method,
+            reference: ref,
+            status:    tx.status
+        }));
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

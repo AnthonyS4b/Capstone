@@ -63,7 +63,8 @@ function wireEvents() {
     // Logout
     $('#logoutBtn').on('click', function (e) {
         e.preventDefault();
-        if (confirm('Are you sure you want to log out?')) window.location.replace('logout.php');
+        showToast('info', 'Logging Out', 'See you next time!');
+        setTimeout(() => window.location.replace('logout.php'), 500);
     });
 
     // Sidebar collapse

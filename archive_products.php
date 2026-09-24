@@ -47,7 +47,7 @@ $ajax_url = 'ajax/category_ajax.php';
     <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Archive Products · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/archivecss.css">
     <link rel="stylesheet" href="assets/css/transitions.css">

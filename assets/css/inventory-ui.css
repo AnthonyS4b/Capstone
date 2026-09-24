@@ -1008,6 +1008,32 @@ body.inv-ui {
     padding-right: 32px;
 }
 
+/* Read-only stand-in for a select whose value is fixed (e.g. the category
+   when adding a product from inside that category) */
+.inv-form-modal .inv-locked-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ink, #16221a);
+    background: var(--canvas, #f6f7f6);
+    border: 1px solid var(--line, #e4e7e4);
+    border-radius: 8px;
+    cursor: default;
+}
+
+.inv-form-modal .inv-locked-field i {
+    color: var(--brand, #2c5530);
+    font-size: 12px;
+}
+
+.inv-form-modal .inv-locked-field[hidden] {
+    display: none;
+}
+
 .inv-form-modal .form-control:focus,
 .inv-form-modal .form-select:focus {
     border-color: var(--brand);
@@ -1360,5 +1386,198 @@ body.inv-ui {
     .inv-form-modal .inv-batch-recv,
     .inv-form-modal .inv-batch-edit {
         display: none;
+    }
+}
+
+/* ═══ Category form (categories.php #categoryModal) ═══ */
+.cat-form-modal .cat-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    background: var(--canvas);
+}
+
+.cat-form-modal .cat-preview-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--r-sm);
+    font-size: 17px;
+    color: var(--cat, var(--brand));
+    background: color-mix(in srgb, var(--cat, var(--brand)) 12%, white);
+}
+
+.cat-form-modal .cat-preview-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.cat-form-modal .cat-preview-text strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cat-form-modal .cat-preview-text span {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cat-form-modal .cat-preview-status {
+    flex-shrink: 0;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #e7f4ec;
+    color: var(--positive);
+    font-size: 11.5px;
+    font-weight: 600;
+}
+
+.cat-form-modal .cat-preview-status.is-inactive {
+    background: #eef0ee;
+    color: var(--ink-muted);
+}
+
+/* Icon grid */
+.cat-form-modal .icon-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 6px;
+    margin: 0 0 14px;
+    padding: 0;
+    max-height: none;
+    overflow: visible;
+    background: none;
+    border-radius: 0;
+}
+
+.cat-form-modal .icon-option {
+    width: auto;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background: #fff;
+    color: var(--ink-muted);
+    font-size: 16px;
+    cursor: pointer;
+    transform: none;
+    transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+.cat-form-modal .icon-option:hover {
+    border-color: var(--line-strong);
+    background: var(--canvas);
+    color: var(--ink);
+    transform: none;
+}
+
+.cat-form-modal .icon-option.selected {
+    border-color: var(--brand);
+    background: var(--brand-tint);
+    color: var(--brand);
+    box-shadow: inset 0 0 0 1px var(--brand);
+}
+
+.cat-form-modal .icon-option:focus-visible,
+.cat-form-modal .cat-swatch:focus-visible,
+.cat-form-modal .cat-swatch-custom:focus-within {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+/* Colour swatches */
+.cat-form-modal .cat-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.cat-form-modal .cat-swatch {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--sw);
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.cat-form-modal .cat-swatch.selected {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--sw);
+}
+
+.cat-form-modal .cat-swatch-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--ink-muted);
+    font-size: 12px;
+    box-shadow: inset 0 0 0 1px var(--line-strong);
+}
+
+.cat-form-modal .cat-swatch-custom.selected {
+    background: var(--sw);
+    color: #fff;
+}
+
+/* The native picker covers the button so a click opens it */
+.cat-form-modal .cat-swatch-custom input[type="color"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+@media (max-width: 575.98px) {
+    .cat-form-modal .inv-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Colour takes the room it needs, status sits beside it when there is space */
+.cat-form-modal .cat-form-row {
+    display: grid;
+    grid-template-columns: auto minmax(160px, 1fr);
+    gap: 0 20px;
+}
+
+@media (max-width: 575.98px) {
+    .cat-form-modal .cat-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 576px) {
+    .cat-form-modal .cat-swatches {
+        flex-wrap: nowrap;
+        gap: 6px;
     }
 }

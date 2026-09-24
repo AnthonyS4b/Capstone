@@ -141,71 +141,102 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 
 // Initialize charts
 document.addEventListener('DOMContentLoaded', function() {
+    // ── Shared chart styling ─────────────────────────────────────────────────
+    Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+
+    function pesoShort(value) {
+        if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
+        if (value >= 1000) return '₱' + (value / 1000).toFixed(0) + 'K';
+        return '₱' + value.toLocaleString();
+    }
+
+    function pesoFull(value) {
+        return '₱' + Number(value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function sum(values) {
+        return values.reduce((a, b) => a + Number(b || 0), 0);
+    }
+
+    const tooltipStyle = {
+        backgroundColor: '#16221a',
+        titleColor: '#ffffff',
+        bodyColor: '#d7dfd9',
+        titleFont: { size: 12, weight: '600' },
+        bodyFont: { size: 12 },
+        padding: { x: 12, y: 10 },
+        cornerRadius: 8,
+        caretSize: 5,
+        displayColors: false
+    };
+
+    const barStyle = {
+        borderWidth: 0,
+        borderRadius: { topLeft: 4, topRight: 4 },
+        borderSkipped: 'start',
+        barPercentage: 0.6,
+        categoryPercentage: 0.7,
+        maxBarThickness: 56
+    };
+
+    function axisStyle(xTicks) {
+        return {
+            y: {
+                beginAtZero: true,
+                grace: '8%',
+                grid: { color: '#eef0ee', drawTicks: false },
+                border: { display: false, dash: [4, 4] },
+                ticks: { callback: pesoShort, maxTicksLimit: 6, padding: 10, font: { size: 11 }, color: '#8b968f' }
+            },
+            x: {
+                grid: { display: false },
+                border: { display: true, color: '#e4e7e4' },
+                ticks: Object.assign({ maxRotation: 0, padding: 8, font: { size: 11, weight: '500' }, color: '#61706a' }, xTicks)
+            }
+        };
+    }
+
     // ── Sales Overview Chart (vertical bar, real data via AJAX) ──────────────
     const ctx = document.getElementById('salesChart').getContext('2d');
-    
+    const salesWrapper = document.getElementById('salesChartWrapper');
+    const salesTotalEl = document.getElementById('salesTotal');
+    const salesRangeLabelEl = document.getElementById('salesRangeLabel');
+    const rangeLabels = { day: 'today', week: 'last 7 days', month: 'last 30 days', year: 'this year' };
+
     const salesChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: [],
-            datasets: [{
+            datasets: [Object.assign({
                 label: 'Sales (₱)',
                 data: [],
-                backgroundColor: '#2c5530',
-                borderWidth: 0,
-                borderRadius: 4,
-                borderSkipped: false,
-                barPercentage: 0.6,
-                categoryPercentage: 0.7,
+                backgroundColor: '#296a37',
                 hoverBackgroundColor: '#1f3d23'
-            }]
+            }, barStyle)]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 4 } },
+            interaction: { mode: 'index', intersect: false },
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#16221a',
-                    titleFont: { size: 12, weight: '600' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6,
-                    displayColors: false,
+                tooltip: Object.assign({}, tooltipStyle, {
                     callbacks: {
                         label: function(context) {
-                            return '₱' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                            return pesoFull(context.parsed.y);
                         }
                     }
-                }
+                })
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#eef0ee', drawTicks: false },
-                    border: { display: false },
-                    ticks: {
-                        callback: function(value) {
-                            if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 1000) return '₱' + (value / 1000).toFixed(0) + 'K';
-                            return '₱' + value.toLocaleString();
-                        },
-                        font: { size: 11 },
-                        color: '#61706a'
-                    }
-                },
-                x: {
-                    grid: { display: false },
-                    border: { display: false },
-                    ticks: { font: { size: 11 }, color: '#61706a' }
-                }
-            },
+            scales: axisStyle(),
             animation: { duration: 600, easing: 'easeOutQuart' }
         }
     });
 
     // Fetch chart data from server
     function loadSalesChart(range) {
+        salesWrapper.classList.add('is-loading');
         fetch('ajax/dashboard_chart_ajax.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -214,15 +245,22 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r => r.json())
         .then(response => {
             if (response.success) {
+                const total = sum(response.values);
                 salesChart.data.labels = response.labels;
                 salesChart.data.datasets[0].data = response.values;
                 salesChart.update();
+                salesTotalEl.textContent = pesoFull(total);
+                salesRangeLabelEl.textContent = rangeLabels[range] || '';
+                salesWrapper.classList.toggle('is-empty', total === 0);
             } else {
                 console.error('Chart data error:', response.message);
             }
         })
         .catch(err => {
             console.error('Failed to load sales chart data:', err);
+        })
+        .finally(() => {
+            salesWrapper.classList.remove('is-loading');
         });
     }
 
@@ -247,67 +285,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const catValues = (typeof phpCategorySales !== 'undefined' && phpCategorySales.length)
         ? phpCategorySales.map(c => c.revenue)
         : [0];
-    const catColors = ['#8B4513', '#2c5530', '#C47A3A', '#416937', '#d4a382', '#1a3d1e', '#A0522D'];
+    const catColors = (typeof phpChartPalette !== 'undefined' && phpChartPalette.length)
+        ? phpChartPalette
+        : ['#296a37', '#c48139', '#3174a7', '#a5492b', '#7e4d8a', '#829e4b'];
 
     const categoryChart = new Chart(ctx2, {
         type: 'bar',
         data: {
             labels: catLabels,
-            datasets: [{
+            datasets: [Object.assign({
                 label: 'Revenue (₱)',
                 data: catValues,
-                backgroundColor: catLabels.map((_, i) => catColors[i % catColors.length]),
-                borderRadius: 4,
-                borderSkipped: false,
-                barPercentage: 0.6,
-                categoryPercentage: 0.7
-            }]
+                backgroundColor: catLabels.map((_, i) => catColors[i % catColors.length])
+            }, barStyle)]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: { top: 4 } },
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#16221a',
-                    titleFont: { size: 12, weight: '600' },
-                    bodyFont: { size: 12 },
-                    padding: 10,
-                    cornerRadius: 6,
-                    displayColors: false,
+                tooltip: Object.assign({}, tooltipStyle, {
                     callbacks: {
                         label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const total = sum(context.dataset.data);
                             const pct = total > 0 ? ((context.parsed.y / total) * 100).toFixed(1) : 0;
-                            return '₱' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' (' + pct + '%)';
+                            return pesoFull(context.parsed.y) + '  ·  ' + pct + '% of top 5';
                         }
                     }
-                }
+                })
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#eef0ee', drawTicks: false },
-                    border: { display: false },
-                    ticks: {
-                        callback: function(value) {
-                            if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
-                            if (value >= 1000) return '₱' + (value / 1000).toFixed(0) + 'K';
-                            return '₱' + value.toLocaleString();
-                        },
-                        font: { size: 11 },
-                        color: '#61706a'
-                    }
-                },
-                x: {
-                    grid: { display: false },
-                    border: { display: false },
-                    ticks: { font: { size: 11 }, color: '#61706a' }
+            scales: axisStyle({
+                autoSkip: false,
+                // Wrap long category names onto two lines instead of rotating them
+                callback: function(value) {
+                    const words = String(this.getLabelForValue(value)).split(' ');
+                    const lines = [];
+                    let line = '';
+                    words.forEach(word => {
+                        if (line && (line + ' ' + word).length > 14) {
+                            lines.push(line);
+                            line = word;
+                        } else {
+                            line = line ? line + ' ' + word : word;
+                        }
+                    });
+                    if (line) lines.push(line);
+                    return lines;
                 }
-            },
+            }),
             animation: { duration: 800, easing: 'easeInOutQuart' }
         }
     });
+
+    const catTotal = sum(catValues);
+    document.getElementById('categoryTotal').textContent = pesoFull(catTotal);
+    document.getElementById('categoryChartWrapper').classList.toggle('is-empty', catTotal === 0);
 });
 
 // Switch Account Functions

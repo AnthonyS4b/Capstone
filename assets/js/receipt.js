@@ -14,6 +14,11 @@
  *   Receipt.print(html)  → opens the browser print dialog for that receipt
  */
 (function () {
+    // Receipt printer paper. OJ-58K / POS-58 rolls are 58 mm wide with about
+    // 48 mm printable; for an 80 mm printer set 80 and 72.
+    const PAPER_MM = 58;
+    const PRINT_WIDTH_MM = 48;
+
     const CSS = `
 .rc { font-family: 'Inter', -apple-system, 'Segoe UI', Arial, sans-serif; color: #16221a; font-size: 13px; line-height: 1.45; font-variant-numeric: tabular-nums; position: relative; }
 .rc-store { text-align: center; padding-bottom: 12px; }
@@ -116,6 +121,36 @@
             </div>`;
     }
 
+    // Thermal printers only print black dots: greys come out speckled or faint,
+    // so the printed copy is pure black, bolder, and exactly the roll's printable width.
+    const THERMAL_CSS = `
+/* No page size: the printer driver's roll size (e.g. 58 x 3276 mm) applies */
+@page { margin: 0; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { width: ${PAPER_MM}mm; }
+.rc { width: ${PRINT_WIDTH_MM}mm; margin: 0 auto; padding: 2mm 0 6mm;
+      font-family: Arial, 'Segoe UI', sans-serif; font-size: 11px; line-height: 1.35; color: #000; }
+.rc * { color: #000 !important; }
+.rc-store { padding-bottom: 6px; }
+.rc-logo { width: 28px; height: 28px; margin-bottom: 3px; filter: grayscale(1) contrast(1.6) brightness(1.15); }
+.rc-store-name { font-size: 13px; }
+.rc-store-sub, .rc-meta, .rc-item-line, .rc-row.rc-muted, .rc-thanks { font-size: 10.5px; }
+.rc-meta { gap: 1px 6px; padding: 5px 0; border-color: #000; }
+.rc-meta dt { font-weight: 400; }
+.rc-items { padding: 4px 0; border-color: #000; }
+.rc-item { padding: 3px 0; }
+.rc-item-name { font-weight: 700; }
+.rc-item-line span:last-child { font-size: 11px; }
+.rc-totals { padding: 4px 0 2px; }
+.rc-row { gap: 6px; padding: 1px 0; }
+.rc-row.rc-total { font-size: 14px; padding: 4px 0; margin: 4px 0; border-color: #000; }
+.rc-thanks { padding-top: 6px; margin-top: 4px; border-color: #000; }
+.rc-thanks strong { font-size: 11.5px; }
+.rc-void { margin-bottom: 6px; padding: 3px; border-color: #000; font-size: 12px; }
+.rc.is-voided .rc-items, .rc.is-voided .rc-totals { opacity: 1; text-decoration: line-through; }
+@media screen { body { padding: 12px 0; background: #eee; } .rc { background: #fff; padding: 3mm 2mm; } }
+`;
+
     function print(receiptHtml) {
         if (!receiptHtml) return;
         const win = window.open('', '_blank');
@@ -133,10 +168,7 @@
                 <title>Receipt</title>
                 <style>
                     ${CSS}
-                    body { margin: 0; padding: 12px; background: #fff; }
-                    .rc { max-width: 280px; margin: 0 auto; }
-                    @page { margin: 6mm; }
-                    @media print { body { padding: 0; } }
+                    ${THERMAL_CSS}
                 </style>
             </head>
             <body>

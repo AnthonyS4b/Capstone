@@ -27,6 +27,14 @@
     max-width: 480px;
 }
 
+/* Add/Edit open on top of the Users list. confirm-dialog.js lifts any second
+   backdrop to 1060 so it dims the modal underneath - without this the form
+   stayed at Bootstrap's 1055, under that backdrop, which caught every click
+   (the page looked frozen). Stays below the confirm dialog (1065). */
+.modal.um-form-modal {
+    z-index: 1062;
+}
+
 .um-modal .modal-content {
     border: none;
     border-radius: 16px;

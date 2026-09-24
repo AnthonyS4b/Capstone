@@ -43,7 +43,7 @@ if ($toast_message) {
     <script src="assets/js/security.js?v=20260814-1" defer></script>
     <title>Product Categories · Espenida's Pet & Poultry Supply</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/categories.css?v=<?= filemtime(__DIR__ . '/assets/css/categories.css') ?>">
     <link rel="stylesheet" href="assets/css/transitions.css">
@@ -166,55 +166,82 @@ if ($toast_message) {
         </div>
     </div>
 
-    <!-- Category Modal — UNCHANGED -->
-    <div class="modal fade" id="categoryModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+    <!-- Category Modal (add + edit). Field ids are read by categories.js. -->
+    <div class="modal fade inv-form-modal cat-form-modal" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="categoryModalTitle">
-                        <i class="fas fa-layer-group me-2"></i>Add New Category
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="inv-form-head">
+                    <div class="inv-form-head-text">
+                        <h2 class="inv-form-title" id="categoryModalTitle">Add category</h2>
+                        <p class="inv-form-sub" id="categoryModalSub">Group products so they are easy to find at the POS.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="categoryForm">
+                    <form id="categoryForm" onsubmit="event.preventDefault(); saveCategory();">
                         <input type="hidden" id="categoryId">
-                        <div class="mb-3">
-                            <label class="form-label">Category Name</label>
-                            <input type="text" class="form-control" id="categoryName" placeholder="e.g., Dog Food"
-                                required>
-                            <small class="text-muted">Products added to this category will be specific to this category
-                                only</small>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea class="form-control" id="categoryDescription" rows="2"
-                                placeholder="Enter category description"></textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Icon Color</label>
-                                <input type="color" class="form-control form-control-color" id="categoryColor"
-                                    value="#4a6fa5">
+                        <input type="hidden" id="categoryIcon" value="fa-paw">
+
+                        <!-- How the category will look in the list -->
+                        <div class="cat-preview" aria-hidden="true">
+                            <span class="cat-preview-icon" id="catPreviewIcon"><i class="fas fa-paw"></i></span>
+                            <div class="cat-preview-text">
+                                <strong id="catPreviewName">Category name</strong>
+                                <span id="catPreviewDesc">Description</span>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Status</label>
-                                <select class="form-select" id="categoryStatus">
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                </select>
+                            <span class="cat-preview-status" id="catPreviewStatus">Active</span>
+                        </div>
+
+                        <section class="inv-form-section">
+                            <div class="inv-field">
+                                <label class="form-label" for="categoryName">Name <span class="inv-req">*</span></label>
+                                <input type="text" class="form-control" id="categoryName" placeholder="e.g. Dog Food" maxlength="100" required>
+                                <small class="inv-hint">Products you add here belong to this category only.</small>
                             </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Icon</label>
-                            <input type="text" class="form-control" id="categoryIcon" value="fa-paw" readonly>
-                            <div class="icon-selector" id="iconSelector"></div>
-                        </div>
+                            <div class="inv-field">
+                                <label class="form-label" for="categoryDescription">Description <span class="inv-optional">optional</span></label>
+                                <textarea class="form-control" id="categoryDescription" rows="2" placeholder="What goes in this category"></textarea>
+                            </div>
+                        </section>
+
+                        <section class="inv-form-section">
+                            <h3 class="inv-form-section-title">Icon</h3>
+                            <div class="icon-selector" id="iconSelector" role="radiogroup" aria-label="Category icon"></div>
+                        </section>
+
+                        <section class="inv-form-section">
+                            <div class="cat-form-row">
+                                <div class="inv-field">
+                                    <span class="form-label" id="catColorLabel">Colour</span>
+                                    <div class="cat-swatches" role="radiogroup" aria-labelledby="catColorLabel">
+                                        <button type="button" class="cat-swatch" data-color="#2c5530" style="--sw:#2c5530" aria-label="Green"></button>
+                                        <button type="button" class="cat-swatch" data-color="#4a6fa5" style="--sw:#4a6fa5" aria-label="Blue"></button>
+                                        <button type="button" class="cat-swatch" data-color="#1abc9c" style="--sw:#1abc9c" aria-label="Teal"></button>
+                                        <button type="button" class="cat-swatch" data-color="#e67e22" style="--sw:#e67e22" aria-label="Orange"></button>
+                                        <button type="button" class="cat-swatch" data-color="#e74c3c" style="--sw:#e74c3c" aria-label="Red"></button>
+                                        <button type="button" class="cat-swatch" data-color="#9b59b6" style="--sw:#9b59b6" aria-label="Purple"></button>
+                                        <button type="button" class="cat-swatch" data-color="#8b4513" style="--sw:#8b4513" aria-label="Brown"></button>
+                                        <label class="cat-swatch cat-swatch-custom" title="Pick any colour">
+                                            <input type="color" id="categoryColor" value="#4a6fa5" aria-label="Custom colour">
+                                            <i class="fas fa-eye-dropper" aria-hidden="true"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="inv-field">
+                                    <label class="form-label" for="categoryStatus">Status</label>
+                                    <select class="form-select" id="categoryStatus">
+                                        <option value="active">Active</option>
+                                        <option value="inactive">Inactive</option>
+                                    </select>
+                                    <small class="inv-hint">Inactive categories are hidden from the POS.</small>
+                                </div>
+                            </div>
+                        </section>
                     </form>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="saveCategory()">Save Category</button>
+                <div class="inv-form-foot">
+                    <button type="button" class="inv-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="inv-btn inv-btn-primary" id="categorySaveBtn" onclick="saveCategory()">Save category</button>
                 </div>
             </div>
         </div>
@@ -239,10 +266,15 @@ if ($toast_message) {
                         <section class="inv-form-section">
                             <div class="inv-form-grid">
                                 <div class="inv-field">
-                                    <label class="form-label" for="productCategory">Category <span class="inv-req">*</span></label>
+                                    <label class="form-label" for="productCategory" id="productCategoryLabel">Category <span class="inv-req">*</span></label>
                                     <select class="form-select" id="productCategory" required onchange="onCategoryChange()">
                                         <option value="">Select category</option>
                                     </select>
+                                    <!-- Adding a product: fixed to the category it was opened from -->
+                                    <div class="inv-locked-field" id="productCategoryLocked" hidden>
+                                        <i class="fas fa-tag" aria-hidden="true"></i>
+                                        <span id="productCategoryLockedName"></span>
+                                    </div>
                                 </div>
                                 <div class="inv-field">
                                     <!-- Unit / Measurement — the select sets the hidden productUnit -->

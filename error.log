@@ -2470,3 +2470,74 @@
 [24-Sep-2026 01:41:53 Asia/Manila] Transaction data: User_ID=1, Total=85, Payment=85, Method=cash
 [24-Sep-2026 01:41:53 Asia/Manila] Transaction inserted with ID: 1533
 [24-Sep-2026 01:42:00 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 13:33:13 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 13:33:13 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 13:33:13 Asia/Manila] Transaction data: User_ID=1, Total=140, Payment=200, Method=cash
+[24-Sep-2026 13:33:13 Asia/Manila] Transaction inserted with ID: 1534
+[24-Sep-2026 13:33:18 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 13:59:31 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 13:59:31 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 13:59:31 Asia/Manila] Transaction data: User_ID=1, Total=65, Payment=100, Method=cash
+[24-Sep-2026 13:59:31 Asia/Manila] Transaction inserted with ID: 1535
+[24-Sep-2026 13:59:32 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 14:15:38 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 14:15:38 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 14:15:38 Asia/Manila] Transaction data: User_ID=1, Total=65, Payment=100, Method=cash
+[24-Sep-2026 14:15:38 Asia/Manila] Transaction inserted with ID: 1536
+[24-Sep-2026 14:15:39 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 15:03:31 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 15:03:31 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 15:03:31 Asia/Manila] Transaction data: User_ID=1, Total=245, Payment=500, Method=cash
+[24-Sep-2026 15:03:31 Asia/Manila] Transaction inserted with ID: 1537
+[24-Sep-2026 15:03:34 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 15:07:45 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 15:07:45 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 15:07:45 Asia/Manila] Transaction data: User_ID=1, Total=480, Payment=500, Method=cash
+[24-Sep-2026 15:07:45 Asia/Manila] Transaction inserted with ID: 1538
+[24-Sep-2026 15:07:46 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 15:40:10 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 15:40:10 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 15:40:10 Asia/Manila] Transaction data: User_ID=1, Total=300, Payment=500, Method=cash
+[24-Sep-2026 15:40:10 Asia/Manila] Transaction inserted with ID: 1539
+[24-Sep-2026 15:40:11 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 21:10:02 Asia/Manila] Found user_id in session: 1
+[24-Sep-2026 21:10:03 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[24-Sep-2026 21:10:03 Asia/Manila] Transaction data: User_ID=1, Total=330, Payment=500, Method=cash
+[24-Sep-2026 21:10:03 Asia/Manila] Transaction inserted with ID: 1540
+[24-Sep-2026 21:10:03 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[24-Sep-2026 21:34:08 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => Okay
+    [description] => 
+    [price] => 55
+    [cost_price] => 23
+    [stock] => 233
+    [unit] => Per Sachet
+    [sku] => CAT-21417216
+    [barcode] => 123123
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:34:08 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 82
+    [data] => Array
+        (
+            [id] => 82
+            [sku] => CAT-21417216
+            [barcode] => 123123
+            [unit] => Per Sachet
+            [cost_price] => 23
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+

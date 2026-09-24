@@ -491,7 +491,8 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode(array_merge($notifs, $notif_alerts));
     ?>;
     </script>
-    <script src="assets/js/emp.js"></script>
+    <script src="assets/js/receipt.js?v=<?= filemtime(__DIR__ . '/assets/js/receipt.js') ?>"></script>
+    <script src="assets/js/emp.js?v=<?= filemtime(__DIR__ . '/assets/js/emp.js') ?>"></script>
     <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>
 </body>

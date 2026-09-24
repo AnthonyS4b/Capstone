@@ -640,6 +640,39 @@ body {
     color: var(--warning);
 }
 
+/* Title + headline figure stacked on the left of a chart header */
+.chart-header:has(.chart-heading) {
+    align-items: flex-start;
+}
+
+.chart-heading {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.chart-summary {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chart-summary-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+}
+
+.chart-summary-label {
+    font-size: 12px;
+    color: var(--ink-subtle);
+}
+
 .time-range {
     display: flex;
     gap: 4px;
@@ -664,7 +697,8 @@ body {
 
 .range-btn.active {
     background: var(--surface);
-    color: var(--ink);
+    color: var(--brand);
+    font-weight: 600;
     border-color: var(--line);
     box-shadow: var(--shadow);
 }
@@ -969,6 +1003,14 @@ body {
     overflow: hidden;
 }
 
+/* reco.css (also loaded on the dashboard) gives .chart-container a fixed
+   260px height for its own page, which clipped the x-axis labels here.
+   Let dashboard panels size to their content. */
+.dashboard-grid > .chart-container {
+    height: auto;
+    margin: 0;
+}
+
 .chart-wrapper {
     position: relative;
     width: 100%;
@@ -983,6 +1025,35 @@ body {
     left: 0;
     width: 100% !important;
     height: 100% !important;
+    transition: opacity 0.2s ease;
+}
+
+/* Dim the chart while a new range is being fetched */
+.chart-wrapper.is-loading canvas {
+    opacity: 0.45;
+}
+
+/* Shown over the chart when every value in the period is zero */
+.chart-empty {
+    position: absolute;
+    inset: 0 0 28px 48px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--ink-subtle);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.chart-empty i {
+    font-size: 20px;
+    color: var(--line-strong);
+}
+
+.chart-wrapper.is-empty .chart-empty {
+    display: flex;
 }
 
 /* Scrollable containers for Category Performance and Low Stock Alerts */

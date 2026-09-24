@@ -1,8 +1,10 @@
 // Available icons - ONLY PET APPROPRIATE ICONS
+// Category icons (Font Awesome 6.5.2 free, the version categories.php loads)
 const availableIcons = [
-    'fa-dog', 'fa-cat', 'fa-dove', 'fa-fish', 'fa-paw', 'fa-bone',
-    'fa-cut', 'fa-capsules', 'fa-apple-alt', 'fa-carrot', 'fa-feather',
-    'fa-shield-dog', 'fa-shield-cat', 'fa-bowl-food'
+    'fa-dog', 'fa-cat', 'fa-shield-dog', 'fa-shield-cat', 'fa-paw', 'fa-bone', 'fa-bowl-food',
+    'fa-dove', 'fa-crow', 'fa-kiwi-bird', 'fa-feather', 'fa-egg', 'fa-drumstick-bite', 'fa-wheat-awn',
+    'fa-fish', 'fa-frog', 'fa-horse', 'fa-seedling', 'fa-carrot', 'fa-apple-alt', 'fa-box',
+    'fa-capsules', 'fa-pills', 'fa-syringe', 'fa-cut', 'fa-soap', 'fa-spray-can'
 ];
 
 let currentCategoryId = null;
@@ -936,18 +938,106 @@ function populateIconSelector() {
     const container = document.getElementById('iconSelector');
     if (!container) return;
 
-    let html = '';
-    availableIcons.forEach(icon => {
-        html += `<div class="icon-option" onclick="selectIcon('${icon}')" title="${icon.replace('fa-', '')}"><i class="fas ${icon}"></i></div>`;
+    container.innerHTML = availableIcons.map(icon => {
+        const label = icon.replace('fa-', '').replace(/-/g, ' ');
+        return `<button type="button" class="icon-option" role="radio" aria-checked="false"
+                        data-icon="${icon}" onclick="selectIcon('${icon}')" title="${label}" aria-label="${label}">
+                    <i class="fas ${icon}" aria-hidden="true"></i>
+                </button>`;
+    }).join('');
+
+    wireCategoryForm();
+}
+
+// Mark the chosen icon (also used when a category is loaded for editing)
+function markSelectedIcon(icon) {
+    document.querySelectorAll('.icon-option').forEach(opt => {
+        const on = opt.dataset.icon === icon;
+        opt.classList.toggle('selected', on);
+        opt.setAttribute('aria-checked', on ? 'true' : 'false');
     });
-    container.innerHTML = html;
 }
 
 function selectIcon(icon) {
     const iconInput = document.getElementById('categoryIcon');
     if (iconInput) iconInput.value = icon;
-    document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
-    if (event && event.currentTarget) event.currentTarget.classList.add('selected');
+    markSelectedIcon(icon);
+    updateCategoryPreview();
+}
+
+// Mark the swatch matching the current colour, or the custom picker when none does
+function markSelectedColor() {
+    const color = (document.getElementById('categoryColor')?.value || '').toLowerCase();
+    let matched = false;
+    document.querySelectorAll('.cat-swatch[data-color]').forEach(sw => {
+        const on = sw.dataset.color.toLowerCase() === color;
+        if (on) matched = true;
+        sw.classList.toggle('selected', on);
+        sw.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    const custom = document.querySelector('.cat-swatch-custom');
+    if (custom) {
+        custom.classList.toggle('selected', !matched);
+        custom.style.setProperty('--sw', color || '#4a6fa5');
+    }
+}
+
+// Live preview: how the category card will look in the list
+function updateCategoryPreview() {
+    const name   = document.getElementById('categoryName')?.value.trim();
+    const desc   = document.getElementById('categoryDescription')?.value.trim();
+    const icon   = document.getElementById('categoryIcon')?.value || 'fa-paw';
+    const color  = document.getElementById('categoryColor')?.value || '#4a6fa5';
+    const status = document.getElementById('categoryStatus')?.value || 'active';
+
+    const iconBox = document.getElementById('catPreviewIcon');
+    if (iconBox) {
+        iconBox.style.setProperty('--cat', color);
+        iconBox.innerHTML = `<i class="fas ${escapeHtml(icon)}"></i>`;
+    }
+    const nameEl = document.getElementById('catPreviewName');
+    if (nameEl) nameEl.textContent = name || 'Category name';
+    const descEl = document.getElementById('catPreviewDesc');
+    if (descEl) descEl.textContent = desc || 'No description';
+    const statusEl = document.getElementById('catPreviewStatus');
+    if (statusEl) {
+        statusEl.textContent = status === 'active' ? 'Active' : 'Inactive';
+        statusEl.classList.toggle('is-inactive', status !== 'active');
+    }
+    markSelectedColor();
+}
+
+// Swatches and field listeners; runs once
+function wireCategoryForm() {
+    const form = document.getElementById('categoryForm');
+    if (!form || form.dataset.wired) return;
+    form.dataset.wired = '1';
+
+    document.querySelectorAll('.cat-swatch[data-color]').forEach(sw => {
+        sw.setAttribute('role', 'radio');
+        sw.addEventListener('click', () => {
+            const input = document.getElementById('categoryColor');
+            if (input) input.value = sw.dataset.color;
+            updateCategoryPreview();
+        });
+    });
+    ['categoryName', 'categoryDescription', 'categoryColor', 'categoryStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', updateCategoryPreview);
+        el.addEventListener('change', updateCategoryPreview);
+    });
+}
+
+function setCategoryModalHeading(editing) {
+    const title = document.getElementById('categoryModalTitle');
+    const sub = document.getElementById('categoryModalSub');
+    const save = document.getElementById('categorySaveBtn');
+    if (title) title.textContent = editing ? 'Edit category' : 'Add category';
+    if (sub) sub.textContent = editing
+        ? 'Changes show on every product in this category.'
+        : 'Group products so they are easy to find at the POS.';
+    if (save) save.textContent = editing ? 'Save changes' : 'Save category';
 }
 
 function openCategoryModal(categoryId = null) {
@@ -957,15 +1047,16 @@ function openCategoryModal(categoryId = null) {
     const idInput = document.getElementById('categoryId');
     if (idInput) idInput.value = '';
 
-    const modalTitle = document.getElementById('categoryModalTitle');
-    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-layer-group me-2"></i>Add New Category';
+    // Clear a duplicate-name error left from last time
+    const nameInput = document.getElementById('categoryName');
+    if (nameInput) nameInput.classList.remove('is-invalid');
 
-    // Reset icon selection
-    document.querySelectorAll('.icon-option').forEach(opt => opt.classList.remove('selected'));
-    const defaultIcon = document.querySelector('.icon-option[onclick*="fa-paw"]');
-    if (defaultIcon) defaultIcon.classList.add('selected');
+    setCategoryModalHeading(false);
+
     const iconField = document.getElementById('categoryIcon');
     if (iconField) iconField.value = 'fa-paw';
+    markSelectedIcon('fa-paw');
+    updateCategoryPreview();
 
     if (categoryId) {
         showLoading();
@@ -993,19 +1084,12 @@ function openCategoryModal(categoryId = null) {
                     if (statusField) statusField.value = cat.status || 'active';
                     if (iconField) iconField.value = cat.icon || 'fa-paw';
 
-                    // Highlight selected icon
-                    document.querySelectorAll('.icon-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                        if (opt.getAttribute('onclick') && opt.getAttribute('onclick').includes(cat.icon || 'fa-paw')) {
-                            opt.classList.add('selected');
-                        }
-                    });
-
-                    if (modalTitle) modalTitle.innerHTML = '<i class="fas fa-edit me-2"></i>Edit Category';
+                    markSelectedIcon(cat.icon || 'fa-paw');
+                    setCategoryModalHeading(true);
+                    updateCategoryPreview();
 
                     // Only open modal AFTER data is populated
-                    const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
-                    modal.show();
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('categoryModal')).show();
                 } else {
                     showToast('error', 'Error', response.message || 'Failed to load category');
                 }
@@ -1017,8 +1101,8 @@ function openCategoryModal(categoryId = null) {
         });
     } else {
         // New category — open immediately
-        const modal = new bootstrap.Modal(document.getElementById('categoryModal'));
-        modal.show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('categoryModal')).show();
+        setTimeout(() => document.getElementById('categoryName')?.focus(), 300);
     }
 }
 
@@ -1126,6 +1210,23 @@ function loadCategoryOptions() {
     });
 }
 
+// Adding: show the open category as a fixed field instead of the dropdown.
+// Editing keeps the dropdown so a product can still be moved between categories.
+function lockProductCategory(locked) {
+    const select = document.getElementById('productCategory');
+    const fixed = document.getElementById('productCategoryLocked');
+    const label = document.getElementById('productCategoryLabel');
+    if (!select || !fixed) return;
+
+    select.hidden = locked;
+    fixed.hidden = !locked;
+    if (label) label.htmlFor = locked ? '' : 'productCategory';
+    if (locked) {
+        document.getElementById('productCategoryLockedName').textContent =
+            select.options[select.selectedIndex]?.text || currentCategoryName;
+    }
+}
+
 function openProductModal(productId = null) {
     if (!currentCategoryId && !productId) {
         showToast('warning', 'Warning', 'Please select a category first');
@@ -1171,9 +1272,14 @@ function openProductModal(productId = null) {
 
     const categorySelect = document.getElementById('productCategory');
     if (currentCategoryId && categorySelect) {
+        // The list only holds active categories; make sure the open one is there
+        if (!productId && !categorySelect.querySelector(`option[value="${currentCategoryId}"]`)) {
+            categorySelect.add(new Option(currentCategoryName, currentCategoryId));
+        }
         categorySelect.value = currentCategoryId;
         onCategoryChange();
     }
+    lockProductCategory(!productId);
 
     if (productId) {
         showLoading();

@@ -176,6 +176,11 @@ $category_sales = array_map(function ($r) use ($cat_total) {
     ];
 }, $cat_rows);
 
+// Category colours, shared by the Sales by Category chart and the Category
+// Performance list. Order is fixed (validated for colour-blind separation
+// between neighbours) - append, don't reorder.
+$chart_palette = ['#296a37', '#c48139', '#3174a7', '#a5492b', '#7e4d8a', '#829e4b'];
+
 // Fetch users for role management (owners only)
 $users = [];
 if ($is_owner) {
@@ -339,7 +344,13 @@ if ($is_owner) {
         <div class="dashboard-grid">
             <div class="chart-container">
                 <div class="chart-header">
-                    <div class="chart-title"><i class="fas fa-chart-bar"></i> Sales Overview</div>
+                    <div class="chart-heading">
+                        <div class="chart-title"><i class="fas fa-chart-column"></i> Sales Overview</div>
+                        <div class="chart-summary">
+                            <span class="chart-summary-value" id="salesTotal">&mdash;</span>
+                            <span class="chart-summary-label" id="salesRangeLabel">last 7 days</span>
+                        </div>
+                    </div>
                     <div class="time-range">
                         <span class="range-btn" data-range="day">Day</span>
                         <span class="range-btn active" data-range="week">Week</span>
@@ -347,14 +358,26 @@ if ($is_owner) {
                         <span class="range-btn" data-range="year">Year</span>
                     </div>
                 </div>
-                <div class="chart-wrapper"><canvas id="salesChart"></canvas></div>
+                <div class="chart-wrapper" id="salesChartWrapper">
+                    <canvas id="salesChart"></canvas>
+                    <div class="chart-empty"><i class="fa-solid fa-receipt"></i><span>No sales in this period</span></div>
+                </div>
             </div>
-            
+
             <div class="chart-container">
                 <div class="chart-header">
-                    <div class="chart-title"><i class="fas fa-pie-chart"></i> Sales by Category</div>
+                    <div class="chart-heading">
+                        <div class="chart-title"><i class="fas fa-tags"></i> Sales by Category</div>
+                        <div class="chart-summary">
+                            <span class="chart-summary-value" id="categoryTotal">&mdash;</span>
+                            <span class="chart-summary-label">top 5 &middot; last 30 days</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="chart-wrapper"><canvas id="categoryChart"></canvas></div>
+                <div class="chart-wrapper" id="categoryChartWrapper">
+                    <canvas id="categoryChart"></canvas>
+                    <div class="chart-empty"><i class="fa-solid fa-tags"></i><span>No category sales in the last 30 days</span></div>
+                </div>
             </div>
         </div>
         
@@ -366,7 +389,7 @@ if ($is_owner) {
                 </div>
                 <div class="scrollable-content">
                     <?php 
-                    $colors = ['#8B4513', '#2c5530', '#C47A3A', '#416937', '#d4a382'];
+                    $colors = $chart_palette;
                     if (!$category_sales): ?>
                         <div class="panel-empty">
                             <i class="fa-solid fa-chart-simple"></i>
@@ -434,6 +457,7 @@ if ($is_owner) {
         const isOwner = <?php echo $is_owner ? 'true' : 'false'; ?>;
         // Chart data from database
         const phpCategorySales = <?php echo json_encode($category_sales); ?>;
+        const phpChartPalette = <?php echo json_encode($chart_palette); ?>;
         // ── Notification seed data (shared include) ─────────────────────────────
         <?php include 'includes/notifications.php'; ?>
     </script>
