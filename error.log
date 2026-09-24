@@ -2829,3 +2829,39 @@
 
 )
 
+[24-Sep-2026 21:58:42 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 5
+    [name] => Kalinaw Pet Collar
+    [description] => 
+    [price] => 450
+    [cost_price] => 300
+    [stock] => 15
+    [unit] => Per Piece
+    [sku] => PET-81546780
+    [barcode] => 8765412
+    [image] => assets/uploads/products/prod_1790258322_51d3d0be.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:58:48 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 91
+    [data] => Array
+        (
+            [id] => 91
+            [sku] => PET-81546780
+            [barcode] => 8765412
+            [unit] => Per Piece
+            [cost_price] => 300
+            [image] => assets/uploads/products/prod_1790258322_51d3d0be.webp
+            [expiration_date] => 
+        )
+
+)
+
