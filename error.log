@@ -2541,3 +2541,219 @@
 
 )
 
+[24-Sep-2026 21:45:02 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => Poultry Drinker
+    [description] => 
+    [price] => 200
+    [cost_price] => 150
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => POU-27147226
+    [barcode] => N/A
+    [image] => assets/uploads/products/prod_1790257501_bbe58f9d.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:45:12 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 83
+    [data] => Array
+        (
+            [id] => 83
+            [sku] => POU-27147226
+            [barcode] => N/A
+            [unit] => Per Piece
+            [cost_price] => 150
+            [image] => assets/uploads/products/prod_1790257501_bbe58f9d.webp
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 21:47:14 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 4
+    [name] => Wondercide Flea & Tick Spot-On for Dogs
+    [description] => 
+    [price] => 250
+    [cost_price] => 200
+    [stock] => 30
+    [unit] => Per Pack
+    [sku] => PET-45192987
+    [barcode] => 123456
+    [image] => assets/uploads/products/prod_1790257634_f22fb4d9.webp
+    [expiration_date] => 2027-11-24
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:47:16 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 84
+    [data] => Array
+        (
+            [id] => 84
+            [sku] => PET-45192987
+            [barcode] => 123456
+            [unit] => Per Pack
+            [cost_price] => 200
+            [image] => assets/uploads/products/prod_1790257634_f22fb4d9.webp
+            [expiration_date] => 2027-11-24
+        )
+
+)
+
+[24-Sep-2026 21:48:42 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 4
+    [name] => Klaus Multivatimin for Hens
+    [description] => 
+    [price] => 450
+    [cost_price] => 400
+    [stock] => 30
+    [unit] => Per Piece
+    [sku] => PET-58509898
+    [barcode] => 53486213
+    [image] => assets/uploads/products/prod_1790257722_4e64eb42.webp
+    [expiration_date] => 2027-11-24
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:48:42 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 85
+    [data] => Array
+        (
+            [id] => 85
+            [sku] => PET-58509898
+            [barcode] => 53486213
+            [unit] => Per Piece
+            [cost_price] => 400
+            [image] => assets/uploads/products/prod_1790257722_4e64eb42.webp
+            [expiration_date] => 2027-11-24
+        )
+
+)
+
+[24-Sep-2026 21:50:14 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Classica Premium Aquatic Gravel Neon 250g (Assorted Colors Per Pack)
+    [description] => 
+    [price] => 40
+    [cost_price] => 20
+    [stock] => 30
+    [unit] => Per Pack
+    [sku] => FIS-69061431
+    [barcode] => 78934153
+    [image] => assets/uploads/products/prod_1790257814_253d9de7.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:50:15 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 86
+    [data] => Array
+        (
+            [id] => 86
+            [sku] => FIS-69061431
+            [barcode] => 78934153
+            [unit] => Per Pack
+            [cost_price] => 20
+            [image] => assets/uploads/products/prod_1790257814_253d9de7.webp
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 21:51:41 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => DDC AQUA 3 in 1 Mini Filter
+    [description] => 
+    [price] => 179
+    [cost_price] => 100
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => FIS-29491139
+    [barcode] => 14234854
+    [image] => assets/uploads/products/prod_1790257901_301b9bf6.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:52:00 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 87
+    [data] => Array
+        (
+            [id] => 87
+            [sku] => FIS-29491139
+            [barcode] => 14234854
+            [unit] => Per Piece
+            [cost_price] => 100
+            [image] => assets/uploads/products/prod_1790257901_301b9bf6.webp
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 21:52:02 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => DDC AQUA 3 in 1 Mini Filter
+    [description] => 
+    [price] => 179
+    [cost_price] => 100
+    [stock] => 20
+    [unit] => Per Piece
+    [sku] => FIS-29491139
+    [barcode] => 14234854
+    [image] => assets/uploads/products/prod_1790257921_106c3e92.webp
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:52:44 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 88
+    [data] => Array
+        (
+            [id] => 88
+            [sku] => PRD17902579227553
+            [barcode] => 14234854
+            [unit] => Per Piece
+            [cost_price] => 100
+            [image] => assets/uploads/products/prod_1790257921_106c3e92.webp
+            [expiration_date] => 
+        )
+
+)
+
