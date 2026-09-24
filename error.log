@@ -2757,3 +2757,75 @@
 
 )
 
+[24-Sep-2026 21:56:07 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquarium Fish Net
+    [description] => 
+    [price] => 482
+    [cost_price] => 300
+    [stock] => 15
+    [unit] => Per Piece
+    [sku] => FIS-08702102
+    [barcode] => 41542367
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:56:20 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 89
+    [data] => Array
+        (
+            [id] => 89
+            [sku] => FIS-08702102
+            [barcode] => 41542367
+            [unit] => Per Piece
+            [cost_price] => 300
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[24-Sep-2026 21:57:48 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 6
+    [name] => Aquarium Airline Tubing 300 Feet Standard 3/16
+    [description] => 
+    [price] => 1810
+    [cost_price] => 1500
+    [stock] => 10
+    [unit] => Per Piece
+    [sku] => FIS-04524866
+    [barcode] => 9734531
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-09-24
+)
+
+[24-Sep-2026 21:57:48 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 90
+    [data] => Array
+        (
+            [id] => 90
+            [sku] => FIS-04524866
+            [barcode] => 9734531
+            [unit] => Per Piece
+            [cost_price] => 1500
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
