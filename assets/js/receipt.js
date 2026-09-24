@@ -11,7 +11,7 @@
  *       status: 'completed' | 'voided'
  *   })  → HTML string
  *
- *   Receipt.print(html)  → opens the browser print dialog for that receipt
+ *   Receipt.print(html)  → prints that receipt from a hidden frame (no new tab)
  */
 (function () {
     // Receipt printer paper. OJ-58K / POS-58 rolls are 58 mm wide with about
@@ -151,17 +151,45 @@ body { width: ${PAPER_MM}mm; }
 @media screen { body { padding: 12px 0; background: #eee; } .rc { background: #fff; padding: 3mm 2mm; } }
 `;
 
+    // Prints from a hidden iframe on the current page, so no new tab opens.
+    // Browsers always show their print dialog; to skip it and print straight to
+    // the default printer, run Chrome with --kiosk-printing on the POS machine.
+    let printing = false;
+
     function print(receiptHtml) {
-        if (!receiptHtml) return;
-        const win = window.open('', '_blank');
-        if (!win) {
-            if (typeof showToast === 'function') {
-                showToast('warning', 'Pop-up blocked', 'Allow pop-ups for this site to print receipts.');
-            }
-            return;
-        }
-        // <base> keeps the logo's relative path working in the new window
-        win.document.write(`<!DOCTYPE html><html>
+        if (!receiptHtml || printing) return;
+        printing = true;
+
+        document.getElementById('receiptPrintFrame')?.remove();
+        const frame = document.createElement('iframe');
+        frame.id = 'receiptPrintFrame';
+        frame.setAttribute('aria-hidden', 'true');
+        // Off-screen but with a real size: Chrome can print a 0x0 or hidden frame blank
+        frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:400px;height:600px;border:0;';
+        document.body.appendChild(frame);
+
+        let done = false;
+        const cleanup = () => {
+            if (done) return;
+            done = true;
+            printing = false;
+            // Removing the frame before the print job is spooled cancels it
+            setTimeout(() => frame.remove(), 1000);
+        };
+
+        frame.onload = function () {
+            const win = frame.contentWindow;
+            win.onafterprint = cleanup;
+            win.focus();
+            win.print();
+            // Chrome blocks in print() until the dialog closes; this covers
+            // browsers that don't fire afterprint
+            setTimeout(cleanup, 60000);
+        };
+
+        // srcdoc fires onload after the logo image has loaded, so it prints.
+        // <base> keeps the logo's relative path working inside the frame.
+        frame.srcdoc = `<!DOCTYPE html><html>
             <head>
                 <meta charset="UTF-8">
                 <base href="${location.href.replace(/[^/]*$/, '')}">
@@ -171,17 +199,8 @@ body { width: ${PAPER_MM}mm; }
                     ${THERMAL_CSS}
                 </style>
             </head>
-            <body>
-                ${receiptHtml}
-                <script>
-                    window.onload = function () {
-                        window.print();
-                        window.onafterprint = function () { window.close(); };
-                    };
-                <\/script>
-            </body>
-        </html>`);
-        win.document.close();
+            <body>${receiptHtml}</body>
+        </html>`;
     }
 
     window.Receipt = { html, print, peso, formatDate };

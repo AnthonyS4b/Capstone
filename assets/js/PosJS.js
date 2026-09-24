@@ -979,7 +979,8 @@ function enlargeQRCode() {
     
     const enlargedImg = document.querySelector('#qrEnlargeModal .modal-body img');
     if (enlargedImg) enlargedImg.src = qrImage.src;
-    new bootstrap.Modal(document.getElementById('qrEnlargeModal')).show();
+    // Reuse one instance: a new Modal per click stacked extra backdrops
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('qrEnlargeModal')).show();
 }
 
 function addQRCodeStyles() {

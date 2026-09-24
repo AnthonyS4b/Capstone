@@ -2973,3 +2973,46 @@
 
 )
 
+[25-Sep-2026 00:36:29 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:36:29 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:36:29 Asia/Manila] Transaction data: User_ID=1, Total=660, Payment=660, Method=gcash
+[25-Sep-2026 00:40:46 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:40:46 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:40:46 Asia/Manila] Transaction data: User_ID=1, Total=210, Payment=250, Method=cash
+[25-Sep-2026 00:40:46 Asia/Manila] Transaction inserted with ID: 1541
+[25-Sep-2026 00:40:48 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 00:45:11 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:45:11 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:45:11 Asia/Manila] Transaction data: User_ID=1, Total=260, Payment=500, Method=cash
+[25-Sep-2026 00:45:11 Asia/Manila] Transaction inserted with ID: 1542
+[25-Sep-2026 00:45:11 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 00:47:57 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:47:57 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:47:57 Asia/Manila] Transaction data: User_ID=1, Total=245, Payment=500, Method=cash
+[25-Sep-2026 00:47:57 Asia/Manila] Transaction inserted with ID: 1543
+[25-Sep-2026 00:47:58 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 00:51:04 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:51:04 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:51:04 Asia/Manila] Transaction data: User_ID=1, Total=565, Payment=1000, Method=cash
+[25-Sep-2026 00:51:04 Asia/Manila] Transaction inserted with ID: 1544
+[25-Sep-2026 00:51:04 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 00:51:25 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:51:25 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:51:25 Asia/Manila] Transaction data: User_ID=1, Total=190, Payment=200, Method=cash
+[25-Sep-2026 00:51:25 Asia/Manila] Transaction inserted with ID: 1545
+[25-Sep-2026 00:51:26 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 00:52:34 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 00:52:34 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 00:52:34 Asia/Manila] Transaction data: User_ID=1, Total=320, Payment=500, Method=cash
+[25-Sep-2026 00:52:34 Asia/Manila] Transaction inserted with ID: 1546
+[25-Sep-2026 00:52:36 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 01:03:53 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 01:03:53 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 01:03:53 Asia/Manila] Transaction data: User_ID=1, Total=90, Payment=200, Method=cash
+[25-Sep-2026 01:03:53 Asia/Manila] Transaction inserted with ID: 1547
+[25-Sep-2026 01:03:53 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[25-Sep-2026 01:04:06 Asia/Manila] Found user_id in session: 1
+[25-Sep-2026 01:04:06 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[25-Sep-2026 01:04:06 Asia/Manila] Transaction data: User_ID=1, Total=90, Payment=90, Method=gcash
+[25-Sep-2026 01:04:06 Asia/Manila] Transaction inserted with ID: 1548
+[25-Sep-2026 01:04:06 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

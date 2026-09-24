@@ -500,6 +500,11 @@ body {
     text-transform: uppercase;
 }
 
+/* Discount / pairing badges sit on a solid red or green fill (set inline) */
+.product-badge.discount-badge {
+    color: #fff;
+}
+
 .product-card.out-of-stock .product-badge {
     background: var(--negative-tint);
     color: var(--negative);
@@ -1440,6 +1445,14 @@ body {
 
 .qr-loading-success {
     animation: checkmark 0.5s ease-in-out;
+}
+
+/* Opens on top of the payment modal. confirm-dialog.js lifts any second
+   backdrop to 1060, which covered this modal (Bootstrap's 1055) and caught
+   every click, so the screen just dimmed and nothing could be closed.
+   Stays below the confirm dialog (1065). */
+#qrEnlargeModal {
+    z-index: 1062;
 }
 
 /* Enlarged modal backdrop blur effect */
