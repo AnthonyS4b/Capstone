@@ -24,11 +24,10 @@ pip install -r requirements.txt
 
 ### Step 2: Configure Database
 
-1. **Import ML Tables** into your `espenida_pos` database:
+1. **Import the database** (the ML tables are included):
    - Open phpMyAdmin or MySQL Workbench
-   - Navigate to your `espenida_pos` database
-   - Import the SQL file: `ml/ml_tables_migration.sql`
-   - Verify new tables are created (see Database Schema section below)
+   - Import `Database SQL/espenida_pos.sql` — it creates the `espenida_pos` database itself
+   - Verify the ML tables exist (see Database Schema section below)
 
 2. **Verify Connection**:
    ```php
@@ -310,7 +309,8 @@ Capstone1/
 │   └── ...existing files...
 │
 ├── reco.php                 # Recommendation dashboard (UPDATED)
-├── espenida_pos.sql         # Database with ML tables (UPDATED)
+├── Database SQL/
+│   └── espenida_pos.sql     # The whole database, ML tables included
 └── ...
 ```
 

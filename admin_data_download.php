@@ -85,6 +85,12 @@ function stream_database_backup(PDO $pdo, string $filename): void
     echo "-- Generated: " . date(DATE_ATOM) . "\n\n";
     echo "SET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n";
 
+    // Creates and selects the database itself, so the file imports in phpMyAdmin
+    // without choosing a database first (same as Database SQL/espenida_pos.sql)
+    $quotedDb = '`' . str_replace('`', '``', POS_DB_NAME) . '`';
+    echo "CREATE DATABASE IF NOT EXISTS {$quotedDb} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;\n";
+    echo "USE {$quotedDb};\n\n";
+
     $tables = $pdo->query("SHOW FULL TABLES WHERE Table_type = 'BASE TABLE'")->fetchAll(PDO::FETCH_NUM);
     foreach ($tables as $tableRow) {
         $table = $tableRow[0];

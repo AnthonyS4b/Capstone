@@ -9,10 +9,14 @@ This guide provides step-by-step instructions on how to package, transfer, and r
 
 1. **Zip the Project Directory:**
    On your current laptop, navigate to your root `htdocs` folder (usually `C:\xampp\htdocs\`).
-   Right-click the `Capstone1` folder and compress it into a `.zip` file.
-   
+   Right-click the `Capstone` folder and compress it into a `.zip` file.
+
 2. **Move to the New Laptop:**
-   Transfer the `Capstone1.zip` file to the new laptop via a flash drive or cloud storage.
+   Transfer the `Capstone.zip` file to the new laptop via a flash drive or cloud storage.
+
+> **Tip:** To bring your latest products, sales and users, first sign in as the owner and open **Backup & export → Download backup**, then save the file as `Capstone\Database SQL\espenida_pos.sql` (replacing the old one) before zipping.
+
+> **Using GitHub instead of a zip?** Commit and push first. The new laptop only gets what is on GitHub, including `espenida_pos.sql`.
 
 ---
 
@@ -23,7 +27,7 @@ The new laptop must have both PHP/MySQL and Python installed to run the dual-sta
 1. **Install XAMPP (for PHP & MySQL):**
    - Download and install [XAMPP](https://www.apachefriends.org/index.html).
    - Open the XAMPP Control Panel and **Start** both the **Apache** and **MySQL** services.
-   - Extract your `Capstone1.zip` folder into the `C:\xampp\htdocs\` directory on the new laptop.
+   - Extract your `Capstone.zip` folder into the `C:\xampp\htdocs\` directory on the new laptop.
 
 2. **Install Python 3.8+ (for the Machine Learning Engine):**
    - Download and install [Python](https://www.python.org/downloads/).
@@ -33,38 +37,34 @@ The new laptop must have both PHP/MySQL and Python installed to run the dual-sta
 
 ### Phase 3: Setting Up the Database
 
-You need to recreate the database tables and records on the new machine.
+There is only one file to import: **`Database SQL\espenida_pos.sql`**. It creates the `espenida_pos` database by itself and fills in every table and record.
 
 1. Open your browser and go to: `http://localhost/phpmyadmin`
-2. Click **New** on the left sidebar to create a new database.
-3. Name the database **`espenida_pos`** (all lowercase) and click **Create**.
-4. With the `espenida_pos` database selected, click the **Import** tab at the top.
-5. Click **Choose File** and navigate to your extracted folder: 
-   `C:\xampp\htdocs\Capstone1\Database SQL\espenida_pos_setup.sql`
-6. Scroll down and click **Import**. Your database is now populated!
+2. Click the **Import** tab at the top (you do not need to create or select a database first).
+3. Click **Choose File** and select:
+   `C:\xampp\htdocs\Capstone\Database SQL\espenida_pos.sql`
+4. Scroll down and click **Import**, then wait for the green *"Import has been successfully finished"* message (it can take up to a minute). The `espenida_pos` database now appears on the left.
+
+> If an `espenida_pos` database already exists on that laptop, importing replaces its tables with the ones in the file.
 
 ---
 
-### Phase 4: Starting the Python Machine Learning Server
+### Phase 4: Installing the Machine Learning Libraries
 
-The POS UI will run automatically via Apache, but the AI recommendation capabilities rely on the Python background server.
+The recommendation engine is a Python server. You only install its libraries once; the system starts the server by itself whenever it is needed.
 
 1. Open a terminal on the new laptop. You can press `Win + R`, type `cmd`, and press Enter.
 2. Navigate into the Machine Learning directory by typing:
    ```cmd
-   cd C:\xampp\htdocs\Capstone1\ml
+   cd C:\xampp\htdocs\Capstone\ml
    ```
-3. **Install the ML Dependencies:**
-   Run the following command to download all the AI libraries (this requires internet access):
+3. **Install the ML Dependencies** (this requires internet access):
    ```cmd
+   pip install -r requirements.txt
    ```
    *(Wait for it to finish installing pandas, scikit-learn, flask, etc.)*
 
-4. **Start the API Server:**
-   ```cmd
-   python api_server.py
-   ```
-   *You should see a message saying "[OK] Starting on http://127.0.0.1:5000". Leave this black terminal window open in the background!*
+There is no need to run `python api_server.py` or keep a terminal open.
 
 ---
 
@@ -72,8 +72,8 @@ The POS UI will run automatically via Apache, but the AI recommendation capabili
 
 1. Open a modern web browser (Chrome, Edge, Firefox).
 2. Type in the following URL:
-   `http://localhost/Capstone1/Login.php`
+   `http://localhost/Capstone/Login.php`
 3. Log in using your default Administrator/Owner credentials.
-4. Navigate to the **Recommendations** dashboard. The system will automatically link up with the Python terminal window in the background, load the Random Forest model, and analyze your inventory!
+4. Navigate to the **Recommendations** dashboard. The first visit starts the Python server in the background (about 15 seconds the very first time, a few seconds after that), loads the Random Forest model, and analyzes your inventory.
 
-> **Troubleshooting Tip:** If the Recommendation dashboard says "Disconnected", immediately check the black Python terminal window to ensure it hasn't crashed or been closed.
+> **Troubleshooting Tip:** If the Recommendation dashboard says "Recommendation Engine Offline", open `C:\xampp\htdocs\Capstone\ml\logs\ml_server.log` to see why the server could not start. The usual cause is that Phase 4 was skipped or Python was installed without "Add Python to PATH".
