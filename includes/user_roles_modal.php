@@ -111,7 +111,7 @@ $um_confirm = __DIR__ . '/../assets/js/confirm-dialog.js';
             </div>
             <div class="um-foot">
                 <button type="button" class="um-btn um-btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="um-btn um-btn-primary" onclick="saveNewUser()">
+                <button type="button" class="um-btn um-btn-primary" id="addUserSaveBtn" onclick="saveNewUser()">
                     <i class="fas fa-plus" aria-hidden="true"></i>Add user
                 </button>
             </div>

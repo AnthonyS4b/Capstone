@@ -17,19 +17,7 @@
 
 ### Step 1: Install Python Dependencies
 
-#### On Windows:
-```bash
-cd c:\xampp\htdocs\Capstone1\ml
-run_server.bat
-```
-
-#### On Linux/Mac:
-```bash
-cd /path/to/Capstone1/ml
-python3 run_server.py
-```
-
-Or manually install dependencies:
+Run once, from the `ml` folder:
 ```bash
 pip install -r requirements.txt
 ```
@@ -53,19 +41,13 @@ pip install -r requirements.txt
 
 ### Step 3: Start the ML API Server
 
-#### Quick Start (Recommended):
+#### Automatic (default):
 
-**Windows:**
-```bash
-cd c:\xampp\htdocs\Capstone1\ml
-run_server.bat
-```
-
-**Linux/Mac:**
-```bash
-cd /path/to/Capstone1/ml  
-python3 run_server.py
-```
+Nothing to run. The first request that needs the ML server (for example opening
+Recommendations) starts `api_server.py` in the background — see the auto-start
+code at the top of `ajax/ml_recommendation_ajax.php`. It finds the Python that
+has the packages above (or the one in the `ML_PYTHON` environment variable) and
+writes its output to `ml/logs/ml_server.log`. To stop it, run `stop_server.vbs`.
 
 #### Manual Start:
 
@@ -207,7 +189,7 @@ Add to your server's cron job or Windows Task Scheduler:
 **Windows (Task Scheduler):**
 ```
 Trigger: Daily at 2:00 AM
-Task: C:\xampp\htdocs\Capstone1\ml\run_server.bat
+Task: python C:\xampp\htdocs\Capstone\ml\api_server.py
 ```
 
 ## 📈 Understanding the ML Algorithm
@@ -314,16 +296,13 @@ Capstone1/
 ├── ml/                      # ML Engine (NEW)
 │   ├── api_server.py       # Flask API server
 │   ├── recommendation_model.py  # ML model & logic
-│   ├── data_processor.py    # Data preprocessing
-│   ├── db_connector.py      # Database interface
+│   ├── data_service.py      # Data preprocessing & database access
 │   ├── ml_config.py        # Configuration
 │   ├── requirements.txt     # Python dependencies
-│   ├── run_server.bat       # Windows launcher
-│   ├── run_server.py        # Cross-platform launcher
+│   ├── stop_server.vbs      # Stops the background server
 │   ├── __init__.py          # Package init
-│   ├── ml_tables_migration.sql  # Database schema
 │   ├── models/              # Trained model storage
-│   ├── logs/                # Application logs
+│   ├── logs/                # Server log (auto-start)
 │   └── README.md
 │
 ├── ajax/

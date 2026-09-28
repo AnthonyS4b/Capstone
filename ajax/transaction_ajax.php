@@ -145,7 +145,9 @@ try {
                     SELECT
                         p.id, p.name, p.price, p.stock,
                         sh.strategy_id, sh.paired_product_id, sh.discounted_price,
-                        CASE WHEN sh.strategy_id = 'cross_sell_pairing' THEN p.price
+                        -- Pairing and Buy 1 Take 1 keep the regular price; price_promotion_items()
+                        -- applies their discount per pair
+                        CASE WHEN sh.strategy_id IN ('cross_sell_pairing', 'buy_one_take_one') THEN p.price
                              ELSE COALESCE(sh.discounted_price, p.price) END AS effective_price
                     FROM products p
                     LEFT JOIN strategy_history sh ON sh.id = (

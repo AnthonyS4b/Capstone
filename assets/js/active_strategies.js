@@ -85,6 +85,7 @@ function renderActiveStrategies(strategies) {
     const canCancel = window.activePromosCanCancel !== false;
     promoMessage(strategies.map(s => {
         const paired = s.strategy_id === 'cross_sell_pairing';
+        const bogo = s.strategy_id === 'buy_one_take_one';
         const timing = promoTiming(s.started_at, s.ended_at);
         const discount = Number(s.discount_applied) || 0;
         const thumb = s.image
@@ -97,13 +98,18 @@ function renderActiveStrategies(strategies) {
                 <div class="promo-main">
                     <div class="promo-top">
                         <span class="promo-product">${escapeHtmlStr(s.product_name)}</span>
-                        ${discount > 0 ? `<span class="promo-off">${discount}% off</span>` : ''}
+                        ${bogo ? '<span class="promo-off">Buy 1 Take 1</span>'
+                            : discount > 0 ? `<span class="promo-off">${discount}% off</span>` : ''}
                     </div>
                     <div class="promo-strategy">${escapeHtmlStr(s.strategy_name || s.strategy_id)}</div>
                     ${paired ? `<div class="promo-note">When bought with ${escapeHtmlStr(s.paired_product_name || 'its paired product')} — one discounted unit per pair</div>` : ''}
+                    ${bogo ? '<div class="promo-note">Every second unit of the same product is free at checkout</div>' : ''}
                     <div class="promo-price">
-                        <span class="promo-new">${promoPeso(s.discounted_price)}${paired ? ' <small>when paired</small>' : ''}</span>
-                        <span class="promo-old">${paired ? 'Regular ' : ''}${promoPeso(s.original_price)}</span>
+                        ${bogo
+                            // The price stays regular; the discount is the free unit
+                            ? `<span class="promo-new">${promoPeso(s.original_price)} <small>each</small></span>`
+                            : `<span class="promo-new">${promoPeso(s.discounted_price)}${paired ? ' <small>when paired</small>' : ''}</span>
+                               <span class="promo-old">${paired ? 'Regular ' : ''}${promoPeso(s.original_price)}</span>`}
                     </div>
                     <div class="promo-time ${timing.soon ? 'is-soon' : ''}">
                         <span>${timing.text}</span>

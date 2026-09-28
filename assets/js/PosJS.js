@@ -254,9 +254,13 @@ function displayProducts(productsToShow) {
             : `<div class="product-icon"><i class="fas ${icon}"></i></div>`;
             
         const isPairing = product.strategy_id === 'cross_sell_pairing';
-        const isDiscounted = discountApplied > 0 && !isPairing;
-        const discountedClass = isDiscounted ? 'discounted' : '';
-        const discountBadge = isPairing ? `<span class="product-badge discount-badge" style="background:#2c5530; left:8px; right:auto;">Pair &amp; save</span>` : isDiscounted ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">-${discountApplied}% OFF</span>` : '';
+        // Buy 1 Take 1 keeps the regular price; every second unit is free at checkout
+        const isBogo = product.strategy_id === 'buy_one_take_one';
+        const isDiscounted = discountApplied > 0 && !isPairing && !isBogo;
+        const discountedClass = isDiscounted || isBogo ? 'discounted' : '';
+        const discountBadge = isPairing ? `<span class="product-badge discount-badge" style="background:#2c5530; left:8px; right:auto;">Pair &amp; save</span>`
+            : isBogo ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">Buy 1 Take 1</span>`
+            : isDiscounted ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">-${discountApplied}% OFF</span>` : '';
         const priceHtml = isDiscounted 
             ? `<div class="product-price"><span style="text-decoration: line-through; color: #94a3b8; font-size: 0.85em; margin-right: 5px;">₱${originalPrice.toFixed(2)}</span><span style="color:#e74c3c">₱${price.toFixed(2)}</span></div>` 
             : `<div class="product-price">₱${price.toFixed(2)}</div>`;
@@ -281,6 +285,7 @@ function displayProducts(productsToShow) {
                     <div class="product-category">${escapeHtml(product.category_name || 'Uncategorized')}</div>
                     ${priceHtml}
                     ${isPairing ? `<div class="small text-success">₱${Number(product.discounted_price).toFixed(2)} when bought with ${escapeHtml(product.paired_product_name || 'the paired product')} (one per pair)</div>` : ''}
+                    ${isBogo ? '<div class="small text-success">Every 2nd unit free</div>' : ''}
                     <div class="product-stock ${stockClass}"><i class="fas fa-box"></i> Stock: ${stock}</div>
                 </div>
             </div>`;
@@ -441,7 +446,19 @@ function getPairingQuantity(item) {
     return Math.min(item.quantity, partner?.quantity || 0);
 }
 
+// Buy 1 Take 1: every second unit is free, matching price_promotion_items() on the server
+function getFreeQuantity(item) {
+    const promo = item.promotion || {};
+    if (promo.strategy_id !== 'buy_one_take_one') return 0;
+    if (promo.strategy_ended_at && new Date(promo.strategy_ended_at.replace(' ', 'T')) <= new Date()) return 0;
+    return Math.floor(item.quantity / 2);
+}
+
 function getCartLineTotal(item) {
+    const free = getFreeQuantity(item);
+    if (free > 0) {
+        return ((item.quantity - free) * Math.round(item.price * 100)) / 100;
+    }
     const paired = getPairingQuantity(item);
     const normalCents = Math.round(item.price * 100);
     const pairedCents = Math.round(Number(item.promotion?.discounted_price || 0) * 100);
@@ -473,6 +490,7 @@ function updateCartDisplay() {
                     <div class="cart-item-title">${escapeHtml(item.name)}</div>
                     <div class="cart-item-price">₱${item.price.toFixed(2)} each</div>
                     ${item.promotion?.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">${getPairingQuantity(item)} paired at ₱${Number(item.promotion.discounted_price).toFixed(2)} each. Pair with ${escapeHtml(item.promotion.paired_product_name || 'the selected partner')}.</div>` : ''}
+                    ${item.promotion?.strategy_id === 'buy_one_take_one' ? `<div class="small text-success">Buy 1 Take 1 · ${getFreeQuantity(item)} free</div>` : ''}
                     <div class="cart-item-quantity">
                         <button class="qty-btn" onclick="updateQuantity(${index},'decrease')" title="Decrease">
                             <i class="fas fa-minus"></i>
@@ -538,6 +556,12 @@ function setQuantityDirect(index, inputEl) {
     }
 
     cart[index].quantity = val;
+    // Promotion lines show a free/paired count that depends on the quantity
+    const promoId = cart[index].promotion?.strategy_id;
+    if (promoId === 'buy_one_take_one' || promoId === 'cross_sell_pairing') {
+        updateCartDisplay();
+        return;
+    }
     inputEl.value = val; // fix displayed value without full re-render
     updateSummary();
 }

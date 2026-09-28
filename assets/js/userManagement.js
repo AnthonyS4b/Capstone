@@ -334,8 +334,11 @@ function saveNewUser() {
         position: position
     };
     
-    // Show loading state on button
-    const saveBtn = event.target;
+    // Show loading state on the Add user button. Not event.target: pressing Enter
+    // makes that the whole form (whose fields the spinner would then wipe), and a
+    // click on the + icon makes it the icon (so the button never got disabled).
+    const saveBtn = document.getElementById('addUserSaveBtn');
+    if (!saveBtn || saveBtn.disabled) return; // already saving
     const originalText = saveBtn.innerHTML;
     saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
     saveBtn.disabled = true;

@@ -14,6 +14,15 @@ import sys
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
+# Started in the background by ajax/ml_recommendation_ajax.php (pythonw, no
+# console): send prints, logging and tracebacks to the log file instead of
+# losing them. Done before the other imports so import errors are kept too.
+if os.environ.get("ML_SERVER_LOG"):
+    _log_path = os.environ["ML_SERVER_LOG"]
+    os.makedirs(os.path.dirname(_log_path), exist_ok=True)
+    sys.stdout = sys.stderr = open(_log_path, "a", buffering=1, encoding="utf-8")
+    print(f"\n--- started {datetime.now():%Y-%m-%d %H:%M:%S} (pid {os.getpid()}) ---")
+
 import numpy as np
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -946,8 +955,11 @@ def save_recommendation() -> Tuple[Any, int]:
                          discounted_price, duration_days, notes, data.get("user_id"), paired_product_id)
                     )
 
-                    # 4. Update product selling price to discounted price
-                    if discount > 0 and strategy_id != "cross_sell_pairing":
+                    # 4. Update product selling price to discounted price. Pairing and
+                    # Buy 1 Take 1 keep the regular price: checkout discounts them per
+                    # pair (includes/promotion_pricing.php), so a single unit is never
+                    # sold at the pair price.
+                    if discount > 0 and strategy_id not in ("cross_sell_pairing", "buy_one_take_one"):
                         cursor.execute(
                             "UPDATE products SET price = %s, updated_at = NOW() WHERE id = %s",
                             (discounted_price, product_id)
@@ -974,6 +986,8 @@ def save_recommendation() -> Tuple[Any, int]:
             "status": "saved",
             "message": ("Cross-Sell Pairing activated. The discount applies at checkout, once per matching pair."
                         if paired_product_id else
+                        "Buy 1 Take 1 activated. Every second unit is free at checkout."
+                        if strategy_id == "buy_one_take_one" else
                         f"Strategy applied! Price updated from ₱{original_price:.2f} to ₱{discounted_price:.2f}"),
             "original_price": original_price,
             "discounted_price": discounted_price,
@@ -1049,7 +1063,8 @@ def cancel_strategy() -> Tuple[Any, int]:
         # Revert the product price, unless the owner changed it during the promotion
         # (then their newer price stands, matching includes/promotion_pricing.php)
         price_kept = False
-        if strategy["strategy_id"] != "cross_sell_pairing":
+        keeps_price = strategy["strategy_id"] in ("cross_sell_pairing", "buy_one_take_one")
+        if not keeps_price:
             reverted = DatabaseConnector.execute_insert_update(
                 "UPDATE products SET price = %s, updated_at = NOW() "
                 "WHERE id = %s AND ABS(price - %s) < 0.005",
@@ -1065,6 +1080,8 @@ def cancel_strategy() -> Tuple[Any, int]:
             "success": True,
             "message": ("Cross-Sell Pairing cancelled. The regular product price is unchanged."
                         if strategy["strategy_id"] == "cross_sell_pairing" else
+                        "Buy 1 Take 1 cancelled. The regular product price is unchanged."
+                        if keeps_price else
                         "Strategy cancelled. The price you set during the promotion was kept."
                         if price_kept else
                         f"Strategy cancelled successfully. Price reverted to ₱{original_price:.2f}")

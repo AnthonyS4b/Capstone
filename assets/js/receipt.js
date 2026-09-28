@@ -85,7 +85,7 @@
                 <div class="rc-item">
                     <div class="rc-item-name">${esc(i.name)}</div>
                     <div class="rc-item-line">
-                        <span>${Number(i.quantity)} × ${peso(i.price)}</span>
+                        <span>${Number(i.quantity)} × ${Number(i.price) === 0 ? 'Free' : peso(i.price)}</span>
                         <span>${peso(Number(i.price) * Number(i.quantity))}</span>
                     </div>
                 </div>`).join('')

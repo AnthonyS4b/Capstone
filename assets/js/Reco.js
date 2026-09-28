@@ -110,7 +110,7 @@ function loadRecommendations() {
         error() {
             showEmptyState(
                 'Recommendation Engine Offline',
-                'Start the server with: python ml/api_server.py'
+                'The ML server could not be started automatically. Check ml/logs/ml_server.log, then refresh.'
             );
         },
     });

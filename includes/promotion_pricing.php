@@ -10,6 +10,19 @@ function price_promotion_items(array $items): array
     $priced = [];
     foreach ($items as $item) {
         $quantity = (int)$item['quantity'];
+
+        // Buy 1 Take 1: every second unit of the same product is free, so an odd
+        // unit (or a single one) is charged the regular price
+        if (($item['strategy_id'] ?? '') === 'buy_one_take_one') {
+            $free = intdiv($quantity, 2);
+            $base = ['id' => (int)$item['id'], 'name' => $item['name']];
+            $priced[] = $base + ['price' => round((float)$item['price'], 2), 'quantity' => $quantity - $free];
+            if ($free > 0) {
+                $priced[] = $base + ['price' => 0.0, 'quantity' => $free];
+            }
+            continue;
+        }
+
         $pairedQuantity = 0;
         $partnerId = (int)($item['paired_product_id'] ?? 0);
         if (($item['strategy_id'] ?? '') === 'cross_sell_pairing'
@@ -69,7 +82,8 @@ function promotions_expire_due(PDO $pdo): int
 
             $pdo->prepare("UPDATE strategy_history SET status = 'completed' WHERE id = ?")->execute([$historyId]);
 
-            if ($promo['strategy_id'] !== 'cross_sell_pairing') {
+            // Pairing and Buy 1 Take 1 never change products.price, so there is nothing to restore
+            if (!in_array($promo['strategy_id'], ['cross_sell_pairing', 'buy_one_take_one'], true)) {
                 $newer = $pdo->prepare("SELECT 1 FROM strategy_history
                                         WHERE product_id = ? AND id <> ? AND status = 'applied'
                                           AND (ended_at IS NULL OR ended_at > NOW()) LIMIT 1");
