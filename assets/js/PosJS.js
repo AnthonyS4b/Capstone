@@ -48,9 +48,36 @@ const changeSpan   = document.getElementById('changeAmount');
             border: 2px solid #e74c3c;
             box-shadow: 0 4px 12px rgba(231, 76, 60, 0.15);
         }
+        .qty-unit {
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+        }
     `;
     document.head.appendChild(style);
 })();
+
+// ── Per Kilo products: quantity is decimal kilograms (0.5, 1.25, 2.5) ──
+const KILO_STEP = 0.5; // what + / − change on a Per Kilo cart line
+
+function isPerKiloUnit(unit) {
+    return String(unit || '').trim().toLowerCase() === 'per kilo';
+}
+
+function roundQty(qty) {
+    return Math.round((Number(qty) || 0) * 100) / 100;
+}
+
+// "2.5 kg" for Per Kilo, "4" otherwise (stock arrives as DECIMAL text, e.g. "4.00")
+function formatQty(qty, unit) {
+    const n = Number(qty) || 0;
+    return isPerKiloUnit(unit) ? `${roundQty(n)} kg` : String(Math.round(n));
+}
+
+// quantity × price in centavos, rounded to the centavo like priced_line_cents() on the server
+function lineCents(qty, price) {
+    return Math.round(Math.round((Number(qty) || 0) * 100) * Math.round((Number(price) || 0) * 100) / 100);
+}
 
 // Helper Functions
 function escapeHtml(text) {
@@ -251,7 +278,9 @@ function displayProducts(productsToShow) {
     
     let html = '';
     productsToShow.forEach(product => {
-        const stock = parseInt(product.stock) || 0;
+        const perKilo = isPerKiloUnit(product.unit);
+        const stock = perKilo ? roundQty(product.stock) : (parseInt(product.stock) || 0);
+        const perKg = perKilo ? '<small>/kg</small>' : '';
         const price = parseFloat(product.price) || 0;
         const discountApplied = parseFloat(product.discount_applied) || 0;
         const originalPrice = parseFloat(product.original_price) || 0;
@@ -270,9 +299,9 @@ function displayProducts(productsToShow) {
         const discountBadge = isPairing ? `<span class="product-badge discount-badge" style="background:#2c5530; left:8px; right:auto;">Pair &amp; save</span>`
             : isBogo ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">Buy 1 Take 1</span>`
             : isDiscounted ? `<span class="product-badge discount-badge" style="background:#e74c3c; left:8px; right:auto;">-${discountApplied}% OFF</span>` : '';
-        const priceHtml = isDiscounted 
-            ? `<div class="product-price"><span style="text-decoration: line-through; color: #94a3b8; font-size: 0.85em; margin-right: 5px;">₱${originalPrice.toFixed(2)}</span><span style="color:#e74c3c">₱${price.toFixed(2)}</span></div>` 
-            : `<div class="product-price">₱${price.toFixed(2)}</div>`;
+        const priceHtml = isDiscounted
+            ? `<div class="product-price"><span style="text-decoration: line-through; color: #94a3b8; font-size: 0.85em; margin-right: 5px;">₱${originalPrice.toFixed(2)}</span><span style="color:#e74c3c">₱${price.toFixed(2)}</span>${perKg}</div>`
+            : `<div class="product-price">₱${price.toFixed(2)}${perKg}</div>`;
         
         html += `
             <div class="product-card ${stock <= 0 ? 'out-of-stock' : ''} ${discountedClass}"
@@ -294,8 +323,8 @@ function displayProducts(productsToShow) {
                     <div class="product-category">${escapeHtml(product.category_name || 'Uncategorized')}</div>
                     ${priceHtml}
                     ${isPairing ? `<div class="small text-success">₱${Number(product.discounted_price).toFixed(2)} when bought with ${escapeHtml(product.paired_product_name || 'the paired product')} (one per pair)</div>` : ''}
-                    ${isBogo ? '<div class="small text-success">Every 2nd unit free</div>' : ''}
-                    <div class="product-stock ${stockClass}"><i class="fas fa-box"></i> Stock: ${stock}</div>
+                    ${isBogo && !perKilo ? '<div class="small text-success">Every 2nd unit free</div>' : ''}
+                    <div class="product-stock ${stockClass}"><i class="fas fa-box"></i> Stock: ${formatQty(stock, product.unit)}</div>
                 </div>
             </div>`;
     });
@@ -314,8 +343,8 @@ function attachProductClickHandlers() {
             addToCart(
                 parseInt(this.dataset.id), 
                 this.dataset.name, 
-                parseFloat(this.dataset.price), 
-                parseInt(this.dataset.stock),
+                parseFloat(this.dataset.price),
+                parseFloat(this.dataset.stock),
                 this.dataset.image || '',
                 this.dataset.strategy || ''
             );
@@ -384,7 +413,7 @@ function findProductByBarcode(barcode) {
                 const id = parseInt(p.id) || 0;
                 const name = p.name || '';
                 const price = parseFloat(p.price) || 0;
-                const stock = parseInt(p.stock) || 0;
+                const stock = roundQty(p.stock);
                 
                 if (!id || !name) {
                     showToast('error', 'Not Found', 'Product data is incomplete');
@@ -411,39 +440,55 @@ function findProductByBarcode(barcode) {
 // Cart Functions
 function addToCart(productId, productName, productPrice, productStock, productImage, strategyId, promotion) {
     promotion = promotion || products.find(p => Number(p.id) === productId) || {};
-    const qtyToAdd = (strategyId === 'buy_one_take_one') ? 2 : 1;
+    const unit = promotion.unit || '';
+    const perKilo = isPerKiloUnit(unit);
+    // Per Kilo starts at 1 kg (or whatever is left) and the cashier types the weight;
+    // Buy 1 Take 1 counts whole units, so it does not apply to Per Kilo
+    const qtyToAdd = perKilo ? roundQty(Math.min(1, productStock))
+        : (strategyId === 'buy_one_take_one') ? 2 : 1;
 
-    if (productStock < qtyToAdd) { 
-        showToast('error', 'Out of Stock', `This product requires at least ${qtyToAdd} in stock.`); 
-        return; 
+    if (!(qtyToAdd > 0) || productStock < qtyToAdd) {
+        showToast('error', 'Out of Stock', `This product requires at least ${formatQty(qtyToAdd || 1, unit)} in stock.`);
+        return;
     }
-    
+
     const existing = cart.find(item => item.id === productId);
-    
+
     if (existing) {
-        if (existing.quantity + qtyToAdd <= productStock) { 
+        if (roundQty(existing.quantity + qtyToAdd) <= productStock) {
             existing.price = productPrice;
             existing.promotion = promotion;
-            existing.quantity += qtyToAdd; 
-            showToast('success', 'Quantity Updated', `${productName} quantity increased by ${qtyToAdd}`); 
-        } else { 
-            showToast('warning', 'Stock Limit', 'Cannot add more than available stock'); 
-            return; 
+            existing.stock = productStock;
+            existing.quantity = roundQty(existing.quantity + qtyToAdd);
+            showToast('success', 'Quantity Updated', `${productName} quantity increased by ${formatQty(qtyToAdd, unit)}`);
+        } else {
+            showToast('warning', 'Stock Limit', `Only ${formatQty(productStock, unit)} available`);
+            return;
         }
     } else {
-        cart.push({ 
-            id: productId, 
-            name: productName, 
-            price: productPrice, 
-            quantity: qtyToAdd, 
+        cart.push({
+            id: productId,
+            name: productName,
+            price: productPrice,
+            quantity: qtyToAdd,
             stock: productStock,
+            unit: unit,
             image: productImage || '',
             strategy_id: strategyId || '',
             promotion: promotion
         });
-        showToast('success', 'Added to Cart', `${productName} has been added ${qtyToAdd > 1 ? '(Buy 1 Take 1 applied)' : ''}`);
+        showToast('success', 'Added to Cart', perKilo
+            ? `${productName} added — enter the weight in kg`
+            : `${productName} has been added ${qtyToAdd > 1 ? '(Buy 1 Take 1 applied)' : ''}`);
     }
     updateCartDisplay();
+
+    // Weighed products: put the cursor in the kg box so the cashier can type the weight
+    if (perKilo) {
+        const index = cart.findIndex(item => item.id === productId);
+        const input = cartItemsEl?.querySelector(`.qty-input[data-index="${index}"]`);
+        if (input) { input.focus(); input.select(); }
+    }
 }
 
 function getPairingQuantity(item) {
@@ -458,20 +503,21 @@ function getPairingQuantity(item) {
 // Buy 1 Take 1: every second unit is free, matching price_promotion_items() on the server
 function getFreeQuantity(item) {
     const promo = item.promotion || {};
-    if (promo.strategy_id !== 'buy_one_take_one') return 0;
+    if (promo.strategy_id !== 'buy_one_take_one' || isPerKiloUnit(item.unit)) return 0;
     if (promo.strategy_ended_at && new Date(promo.strategy_ended_at.replace(' ', 'T')) <= new Date()) return 0;
     return Math.floor(item.quantity / 2);
 }
 
+// Quantity × price, each part rounded to the centavo exactly as checkout does
+// (2.5 kg × ₱120.00/kg = ₱300.00)
 function getCartLineTotal(item) {
     const free = getFreeQuantity(item);
     if (free > 0) {
-        return ((item.quantity - free) * Math.round(item.price * 100)) / 100;
+        return lineCents(item.quantity - free, item.price) / 100;
     }
     const paired = getPairingQuantity(item);
-    const normalCents = Math.round(item.price * 100);
-    const pairedCents = Math.round(Number(item.promotion?.discounted_price || 0) * 100);
-    return ((item.quantity - paired) * normalCents + paired * pairedCents) / 100;
+    return (lineCents(item.quantity - paired, item.price)
+          + lineCents(paired, Number(item.promotion?.discounted_price || 0))) / 100;
 }
 
 function updateCartDisplay() {
@@ -492,30 +538,33 @@ function updateCartDisplay() {
         const cartVisual = item.image
             ? `<div class="cart-item-icon cart-item-thumb"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>`
             : `<div class="cart-item-icon"><i class="fas fa-paw"></i></div>`;
+        const perKilo = isPerKiloUnit(item.unit);
         html += `
             <div class="cart-item">
                 ${cartVisual}
                 <div class="cart-item-details">
                     <div class="cart-item-title">${escapeHtml(item.name)}</div>
-                    <div class="cart-item-price">₱${item.price.toFixed(2)} each</div>
+                    <div class="cart-item-price">₱${item.price.toFixed(2)}${perKilo ? '/kg' : ' each'}</div>
+                    ${perKilo ? `<div class="small text-muted cart-item-kg-total">${formatQty(item.quantity, item.unit)} × ₱${item.price.toFixed(2)}/kg = ${formatPeso(getCartLineTotal(item))}</div>` : ''}
                     ${item.promotion?.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">${getPairingQuantity(item)} paired at ₱${Number(item.promotion.discounted_price).toFixed(2)} each. Pair with ${escapeHtml(item.promotion.paired_product_name || 'the selected partner')}.</div>` : ''}
                     ${item.promotion?.strategy_id === 'buy_one_take_one' ? `<div class="small text-success">Buy 1 Take 1 · ${getFreeQuantity(item)} free</div>` : ''}
                     <div class="cart-item-quantity">
                         <button class="qty-btn" onclick="updateQuantity(${index},'decrease')" title="Decrease">
                             <i class="fas fa-minus"></i>
                         </button>
-                        <input 
-                            type="number" 
-                            class="qty-input" 
-                            value="${item.quantity}" 
-                            min="1" 
+                        <input
+                            type="number"
+                            class="qty-input"
+                            value="${perKilo ? roundQty(item.quantity) : item.quantity}"
+                            min="${perKilo ? '0.01' : '1'}"
+                            step="${perKilo ? '0.01' : '1'}"
                             max="${item.stock}"
                             data-index="${index}"
-                            title="Edit quantity"
+                            title="${perKilo ? 'Weight in kg' : 'Edit quantity'}"
                             onclick="this.select()"
                             onchange="setQuantityDirect(${index}, this)"
                             onkeydown="if(event.key==='Enter'){this.blur();}"
-                        >
+                        >${perKilo ? '<span class="qty-unit">kg</span>' : ''}
                         <button class="qty-btn" onclick="updateQuantity(${index},'increase')" title="Increase">
                             <i class="fas fa-plus"></i>
                         </button>
@@ -532,39 +581,54 @@ function updateCartDisplay() {
 }
 
 function updateQuantity(index, action) {
-    if (!cart[index]) return;
-    
+    const item = cart[index];
+    if (!item) return;
+    // Per Kilo lines move in half kilos; other units one at a time
+    const perKilo = isPerKiloUnit(item.unit);
+    const step = perKilo ? KILO_STEP : 1;
+
     if (action === 'increase') {
-        if (cart[index].quantity < cart[index].stock) {
-            cart[index].quantity += 1;
-        } else { 
-            showToast('warning', 'Stock Limit', 'Cannot add more than available stock'); 
-            return; 
+        if (item.quantity < item.stock) {
+            item.quantity = roundQty(Math.min(item.quantity + step, item.stock));
+        } else {
+            showToast('warning', 'Stock Limit', `Only ${formatQty(item.stock, item.unit)} available`);
+            return;
         }
     } else {
-        if (cart[index].quantity > 1) {
-            cart[index].quantity -= 1;
-        } else { 
-            removeFromCart(index); 
-            return; 
+        if (roundQty(item.quantity - step) >= (perKilo ? 0.01 : 1)) {
+            item.quantity = roundQty(item.quantity - step);
+        } else {
+            removeFromCart(index);
+            return;
         }
     }
     updateCartDisplay();
 }
 
 function setQuantityDirect(index, inputEl) {
-    if (!cart[index]) return;
+    const item = cart[index];
+    if (!item) return;
+    const perKilo = isPerKiloUnit(item.unit);
 
-    let val = parseInt(inputEl.value);
+    // Per Kilo: kilograms with up to 2 decimals (0.5, 1.25); other units whole numbers
+    let val = perKilo ? roundQty(parseFloat(inputEl.value)) : parseInt(inputEl.value);
 
-    if (isNaN(val) || val < 1) {
-        val = 1;
-    } else if (val > cart[index].stock) {
-        showToast('warning', 'Stock Limit', `Only ${cart[index].stock} units available`);
-        val = cart[index].stock;
+    if (isNaN(val) || val < (perKilo ? 0.01 : 1)) {
+        if (perKilo) showToast('warning', 'Invalid Weight', 'Enter the weight in kg, e.g. 0.5 or 2.5');
+        val = perKilo ? item.quantity : 1;
+    } else if (val > item.stock) {
+        showToast('warning', 'Stock Limit', perKilo
+            ? `Only ${formatQty(item.stock, item.unit)} available`
+            : `Only ${item.stock} units available`);
+        val = item.stock;
     }
 
-    cart[index].quantity = val;
+    item.quantity = val;
+    if (perKilo) {
+        // The kg line under the name shows the new total
+        updateCartDisplay();
+        return;
+    }
     // Promotion lines show a free/paired count that depends on the quantity
     const promoId = cart[index].promotion?.strategy_id;
     if (promoId === 'buy_one_take_one' || promoId === 'cross_sell_pairing') {
@@ -750,13 +814,14 @@ function showPaymentConfirmation(total, paymentAmount) {
     }
     if (confirmPayment) confirmPayment.value = paymentAmount || '';
 
-    const units = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    // A weighed (Per Kilo) line counts as one item, whatever it weighs
+    const units = cart.reduce((sum, item) => sum + (isPerKiloUnit(item.unit) ? 1 : Number(item.quantity || 0)), 0);
     if (itemCount) itemCount.textContent = `${units} item${units === 1 ? '' : 's'} · view list`;
     if (confirmItems) {
         confirmItems.innerHTML = cart.map(item =>
             `<div class="pay-item">
                 <span class="pay-item-name">${escapeHtml(item.name)}</span>
-                <span class="pay-item-qty">×${item.quantity}</span>
+                <span class="pay-item-qty">${isPerKiloUnit(item.unit) ? formatQty(item.quantity, item.unit) : '×' + item.quantity}</span>
                 <span class="pay-item-amt">${formatPeso(getCartLineTotal(item))}</span>
             </div>`
         ).join('');
@@ -822,7 +887,11 @@ function updateConfirmChange() {
     if (btnText) btnText.textContent = isCash ? `Complete sale · ${formatPeso(total)}` : 'Confirm GCash payment';
 }
 
+// One checkout at a time: a second submit while the first is still saving would record the sale twice
+let paymentInFlight = false;
+
 function processPayment(total, payment, change, paymentMethod, reference) {
+    if (paymentInFlight) return;
     showLoading();
 
     // Get user info from PHP constants - with null checks
@@ -839,18 +908,22 @@ function processPayment(total, payment, change, paymentMethod, reference) {
         return;
     }
 
-    const cartSnapshot = cart.map(item => ({ 
-        id: item.id, 
-        name: item.name, 
-        price: item.price, 
-        quantity: item.quantity 
+    const cartSnapshot = cart.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: roundQty(item.quantity),
+        unit: item.unit || ''
     }));
 
+    paymentInFlight = true;
     $.ajax({
-        url: 'ajax/transaction_ajax.php', 
-        method: 'POST', 
-        dataType: 'json', 
-        timeout: 30000,
+        url: 'ajax/transaction_ajax.php',
+        method: 'POST',
+        dataType: 'json',
+        // A sale writes many rows; on a slow hard disk that can take well over 30 seconds
+        timeout: 120000,
+        complete: function() { paymentInFlight = false; },
         data: {
             action: 'save_transaction',
             user_id: userId,
@@ -888,6 +961,12 @@ function processPayment(total, payment, change, paymentMethod, reference) {
         },
         error: function(xhr, status, error) {
             hideLoading();
+            if (status === 'timeout') {
+                // The server may still complete the sale after the browser stops waiting
+                showToast('warning', 'Sale not confirmed', 'The server is slow to answer. Check Sales transactions before charging the customer again.');
+                console.error('Transaction timed out');
+                return;
+            }
             let msg = 'Transaction failed. ';
             try {
                 const response = JSON.parse(xhr.responseText);

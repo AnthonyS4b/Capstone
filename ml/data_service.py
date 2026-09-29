@@ -221,7 +221,15 @@ class DataProcessor:
         """
         try:
             data = DatabaseConnector.execute_query(query, (product_id, days_back))
-            return pd.DataFrame(data) if data else pd.DataFrame()
+            if not data:
+                return pd.DataFrame()
+            df = pd.DataFrame(data)
+            # DECIMAL columns arrive as decimal.Decimal, which cannot be mixed with
+            # floats in pandas maths; quantity is decimal kilograms for Per Kilo products
+            for col in ("quantity", "price", "current_stock", "cost_price", "unit_price"):
+                if col in df.columns:
+                    df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(float)
+            return df
         except Exception as e:
             logger.error(f"Error fetching sales data for product {product_id}: {e}")
             return pd.DataFrame()

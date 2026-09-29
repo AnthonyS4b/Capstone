@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/product_units.php'; // format_unit_amount() for low-stock alerts
 /**
  * includes/notifications.php
  * ──────────────────────────────────────────────────────────────────────────
@@ -98,6 +99,7 @@ try {
         SELECT
             p.name    AS product,
             p.stock,
+            p.unit,
             10        AS threshold,
             CASE WHEN p.stock <= 5 THEN 'critical' ELSE 'low' END AS status
         FROM products p
@@ -116,7 +118,7 @@ try {
             'type' => $lvl,
             'icon' => $lvl === 'critical' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle',
             'title'=> $a['product'],
-            'body' => 'Stock at ' . $a['stock'] . ' unit' . ($a['stock'] != 1 ? 's' : '') . ' — below threshold (' . $a['threshold'] . ')',
+            'body' => 'Stock at ' . format_unit_amount($a['stock'], $a['unit'] ?? '') . ' — below threshold (' . $a['threshold'] . ')',
             'time' => 'Just now',
             'read' => false,
         ];

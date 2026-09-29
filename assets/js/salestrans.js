@@ -410,7 +410,8 @@ function viewTransaction(transactionId) {
                 items   : (tx.items || []).map(item => ({
                     name     : item.product_name || item.name || 'Product',
                     price    : parseFloat(item.price) || 0,
-                    quantity : parseInt(item.quantity, 10) || 0
+                    quantity : parseFloat(item.quantity) || 0,   // decimal kilograms for Per Kilo
+                    unit     : item.unit || ''
                 })),
                 total   : total,
                 payment : parseFloat(tx.amount_paid || (pm === 'gcash' ? total : 0)),

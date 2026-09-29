@@ -28,3 +28,348 @@
 [28-Sep-2026 23:04:42 Asia/Manila] Transaction data: User_ID=1, Total=490, Payment=500, Method=cash
 [28-Sep-2026 23:04:42 Asia/Manila] Transaction inserted with ID: 1554
 [28-Sep-2026 23:04:42 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[29-Sep-2026 19:47:12 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Boosted Feed
+    [description] => 
+    [price] => 85
+    [cost_price] => 65
+    [stock] => 25
+    [unit] => Per Kilo
+    [sku] => POU-56315727
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790682432_5840a969.jpg
+    [expiration_date] => 2027-02-02
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 19:47:29 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 95
+    [data] => Array
+        (
+            [id] => 95
+            [sku] => POU-56315727
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790682432_5840a969.jpg
+            [expiration_date] => 2027-02-02
+        )
+
+)
+
+[29-Sep-2026 19:47:32 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Boosted Feed
+    [description] => 
+    [price] => 85
+    [cost_price] => 65
+    [stock] => 25
+    [unit] => Per Kilo
+    [sku] => POU-56315727
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790682452_6beced4c.jpg
+    [expiration_date] => 2027-02-02
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 19:48:00 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 96
+    [data] => Array
+        (
+            [id] => 96
+            [sku] => PRD17906824524861
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790682452_6beced4c.jpg
+            [expiration_date] => 2027-02-02
+        )
+
+)
+
+[29-Sep-2026 20:10:26 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Booster Feed
+    [description] => 
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 25.5
+    [unit] => Per Kilo
+    [sku] => POU-87572326
+    [barcode] => 112233
+    [image] => assets/uploads/products/prod_1790683826_2c1fc2f6.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 20:10:26 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 
+    [message] => Barcode 112233 is already used by "Alessi Petnic Pet Travel Organizer". Each product needs its own barcode.
+)
+
+[29-Sep-2026 20:10:31 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Booster Feed
+    [description] => 
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 25.5
+    [unit] => Per Kilo
+    [sku] => POU-87572326
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790683831_a8139bf0.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 20:10:42 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 97
+    [data] => Array
+        (
+            [id] => 97
+            [sku] => POU-87572326
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790683831_a8139bf0.jpg
+            [expiration_date] => 2027-02-22
+        )
+
+)
+
+[29-Sep-2026 20:10:45 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Booster Feed
+    [description] => 
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 25.5
+    [unit] => Per Kilo
+    [sku] => POU-87572326
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790683845_76971fae.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 20:11:02 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 98
+    [data] => Array
+        (
+            [id] => 98
+            [sku] => PRD17906838459002
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790683845_76971fae.jpg
+            [expiration_date] => 2027-02-22
+        )
+
+)
+
+[29-Sep-2026 20:24:49 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Booster Feed
+    [description] => 
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 25.5
+    [unit] => Per Kilo
+    [sku] => POU-87572326
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790684689_d553824b.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 20:25:05 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 99
+    [data] => Array
+        (
+            [id] => 99
+            [sku] => PRD17906846899927
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790684689_d553824b.jpg
+            [expiration_date] => 2027-02-22
+        )
+
+)
+
+[29-Sep-2026 20:32:11 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [category_id] => 3
+    [name] => ZZ timing test 1 (delete me)
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 0
+    [unit] => Per Kilo
+    [sku] => 
+    [barcode] => 
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 
+)
+
+[29-Sep-2026 20:32:19 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 100
+    [data] => Array
+        (
+            [id] => 100
+            [sku] => PRD1790685131800
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[29-Sep-2026 20:32:20 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [category_id] => 3
+    [name] => ZZ timing test 2 (delete me)
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 0
+    [unit] => Per Kilo
+    [sku] => 
+    [barcode] => 
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 
+)
+
+[29-Sep-2026 20:32:37 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 101
+    [data] => Array
+        (
+            [id] => 101
+            [sku] => PRD1790685140730
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[29-Sep-2026 20:33:17 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [category_id] => 3
+    [name] => ZZ timing test 3 (delete me)
+    [price] => 80
+    [cost_price] => 65
+    [stock] => 0
+    [unit] => Per Kilo
+    [sku] => 
+    [barcode] => 
+    [image] => 
+)
+
+[29-Sep-2026 20:33:30 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 102
+    [data] => Array
+        (
+            [id] => 102
+            [sku] => PRD1790685197439
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[29-Sep-2026 20:47:47 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro Booster Feed
+    [description] => 
+    [price] => 85
+    [cost_price] => 60
+    [stock] => 25
+    [unit] => Per Kilo
+    [sku] => POU-30634283
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790686067_430ac860.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 20:48:02 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 103
+    [data] => Array
+        (
+            [id] => 103
+            [sku] => POU-30634283
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 60
+            [image] => assets/uploads/products/prod_1790686067_430ac860.jpg
+            [expiration_date] => 2027-02-22
+        )
+
+)
+
+[29-Sep-2026 20:49:43 Asia/Manila] Found user_id in session: 1
+[29-Sep-2026 20:49:43 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[29-Sep-2026 20:49:43 Asia/Manila] Transaction data: User_ID=1, Total=160, Payment=200, Method=cash
+[29-Sep-2026 20:49:43 Asia/Manila] Transaction inserted with ID: 1555
+[29-Sep-2026 20:49:44 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

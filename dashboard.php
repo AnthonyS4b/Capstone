@@ -133,6 +133,7 @@ $alertStmt = $pdo->query("
     SELECT
         p.name    AS product,
         p.stock,
+        p.unit,
         10        AS threshold,
         CASE WHEN p.stock <= 5 THEN 'critical' ELSE 'low' END AS status
     FROM products p
@@ -433,7 +434,7 @@ if ($is_owner) {
                     <div class="alert-item">
                         <div>
                             <div class="alert-product"><?php echo htmlspecialchars($alert['product']); ?></div>
-                            <div class="alert-stock">Stock: <strong><?php echo $alert['stock']; ?></strong> / <?php echo $alert['threshold']; ?></div>
+                            <div class="alert-stock">Stock: <strong><?php echo htmlspecialchars(format_unit_quantity($alert['stock'], $alert['unit'] ?? '')); ?></strong> / <?php echo $alert['threshold']; ?></div>
                         </div>
                         <span class="status-badge status-<?php echo $alert['status']; ?>"><?php echo ucfirst($alert['status']); ?></span>
                     </div>

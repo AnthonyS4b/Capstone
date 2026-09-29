@@ -90,12 +90,36 @@ function escapeHtml(str) {
 }
 
 // ── Unit type classification ─────────────────────────────────────
-const WEIGHT_UNIT_TYPES = ['per kilo', 'per gram'];
+// 'kilo'   : Per Kilo — stock and prices are per kilogram, decimals allowed (25.5 kg)
+// 'weight' : Per Gram — stock is not tracked (set to 1)
+// 'packaged': every other unit — whole-number stock
+const WEIGHT_UNIT_TYPES = ['per gram'];
+
+function isPerKiloUnit(unit) {
+    return String(unit || '').trim().toLowerCase() === 'per kilo';
+}
+
+// Stock/quantity as people read it. The database sends DECIMAL values ("4.00"),
+// so whole-number units are rounded to "4" and Per Kilo shows "25.5 kg".
+function formatQty(qty, unit, withUnit = true) {
+    const n = Number(qty) || 0;
+    if (!isPerKiloUnit(unit)) return String(Math.round(n));
+    const text = String(Math.round(n * 100) / 100);
+    return withUnit ? text + ' kg' : text;
+}
+
+// "12 units" / "1 unit" / "2.5 kg"
+function formatQtyAmount(qty, unit) {
+    if (isPerKiloUnit(unit)) return formatQty(qty, unit);
+    const n = Math.round(Number(qty) || 0);
+    return `${n} unit${n === 1 ? '' : 's'}`;
+}
 
 function getUnitTypeFromValue(val) {
     if (!val) return 'packaged';
     const parsed = parseStoredUnit(val);
     const ut = parsed.unitType.toLowerCase();
+    if (ut === 'per kilo') return 'kilo';
     if (WEIGHT_UNIT_TYPES.includes(ut)) return 'weight';
     return 'packaged';
 }
@@ -170,6 +194,7 @@ function buildUnitString() {
 function getUnitType() {
     const typeSel = document.getElementById('productUnitType');
     if (!typeSel || !typeSel.value) return null;
+    if (isPerKiloUnit(typeSel.value)) return 'kilo';
     return WEIGHT_UNIT_TYPES.includes(typeSel.value.toLowerCase()) ? 'weight' : 'packaged';
 }
 
@@ -234,6 +259,21 @@ function onUnitChange() {
         expirationRow.style.display = (catType === 'accessory') ? 'none' : '';
     }
 
+    // Per Kilo: prices are per kg and stock is kilograms with decimals (25.5)
+    const perKilo = unitType === 'kilo';
+    document.querySelectorAll('#productModal .inv-per-kg').forEach(el => { el.hidden = !perKilo; });
+    if (stockInput) {
+        stockInput.dataset.numeric = perKilo ? 'money' : 'int';
+        stockInput.inputMode = perKilo ? 'decimal' : 'numeric';
+        stockInput.placeholder = perKilo ? '0.00' : '0';
+        stockInput.maxLength = perKilo ? 10 : 7;
+        // Switching away from Per Kilo: drop decimals the whole-number field can't hold
+        if (!perKilo && stockInput.value.includes('.')) {
+            stockInput.value = String(Math.round(parseFloat(stockInput.value) || 0));
+        }
+    }
+    updateMarginHint();
+
     if (!unitType) {
         if (stockWrapper) stockWrapper.style.display = 'none';
         if (unitHint) unitHint.style.display = 'none';
@@ -244,7 +284,18 @@ function onUnitChange() {
         return;
     }
 
-    if (unitType === 'weight') {
+    if (unitType === 'kilo') {
+        if (stockWrapper) stockWrapper.style.display = 'block';
+        if (barcodeReqStar) barcodeReqStar.style.display = 'none';
+        if (barcodeOptTag) barcodeOptTag.style.display = '';
+        if (barcodeInput) barcodeInput.required = false;
+        if (stockInput) stockInput.required = true;
+        if (unitHint) {
+            unitHint.style.display = 'block';
+            unitHint.className = 'unit-hint unit-hint-weight mt-1';
+            unitHint.innerHTML = '<i class="fas fa-weight-hanging me-1"></i>Sold by weight — enter stock in kilograms (e.g. 25.5). Cost and selling price are per kg. Barcode is optional.';
+        }
+    } else if (unitType === 'weight') {
         if (stockWrapper) stockWrapper.style.display = 'none';
         if (barcodeReqStar) barcodeReqStar.style.display = 'none';
         if (barcodeOptTag) barcodeOptTag.style.display = '';
@@ -656,21 +707,23 @@ function displayProducts(products) {
     products.forEach(product => {
         const unitType = getUnitTypeFromValue(product.unit);
         const isWeight = (unitType === 'weight');
+        const perKilo = (unitType === 'kilo');
 
-        // Stock: plain number, coloured only when low or out
+        // Stock: plain number (kilograms for Per Kilo), coloured only when low or out
         let stockHtml;
         if (isWeight) {
             stockHtml = '<span class="inv-muted">By weight</span>';
         } else {
-            const stockValue = parseInt(product.stock) || 0;
+            const stockValue = parseFloat(product.stock) || 0;
             const stockCls = stockValue <= 5 ? 'is-bad' : stockValue <= 15 ? 'is-warn' : '';
-            stockHtml = `<span class="${stockCls}">${stockValue <= 0 ? 'Out' : stockValue}</span>`;
+            stockHtml = `<span class="${stockCls}">${stockValue <= 0 ? 'Out' : formatQty(stockValue, product.unit)}</span>`;
         }
+        const perKgHtml = perKilo ? '<small class="inv-muted">/kg</small>' : '';
 
         const unitHtml = product.unit ? escapeHtml(product.unit) : '<span class="inv-muted">—</span>';
 
         const costHtml = product.cost_price && parseFloat(product.cost_price) > 0
-            ? `₱${parseFloat(product.cost_price).toFixed(2)}`
+            ? `₱${parseFloat(product.cost_price).toFixed(2)}${perKgHtml}`
             : '<span class="inv-muted">—</span>';
 
         // Expiry: the date, with a short relative note underneath
@@ -713,14 +766,14 @@ function displayProducts(products) {
                 </td>
                 <td class="inv-muted-cell">${unitHtml}</td>
                 <td class="inv-num inv-muted-cell">${costHtml}</td>
-                <td class="inv-num"><strong>₱${parseFloat(product.price).toFixed(2)}</strong></td>
+                <td class="inv-num"><strong>₱${parseFloat(product.price).toFixed(2)}</strong>${perKgHtml}</td>
                 <td class="inv-num">${stockHtml}</td>
                 <td class="inv-num days-in-cell">${getDaysInBadgeHtml(product)}</td>
                 <td class="inv-expiry">${expiryHtml}</td>
                 <td><span class="inv-status ${statusClass}" title="${statusTitle}">${displayStatus}</span></td>
                 <td class="inv-actions">
                     ${isOwner ? `<button class="btn-icon" onclick="editProduct(${product.id})" title="Edit product"><i class="fas fa-pen"></i></button>` : ''}
-                    <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${product.stock || 0}, '${currentStatus}')" title="Manage stock & status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
+                    <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${parseFloat(product.stock) || 0}, '${currentStatus}', '${escapeHtml(product.unit || '').replace(/'/g, "\\'")}')" title="Manage stock & status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
                     <button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to archive"><i class="fas fa-box-archive"></i></button>
                 </td>
             </tr>`;
@@ -775,11 +828,12 @@ function updateMarginHint() {
     const profit = price - cost;
     const pct = Math.round((profit / price) * 100);
     const peso = n => '₱' + Math.abs(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const per = getUnitType() === 'kilo' ? 'per kg' : 'per unit';
     if (profit <= 0) {
         hint.classList.add('is-bad');
-        hint.textContent = profit === 0 ? 'Selling at cost — no profit.' : `Selling at a loss of ${peso(profit)} per unit.`;
+        hint.textContent = profit === 0 ? 'Selling at cost — no profit.' : `Selling at a loss of ${peso(profit)} ${per}.`;
     } else {
-        hint.textContent = `Profit ${peso(profit)} per unit (${pct}% margin)`;
+        hint.textContent = `Profit ${peso(profit)} ${per} (${pct}% margin)`;
     }
 }
 
@@ -788,7 +842,19 @@ document.addEventListener('input', e => {
 });
 document.getElementById('productModal')?.addEventListener('shown.bs.modal', updateMarginHint);
 
+// A save can take many seconds on a slow disk; a second click must not create a duplicate
+let productSaveInFlight = false;
+
+function setProductSaving(saving) {
+    productSaveInFlight = saving;
+    const btn = document.getElementById('saveProductBtn');
+    if (!btn) return;
+    btn.disabled = saving;
+    btn.textContent = saving ? 'Saving…' : 'Save product';
+}
+
 function saveProduct() {
+    if (productSaveInFlight) return;
     // Sync hidden unit field from the two visible fields
     buildUnitString();
 
@@ -808,7 +874,7 @@ function saveProduct() {
     if (unitType === 'weight') {
         stock = 1;
     } else {
-        stock = document.getElementById('productStock')?.value || 0;
+        stock = (document.getElementById('productStock')?.value || '').trim() || 0;
     }
 
     const formData = {
@@ -850,7 +916,12 @@ function saveProduct() {
         document.getElementById('productCostPrice')?.focus();
         return;
     }
-    if (unitType !== 'weight' && !/^\d+$/.test(String(stock))) {
+    if (unitType === 'kilo' && !/^\d+(\.\d{1,2})?$/.test(String(stock))) {
+        showToast('warning', 'Invalid Stock', 'Stock must be 0 or more kilograms, with up to 2 decimals (e.g. 25.5)');
+        document.getElementById('productStock')?.focus();
+        return;
+    }
+    if (unitType === 'packaged' && !/^\d+$/.test(String(stock))) {
         showToast('warning', 'Invalid Stock', 'Stock must be a whole number of 0 or more');
         document.getElementById('productStock')?.focus();
         return;
@@ -880,6 +951,10 @@ function saveProduct() {
         showToast('warning', 'Warning', 'Please enter the stock quantity');
         return;
     }
+    if (!productId && unitType === 'kilo' && !(parseFloat(stock) > 0)) {
+        showToast('warning', 'Warning', 'Please enter the stock in kilograms');
+        return;
+    }
 
     // Check if there's a pending image file to upload first
     const imageFileInput = document.getElementById('imageFileInput');
@@ -888,6 +963,7 @@ function saveProduct() {
     if (pendingFile) {
         // Upload image first, then save product
         showLoading();
+        setProductSaving(true);
         const imgFormData = new FormData();
         imgFormData.append('image', pendingFile);
 
@@ -898,18 +974,23 @@ function saveProduct() {
             processData: false,
             contentType: false,
             dataType: 'json',
+            timeout: 60000,
             success: function (imgResponse) {
                 if (imgResponse.success) {
                     formData.image = imgResponse.image_path;
                     document.getElementById('productImage').value = imgResponse.image_path;
+                    // Uploaded: a retry reuses this path instead of uploading the photo again
+                    imageFileInput.value = '';
                     doSaveProduct(formData);
                 } else {
                     hideLoading();
+                    setProductSaving(false);
                     showToast('error', 'Image Error', imgResponse.message || 'Failed to upload image');
                 }
             },
             error: function () {
                 hideLoading();
+                setProductSaving(false);
                 showToast('error', 'Error', 'Failed to upload image');
             }
         });
@@ -920,12 +1001,15 @@ function saveProduct() {
 
 function doSaveProduct(formData) {
     showLoading();
+    setProductSaving(true);
     $.ajax({
         url: ajaxUrl,
         method: 'POST',
         data: formData,
         dataType: 'json',
-        timeout: 10000,
+        // Saving writes several rows; on a slow hard disk that can take well over 10 seconds
+        timeout: 60000,
+        complete: function () { setProductSaving(false); },
         success: function (response) {
             hideLoading();
             if (response.success) {
@@ -944,6 +1028,15 @@ function doSaveProduct(formData) {
         error: function (xhr, status, error) {
             hideLoading();
             console.error('AJAX Error:', { url: ajaxUrl, status, error, statusCode: xhr.status, responseText: xhr.responseText });
+            if (status === 'timeout') {
+                // The server may still finish the save after the browser stops waiting
+                showToast('warning', 'Still saving', 'The server is slow to answer. The product may still be saved — check the list before saving again.');
+                if (currentCategoryId) {
+                    loadCategoryProducts(currentCategoryId);
+                    setTimeout(() => loadCategoryProducts(currentCategoryId), 15000);
+                }
+                return;
+            }
             let errorMsg = 'Failed to connect to server. ';
             if (xhr.status === 404) errorMsg += 'File not found at: ' + ajaxUrl;
             else if (xhr.status === 500) errorMsg += 'Server error. Check error log.';
@@ -1342,7 +1435,8 @@ function openProductModal(productId = null) {
                         if (utQty) utQty.value = parsed.qty;
                     }
                     if (unitField) unitField.value = product.unit || '';
-                    if (stockField) stockField.value = product.stock || 0;
+                    // DECIMAL stock arrives as "4.00": whole units show 4, Per Kilo shows 25.5
+                    if (stockField) stockField.value = formatQty(product.stock, product.unit, false);
                     if (skuField) skuField.value = product.sku || '';
                     if (barcodeField) barcodeField.value = product.barcode || '';
                     if (expField && product.expiration_date && product.expiration_date !== '0000-00-00') {
@@ -1407,27 +1501,43 @@ function openProductModal(productId = null) {
 
 // ==================== STOCK FUNCTIONS ====================
 
-function openStockModal(productId, productName, currentStock, currentStatus) {
+// Unit of the product open in the stock modal ('Per Kilo' takes decimal kilograms)
+let stockModalUnit = '';
+
+function openStockModal(productId, productName, currentStock, currentStatus, unit) {
     const idField = document.getElementById('stockProductId');
     const nameField = document.getElementById('stockProductName');
     const stockField = document.getElementById('currentStock');
     const quantityField = document.getElementById('stockQuantity');
     const statusField = document.getElementById('stockProductStatus');
     const actionField = document.getElementById('stockAction');
+    const perKilo = isPerKiloUnit(unit);
+    stockModalUnit = unit || '';
 
     if (idField) idField.value = productId;
     if (nameField) nameField.textContent = productName;
-    if (stockField) stockField.textContent = currentStock;
-    if (quantityField) quantityField.value = '';
+    if (stockField) {
+        stockField.textContent = formatQty(currentStock, unit);
+        stockField.dataset.stock = String(Number(currentStock) || 0);
+    }
+    if (quantityField) {
+        quantityField.value = '';
+        quantityField.dataset.numeric = perKilo ? 'money' : 'int';
+        quantityField.inputMode = perKilo ? 'decimal' : 'numeric';
+        quantityField.placeholder = perKilo ? 'How many kg? (e.g. 2.5)' : 'How many units?';
+    }
+    const qtyLabel = document.getElementById('qtyLabel');
+    if (qtyLabel) qtyLabel.textContent = perKilo ? 'Quantity (kg)' : 'Quantity';
 
     if (statusField) {
         statusField.value = currentStatus || 'active';
     }
-    
+
     // Fetch and render batches
     refreshBatchList(productId);
 
-    const isWeightProduct = (parseInt(currentStock) === 1);
+    // Per Gram products keep stock at 1 and are managed by status; Per Kilo has real stock
+    const isWeightProduct = !perKilo && (parseInt(currentStock) === 1);
 
     if (actionField) {
         // Bind UI toggling to batch radios as well
@@ -1484,7 +1594,7 @@ function refreshBatchList(productId) {
                                      onclick="toggleBatchExpiryEditor(this)"
                                      role="button" tabindex="0" title="Change this batch's expiry date">
                                     <span class="inv-batch-order">${isFirst ? 'Sells first' : 'Next'}</span>
-                                    <span class="inv-batch-qty">${batch.stock} <small>units</small></span>
+                                    <span class="inv-batch-qty">${formatQty(batch.stock, stockModalUnit, false)} <small>${isPerKiloUnit(stockModalUnit) ? 'kg' : 'units'}</small></span>
                                     <span class="inv-batch-exp batch-exp-display">${expText}</span>
                                     <span class="inv-batch-recv">Received ${fmtDate(batch.date_added)}</span>
                                     <i class="fas fa-pen inv-batch-edit" aria-hidden="true"></i>
@@ -1508,10 +1618,11 @@ function refreshBatchList(productId) {
                 const mismatchEl = document.getElementById('batchMismatchWarning');
                 const stockEl = document.getElementById('currentStock');
                 if (mismatchEl && stockEl) {
-                    const productStock = parseInt(stockEl.textContent, 10) || 0;
-                    const batchTotal = response.data.reduce((sum, b) => sum + (parseInt(b.stock, 10) || 0), 0);
+                    // Compared in hundredths so decimal kilograms add up exactly
+                    const productStock = Math.round((Number(stockEl.dataset.stock) || 0) * 100);
+                    const batchTotal = response.data.reduce((sum, b) => sum + Math.round((Number(b.stock) || 0) * 100), 0);
                     if (response.data.length > 0 && batchTotal !== productStock) {
-                        mismatchEl.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>Batches total <strong>${batchTotal}</strong> units but current stock is <strong>${productStock}</strong>. Expiry tracking may be off — re-save the product or contact the owner.`;
+                        mismatchEl.innerHTML = `<i class="fas fa-exclamation-triangle me-1"></i>Batches total <strong>${formatQtyAmount(batchTotal / 100, stockModalUnit)}</strong> but current stock is <strong>${formatQty(productStock / 100, stockModalUnit)}</strong>. Expiry tracking may be off — re-save the product or contact the owner.`;
                         mismatchEl.style.display = 'block';
                     } else {
                         mismatchEl.style.display = 'none';
@@ -1522,7 +1633,7 @@ function refreshBatchList(productId) {
                     addSelect.innerHTML = '<option value="">Select a batch...</option>';
                     response.data.forEach(batch => {
                         let expText = batch.expiration_date ? `(Exp: ${batch.expiration_date})` : '(No expiry)';
-                        addSelect.innerHTML += `<option value="${batch.id}">${batch.batch_no} - ${batch.stock} units ${expText} [Recv: ${batch.date_added}]</option>`;
+                        addSelect.innerHTML += `<option value="${batch.id}">${batch.batch_no} - ${formatQtyAmount(batch.stock, stockModalUnit)} ${expText} [Recv: ${batch.date_added}]</option>`;
                     });
                 }
                 
@@ -1530,7 +1641,7 @@ function refreshBatchList(productId) {
                     removeSelect.innerHTML = '<option value="auto">Automatic FIFO (Oldest First)</option>';
                     response.data.forEach(batch => {
                         let expText = batch.expiration_date ? `(Exp: ${batch.expiration_date})` : '(No expiry)';
-                        removeSelect.innerHTML += `<option value="${batch.id}">${batch.batch_no} - ${batch.stock} units ${expText}</option>`;
+                        removeSelect.innerHTML += `<option value="${batch.id}">${batch.batch_no} - ${formatQtyAmount(batch.stock, stockModalUnit)} ${expText}</option>`;
                     });
                 }
             }
@@ -1669,14 +1780,19 @@ function updateStock() {
 
     // Determine the effective action:
     // If action is 'none' OR quantity is empty/zero, treat as status-only update
+    // Per Kilo takes kilograms with up to 2 decimals (2.5), other units whole numbers
     const qtyText = (rawQuantity || '').trim();
-    if (action !== 'none' && /^[1-9]\d*$/.test(qtyText)) {
+    const perKilo = isPerKiloUnit(stockModalUnit);
+    const validQty = perKilo
+        ? /^\d+(\.\d{1,2})?$/.test(qtyText) && parseFloat(qtyText) > 0
+        : /^[1-9]\d*$/.test(qtyText);
+    if (action !== 'none' && validQty) {
         // User wants to add/remove stock
-        quantity = parseInt(qtyText, 10);
+        quantity = perKilo ? qtyText : parseInt(qtyText, 10);
         effectiveType = action;
     } else if (action !== 'none' && qtyText !== '') {
         // Anything else typed ("0", "-5", "--22") is a mistake, not a status-only save
-        showToast('warning', 'Invalid Quantity', 'Enter a whole number greater than 0');
+        showToast('warning', 'Invalid Quantity', perKilo ? 'Enter the weight in kg, more than 0 (e.g. 2.5)' : 'Enter a whole number greater than 0');
         document.getElementById('stockQuantity')?.focus();
         return;
     } else {

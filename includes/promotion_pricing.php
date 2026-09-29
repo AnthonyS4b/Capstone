@@ -1,24 +1,32 @@
 <?php
 
-/** Price validated, unique cart products using promotion data loaded by the server. */
+require_once __DIR__ . '/product_units.php';
+
+/**
+ * Price validated, unique cart products using promotion data loaded by the server.
+ * Quantities may be decimal kilograms for Per Kilo products ('unit' on each item);
+ * they are split in hundredths so every returned quantity keeps 2 decimals.
+ */
 function price_promotion_items(array $items): array
 {
     $quantities = [];
     foreach ($items as $item) {
-        $quantities[(int)$item['id']] = (int)$item['quantity'];
+        $quantities[(int)$item['id']] = qty_to_hundredths($item['quantity']);
     }
     $priced = [];
     foreach ($items as $item) {
-        $quantity = (int)$item['quantity'];
+        $quantity = qty_to_hundredths($item['quantity']);
+        $base = ['id' => (int)$item['id'], 'name' => $item['name'], 'unit' => $item['unit'] ?? ''];
+        $perKilo = unit_is_per_kilo($item['unit'] ?? '');
 
         // Buy 1 Take 1: every second unit of the same product is free, so an odd
-        // unit (or a single one) is charged the regular price
-        if (($item['strategy_id'] ?? '') === 'buy_one_take_one') {
-            $free = intdiv($quantity, 2);
-            $base = ['id' => (int)$item['id'], 'name' => $item['name']];
-            $priced[] = $base + ['price' => round((float)$item['price'], 2), 'quantity' => $quantity - $free];
+        // unit (or a single one) is charged the regular price. It counts whole
+        // units, so it does not apply to products sold by the kilo.
+        if (($item['strategy_id'] ?? '') === 'buy_one_take_one' && !$perKilo) {
+            $free = intdiv(intdiv($quantity, 100), 2) * 100;
+            $priced[] = $base + ['price' => round((float)$item['price'], 2), 'quantity' => ($quantity - $free) / 100];
             if ($free > 0) {
-                $priced[] = $base + ['price' => 0.0, 'quantity' => $free];
+                $priced[] = $base + ['price' => 0.0, 'quantity' => $free / 100];
             }
             continue;
         }
@@ -30,21 +38,29 @@ function price_promotion_items(array $items): array
             && isset($item['discounted_price'])) {
             $pairedQuantity = min($quantity, $quantities[$partnerId] ?? 0);
         }
-        $base = ['id' => (int)$item['id'], 'name' => $item['name']];
         if ($pairedQuantity > 0) {
             $priced[] = $base + [
                 'price' => round((float)$item['discounted_price'], 2),
-                'quantity' => $pairedQuantity,
+                'quantity' => $pairedQuantity / 100,
             ];
         }
         if ($quantity > $pairedQuantity) {
             $priced[] = $base + [
                 'price' => round((float)$item['price'], 2),
-                'quantity' => $quantity - $pairedQuantity,
+                'quantity' => ($quantity - $pairedQuantity) / 100,
             ];
         }
     }
     return $priced;
+}
+
+/**
+ * Amount charged for one priced line, in centavos: quantity × price rounded to the
+ * nearest centavo (2.5 kg × ₱120 = ₱300.00). The POS rounds each line the same way.
+ */
+function priced_line_cents(array $item): int
+{
+    return (int)round(qty_to_hundredths($item['quantity']) * (int)round((float)$item['price'] * 100) / 100);
 }
 
 /**

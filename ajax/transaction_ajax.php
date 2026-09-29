@@ -143,7 +143,7 @@ try {
 
                 $productStmt = $pdo->prepare("
                     SELECT
-                        p.id, p.name, p.price, p.stock,
+                        p.id, p.name, p.price, p.stock, p.unit,
                         sh.strategy_id, sh.paired_product_id, sh.discounted_price,
                         -- Pairing and Buy 1 Take 1 keep the regular price; price_promotion_items()
                         -- applies their discount per pair
@@ -164,37 +164,34 @@ try {
                 ");
 
                 // Combine duplicate product lines before checking stock or pairing quantities.
+                // Quantities are held in hundredths: Per Kilo products sell decimal kilograms
+                // (2.5 kg = 250), every other unit must be whole (checked per product below).
                 $cartQuantities = [];
                 foreach ($items as $submittedItem) {
                     $id = filter_var($submittedItem['id'] ?? null, FILTER_VALIDATE_INT);
-                    $qty = filter_var($submittedItem['quantity'] ?? null, FILTER_VALIDATE_INT);
-                    if (!$id || $id <= 0 || !$qty || $qty <= 0) {
+                    $qty = parse_unit_quantity($submittedItem['quantity'] ?? null, true);
+                    if (!$id || $id <= 0 || $qty === null) {
                         throw new Exception('Invalid product or quantity in the cart');
                     }
-                    $cartQuantities[$id] = ($cartQuantities[$id] ?? 0) + $qty;
+                    $cartQuantities[$id] = ($cartQuantities[$id] ?? 0) + qty_to_hundredths($qty);
                 }
                 ksort($cartQuantities);
-                $items = [];
-                foreach ($cartQuantities as $id => $qty) {
-                    $items[] = ['id' => $id, 'quantity' => $qty];
-                }
 
                 $validatedItems = [];
-                $calculatedTotal = 0.0;
-                foreach ($items as $submittedItem) {
-                    $productId = filter_var($submittedItem['id'] ?? null, FILTER_VALIDATE_INT);
-                    $quantity = filter_var($submittedItem['quantity'] ?? null, FILTER_VALIDATE_INT);
-                    if (!$productId || !$quantity || $quantity <= 0) {
-                        throw new Exception('Invalid product or quantity in the cart');
-                    }
-
+                foreach ($cartQuantities as $productId => $quantityHundredths) {
                     $productStmt->execute([$productId]);
                     $product = $productStmt->fetch(PDO::FETCH_ASSOC);
                     if (!$product) {
                         throw new Exception('A cart product is unavailable or expired');
                     }
-                    if ((int)$product['stock'] < $quantity) {
-                        throw new Exception('Insufficient stock for product: ' . $product['name']);
+                    $perKilo = unit_is_per_kilo($product['unit']);
+                    if (!$perKilo && $quantityHundredths % 100 !== 0) {
+                        throw new Exception('Quantity for ' . $product['name'] . ' must be a whole number');
+                    }
+                    $quantity = $quantityHundredths / 100;
+                    if (qty_to_hundredths($product['stock']) < $quantityHundredths) {
+                        throw new Exception('Insufficient stock for product: ' . $product['name']
+                            . ' (only ' . format_unit_quantity($product['stock'], $product['unit']) . ' left)');
                     }
 
                     $unitPrice = round((float)$product['effective_price'], 2);
@@ -207,18 +204,16 @@ try {
                         'name' => $product['name'],
                         'price' => $unitPrice,
                         'quantity' => $quantity,
+                        'unit' => $product['unit'],
                         'strategy_id' => $product['strategy_id'],
                         'paired_product_id' => $product['paired_product_id'],
                         'discounted_price' => $product['discounted_price'],
                     ];
-                    $calculatedTotal += $unitPrice * $quantity;
                 }
 
+                // Each line is quantity × price rounded to the centavo (2.5 kg × ₱120 = ₱300.00)
                 $items = price_promotion_items($validatedItems);
-                $calculatedTotal = array_sum(array_map(function ($item) {
-                    return $item['price'] * $item['quantity'];
-                }, $items));
-                $total = round($calculatedTotal, 2);
+                $total = array_sum(array_map('priced_line_cents', $items)) / 100;
                 if ($total <= 0) {
                     throw new Exception('Transaction total must be greater than zero');
                 }
@@ -289,10 +284,17 @@ try {
                     $itemStmt->execute([
                         ':transaction_id' => $transaction_id,
                         ':product_id' => $item['id'],
-                        ':quantity' => $item['quantity'],
+                        ':quantity' => hundredths_to_qty(qty_to_hundredths($item['quantity'])),
                         ':price' => $item['price']
                     ]);
                 }
+
+                // A product can span two priced lines (paired / free units); take its stock once
+                $soldHundredths = [];
+                foreach ($items as $item) {
+                    $soldHundredths[$item['id']] = ($soldHundredths[$item['id']] ?? 0) + qty_to_hundredths($item['quantity']);
+                }
+                $productNames = array_column($items, 'name', 'id');
                 
                 // 3. Update product stock
                 $stockStmt = $pdo->prepare("
@@ -303,39 +305,42 @@ try {
                     WHERE id = :product_id AND stock >= :quantity
                 ");
                 
-                foreach ($items as $item) {
+                foreach ($soldHundredths as $soldProductId => $soldQty) {
+                    $item = ['id' => $soldProductId, 'name' => $productNames[$soldProductId] ?? 'product'];
+
+                    // The stock >= check makes stock going negative impossible, even with two tills at once
                     $stockStmt->execute([
-                        ':quantity' => $item['quantity'],
+                        ':quantity' => hundredths_to_qty($soldQty),
                         ':product_id' => $item['id'],
                         ':user_id' => $user_id
                     ]);
-                    
+
                     if ($stockStmt->rowCount() == 0) {
                         throw new Exception("Insufficient stock for product: " . $item['name']);
                     }
-                    
-                    // ── FIFO Batch Deduction ───────────────────────────────
-                    $qtyToDeduct = (int)$item['quantity'];
-                    
+
+                    // ── FIFO Batch Deduction (in hundredths, so 2.5 kg comes off exactly) ──
+                    $qtyToDeduct = $soldQty;
+
                     $batchSelStmt = $pdo->prepare("
-                        SELECT id, stock FROM product_batches 
-                        WHERE product_id = :pid AND stock > 0 AND status = 'active' 
+                        SELECT id, stock FROM product_batches
+                        WHERE product_id = :pid AND stock > 0 AND status = 'active'
                         ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC
                     ");
                     $batchSelStmt->execute([':pid' => $item['id']]);
                     $batches = $batchSelStmt->fetchAll(PDO::FETCH_ASSOC);
-                    
+
                     foreach ($batches as $batch) {
                         if ($qtyToDeduct <= 0) break;
-                        
-                        $deduct = min((int)$batch['stock'], $qtyToDeduct);
-                        
+
+                        $deduct = min(qty_to_hundredths($batch['stock']), $qtyToDeduct);
+
                         $batchUpdStmt = $pdo->prepare("UPDATE product_batches SET stock = stock - :deduct WHERE id = :bid");
-                        $batchUpdStmt->execute([':deduct' => $deduct, ':bid' => $batch['id']]);
-                        
+                        $batchUpdStmt->execute([':deduct' => hundredths_to_qty($deduct), ':bid' => $batch['id']]);
+
                         $qtyToDeduct -= $deduct;
                     }
-                    
+
                     // Mark zero-stock batches as depleted
                     $deplStmt = $pdo->prepare("UPDATE product_batches SET status = 'depleted' WHERE product_id = :pid AND stock = 0 AND status = 'active'");
                     $deplStmt->execute([':pid' => $item['id']]);
@@ -600,7 +605,8 @@ try {
                 SELECT 
                     ti.*,
                     p.name as product_name,
-                    p.sku as product_sku
+                    p.sku as product_sku,
+                    p.unit
                 FROM transaction_items ti
                 LEFT JOIN products p ON ti.product_id = p.id
                 WHERE ti.transaction_id = ?
@@ -655,7 +661,7 @@ try {
 
                 // Get transaction items with product names for logging
                 $stmt = $pdo->prepare("
-                    SELECT ti.*, p.name as product_name
+                    SELECT ti.*, p.name as product_name, p.unit
                     FROM transaction_items ti
                     LEFT JOIN products p ON ti.product_id = p.id
                     WHERE ti.transaction_id = ?
@@ -716,7 +722,8 @@ try {
                 ");
 
                 foreach ($items as $item) {
-                    $qty = (int)$item['quantity'];
+                    // Exact quantity sold, decimal kilograms included (2.50 kg goes back as 2.50)
+                    $qty = hundredths_to_qty(qty_to_hundredths($item['quantity']));
                     $stockStmt->execute([$qty, $user_id, $item['product_id']]);
 
                     $batchPick->execute([
@@ -741,7 +748,7 @@ try {
                         $productExpiry->execute([$next['expiration_date'], $next['date_added'], $item['product_id']]);
                     }
 
-                    $changes = "Stock restored (+{$qty}) to {$batchNote} - Transaction #{$id} voided via Sales UI";
+                    $changes = "Stock restored (+" . format_unit_quantity($qty, $item['unit']) . ") to {$batchNote} - Transaction #{$id} voided via Sales UI";
                     $logStmt->execute([$item['product_id'], $item['product_name'], $user_id, $changes]);
                 }
 

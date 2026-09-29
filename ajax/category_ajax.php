@@ -255,7 +255,8 @@ try {
                     'id'            => $p['id']            ?? $p['product_id'] ?? null,
                     'name'          => $p['name']          ?? $p['product_name'] ?? '',
                     'price'         => isset($p['price'])  ? (float)$p['price'] : 0.0,
-                    'stock'         => isset($p['stock'])  ? (int)$p['stock']   : 0,
+                    'stock'         => isset($p['stock'])  ? (float)$p['stock'] : 0,  // kilograms for Per Kilo
+                    'unit'          => $p['unit']          ?? '',
                     'sku'           => $p['sku']           ?? '',
                     'barcode'       => $p['barcode']       ?? '',
                     'category_id'   => $p['category_id']   ?? null,

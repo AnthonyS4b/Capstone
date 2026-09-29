@@ -44,8 +44,10 @@ $dailyStmt = $pdo->prepare("
         COALESCE(SUM(t.total_amount), 0) AS daily_sales,
         COUNT(*)                         AS orders_today,
         COALESCE(SUM((
-            SELECT COALESCE(SUM(ti.quantity), 0)
+            -- A weighed (Per Kilo) line counts as one item, whatever it weighs
+            SELECT COALESCE(SUM(CASE WHEN LOWER(TRIM(p.unit)) = 'per kilo' THEN 1 ELSE ti.quantity END), 0)
             FROM transaction_items ti
+            LEFT JOIN products p ON p.id = ti.product_id
             WHERE ti.transaction_id = t.id
         )), 0)                           AS items_sold
     FROM transactions t
@@ -467,7 +469,7 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
         // ── 4. Low-stock alerts (below priority items) ──
         try {
             $lowStockStmt = $pdo->query("
-                SELECT p.name AS product, p.stock,
+                SELECT p.name AS product, p.stock, p.unit,
                        CASE WHEN p.stock <= 5 THEN 'critical' ELSE 'low' END AS status
                 FROM products p
                 WHERE p.deleted_at IS NULL AND p.archived_at IS NULL AND p.stock < 10
@@ -480,7 +482,7 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
                     'type' => $lvl,
                     'icon' => $lvl === 'critical' ? 'fa-exclamation-circle' : 'fa-exclamation-triangle',
                     'title'=> $a['product'],
-                    'body' => 'Stock at ' . $a['stock'] . ' unit' . ($a['stock'] != 1 ? 's' : '') . ' — below threshold',
+                    'body' => 'Stock at ' . format_unit_amount($a['stock'], $a['unit'] ?? '') . ' — below threshold',
                     'time' => 'Just now',
                     'read' => false,
                 ];

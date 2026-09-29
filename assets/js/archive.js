@@ -292,7 +292,9 @@ function displayArchivedProducts(products) {
                 </td>
                 <td class="inv-muted-cell">${escHtml(product.category_name || 'Uncategorized')}</td>
                 <td class="inv-num">₱${price}</td>
-                <td class="inv-num">${parseInt(product.stock, 10) || 0}</td>
+                <td class="inv-num">${String(product.unit || '').trim().toLowerCase() === 'per kilo'
+                    ? `${Math.round((parseFloat(product.stock) || 0) * 100) / 100} kg`
+                    : (parseInt(product.stock, 10) || 0)}</td>
                 <td class="inv-muted-cell">${escHtml(deletedDate)}</td>
                 <td class="inv-actions">
                     <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(${product.id})" title="Restore to inventory">

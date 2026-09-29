@@ -51,6 +51,7 @@ try {
             p.sku,
             p.price,
             p.stock,
+            p.unit,
             c.name as category_name,
             c.id as category_id,
             -- Who added this item (EMPLOYEE/OWNER NAME)
@@ -313,8 +314,8 @@ $js_data = [
                                                     <?php endif; ?>
                                                 </td>
                                                 <td class="inv-muted-cell"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
-                                                <td class="inv-num">₱<?php echo number_format($item['price'], 2); ?></td>
-                                                <td class="inv-num <?php echo $item['stock'] <= 5 ? 'is-bad' : ($item['stock'] <= 15 ? 'is-warn' : ''); ?>"><?php echo (int)$item['stock']; ?></td>
+                                                <td class="inv-num">₱<?php echo number_format($item['price'], 2); ?><?php if (unit_is_per_kilo($item['unit'] ?? '')): ?><small class="inv-muted">/kg</small><?php endif; ?></td>
+                                                <td class="inv-num <?php echo $item['stock'] <= 5 ? 'is-bad' : ($item['stock'] <= 15 ? 'is-warn' : ''); ?>"><?php echo htmlspecialchars(format_unit_quantity($item['stock'], $item['unit'] ?? '')); ?></td>
                                                 <td>
                                                     <span class="inv-person"><?php echo htmlspecialchars($added_by_name); ?></span>
                                                     <span class="inv-sub"><?php echo ucfirst($added_by_role); ?></span>

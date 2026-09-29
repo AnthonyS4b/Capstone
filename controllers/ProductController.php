@@ -1,6 +1,7 @@
 <?php
 // controllers/ProductController.php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/product_units.php';
 
 class ProductController {
     private $conn;
@@ -17,14 +18,17 @@ class ProductController {
      * Returns a log line describing the change, or null when already in sync.
      */
     private function reconcileBatchStock($productId, $expiryForShortfall = null) {
-        $pStmt = $this->conn->prepare("SELECT stock FROM products WHERE id = :id FOR UPDATE");
+        $pStmt = $this->conn->prepare("SELECT stock, unit FROM products WHERE id = :id FOR UPDATE");
         $pStmt->execute([':id' => $productId]);
-        $productStock = (int)$pStmt->fetchColumn();
+        $product = $pStmt->fetch(PDO::FETCH_ASSOC);
+        $productStock = qty_to_hundredths($product['stock'] ?? 0);
+        $unit = $product['unit'] ?? '';
 
         $sStmt = $this->conn->prepare("SELECT COALESCE(SUM(stock), 0) FROM product_batches WHERE product_id = :id AND status = 'active'");
         $sStmt->execute([':id' => $productId]);
-        $batchStock = (int)$sStmt->fetchColumn();
+        $batchStock = qty_to_hundredths($sStmt->fetchColumn());
 
+        // In hundredths so Per Kilo stock (decimal kilograms) reconciles exactly
         $diff = $batchStock - $productStock;
         if ($diff === 0) {
             return null;
@@ -38,14 +42,14 @@ class ProductController {
             $remaining = $diff;
             foreach ($batches->fetchAll(PDO::FETCH_ASSOC) as $batch) {
                 if ($remaining <= 0) break;
-                $deduct = min((int)$batch['stock'], $remaining);
-                $upd->execute([':qty' => $deduct, ':bid' => $batch['id']]);
+                $deduct = min(qty_to_hundredths($batch['stock']), $remaining);
+                $upd->execute([':qty' => hundredths_to_qty($deduct), ':bid' => $batch['id']]);
                 $remaining -= $deduct;
             }
             $this->conn->prepare("UPDATE product_batches SET status = 'depleted' WHERE product_id = :id AND stock = 0 AND status = 'active'")
                 ->execute([':id' => $productId]);
 
-            return "Batches synced to stock: -{$diff} units removed from batches (nearest expiry first)";
+            return "Batches synced to stock: -" . format_unit_amount($diff / 100, $unit) . " removed from batches (nearest expiry first)";
         }
 
         $shortfall = -$diff;
@@ -53,12 +57,12 @@ class ProductController {
             ->execute([
                 ':pid' => $productId,
                 ':bno' => "B-ADJ-" . time() . "-" . $productId,
-                ':stk' => $shortfall,
+                ':stk' => hundredths_to_qty($shortfall),
                 ':dadd' => date('Y-m-d'),
                 ':exp' => $expiryForShortfall
             ]);
 
-        return "Batches synced to stock: +{$shortfall} units added as an adjustment batch";
+        return "Batches synced to stock: +" . format_unit_amount($shortfall / 100, $unit) . " added as an adjustment batch";
     }
 
     /**
@@ -386,9 +390,12 @@ class ProductController {
         if ($cost !== '' && $cost !== null && !$isMoney($cost)) {
             return 'Cost price must be 0 or a positive number.';
         }
+        // Per Kilo stock is kilograms with up to 2 decimals (10.5); other units are whole numbers
         $stock = $data['stock'] ?? 0;
-        if (!preg_match('/^\d+$/', (string)$stock)) {
-            return 'Stock must be a whole number of 0 or more.';
+        if (parse_unit_quantity($stock, unit_is_per_kilo($data['unit'] ?? ''), true) === null) {
+            return unit_is_per_kilo($data['unit'] ?? '')
+                ? 'Stock must be 0 or more kilograms, with up to 2 decimals (e.g. 25.5).'
+                : 'Stock must be a whole number of 0 or more.';
         }
         return null;
     }
@@ -397,9 +404,24 @@ class ProductController {
         if ($error = $this->validateProductNumbers($data)) {
             return ['success' => false, 'message' => $error];
         }
+        // "12.50" for DECIMAL stock (kilograms for Per Kilo, whole numbers otherwise)
+        $data['stock'] = hundredths_to_qty(qty_to_hundredths($data['stock'] ?? 0));
         try {
+            // A SKU from the form (typed, or pre-filled when the form opened) that is already
+            // taken is refused. That is almost always the same product sent twice — a second
+            // click after a slow save — so it must not become a duplicate with a new SKU.
+            $submittedSku = trim((string)($data['sku'] ?? ''));
+            if ($submittedSku !== '') {
+                $taken = $this->conn->prepare("SELECT name, deleted_at FROM products WHERE sku = :sku LIMIT 1");
+                $taken->execute([':sku' => $submittedSku]);
+                if ($owner = $taken->fetch(PDO::FETCH_ASSOC)) {
+                    return ['success' => false, 'message' => 'SKU ' . $submittedSku . ' is already used by "' . $owner['name'] . '"'
+                        . ($owner['deleted_at'] ? ' (in the archive)' : '') . '. If you just saved this product, it is already in the list.'];
+                }
+            }
+
             // Generate SKU if not provided
-            $sku = !empty($data['sku']) ? $data['sku'] : 'PRD' . time() . rand(100, 999);
+            $sku = $submittedSku !== '' ? $submittedSku : 'PRD' . time() . rand(100, 999);
 
             // Ensure the SKU is unique — regenerate up to 5 times if a collision is found
             $attempts = 0;
@@ -511,7 +533,7 @@ class ProductController {
             $stmt->bindParam(':description', $data['description'], PDO::PARAM_STR);
             $stmt->bindParam(':price', $data['price'], PDO::PARAM_STR);
             $stmt->bindParam(':cost_price', $cost_price, PDO::PARAM_STR);
-            $stmt->bindParam(':stock', $data['stock'], PDO::PARAM_INT);
+            $stmt->bindParam(':stock', $data['stock'], PDO::PARAM_STR);
             $stmt->bindParam(':unit', $unit, PDO::PARAM_STR);
             $stmt->bindParam(':sku', $sku, PDO::PARAM_STR);
             $stmt->bindParam(':barcode', $barcode, PDO::PARAM_STR);
@@ -600,6 +622,7 @@ class ProductController {
         if ($error = $this->validateProductNumbers($data)) {
             return ['success' => false, 'message' => $error];
         }
+        $data['stock'] = hundredths_to_qty(qty_to_hundredths($data['stock'] ?? 0));
         try {
             // Get category name for the category field
             $categoryName = '';
@@ -655,7 +678,7 @@ class ProductController {
             $stmt->bindParam(':description', $data['description'], PDO::PARAM_STR);
             $stmt->bindParam(':price', $data['price'], PDO::PARAM_STR);
             $stmt->bindParam(':cost_price', $cost_price, PDO::PARAM_STR);
-            $stmt->bindParam(':stock', $data['stock'], PDO::PARAM_INT);
+            $stmt->bindParam(':stock', $data['stock'], PDO::PARAM_STR);
             $stmt->bindParam(':unit', $unit, PDO::PARAM_STR);
             $stmt->bindParam(':sku', $sku, PDO::PARAM_STR);
             $stmt->bindParam(':barcode', $barcode, PDO::PARAM_STR);
@@ -702,17 +725,27 @@ class ProductController {
     
     // Update stock and status
     public function updateStock($id, $quantity, $type = 'add', $status = null, $batchData = null) {
-        // A stock change needs a positive whole number; "-5", "5.5" or "--22" are rejected
-        // instead of being silently treated as a status-only update.
-        if (in_array($type, ['add', 'remove'], true) && !preg_match('/^[1-9]\d*$/', trim((string)$quantity))) {
-            return ['success' => false, 'message' => 'Quantity must be a whole number greater than 0.'];
+        // A stock change needs a positive amount: a whole number, or kilograms with up to
+        // 2 decimals for Per Kilo products. "-5", "5.5 pcs" or "--22" are rejected instead
+        // of being silently treated as a status-only update.
+        $unitStmt = $this->conn->prepare("SELECT unit FROM products WHERE id = :id");
+        $unitStmt->execute([':id' => $id]);
+        $unit = (string)$unitStmt->fetchColumn();
+        $perKilo = unit_is_per_kilo($unit);
+        if (in_array($type, ['add', 'remove'], true) && parse_unit_quantity($quantity, $perKilo) === null) {
+            return ['success' => false, 'message' => $perKilo
+                ? 'Quantity must be more than 0 kg, with up to 2 decimals (e.g. 2.5).'
+                : 'Quantity must be a whole number greater than 0.'];
         }
         try {
-            $quantity = (int)$quantity;
+            // Hundredths for the arithmetic, "12.50" for the DECIMAL columns
+            $quantityHundredths = in_array($type, ['add', 'remove'], true) ? qty_to_hundredths(parse_unit_quantity($quantity, $perKilo)) : 0;
+            $quantity = hundredths_to_qty($quantityHundredths);
+            $quantityLabel = format_unit_amount($quantity, $unit);
             $hasValidStatus = ($status !== null && in_array($status, ['active', 'inactive']));
-            
+
             // ── Status-only update (type = 'none' or quantity = 0) ──
-            if ($type === 'none' || $quantity <= 0) {
+            if ($type === 'none' || $quantityHundredths <= 0) {
                 if ($hasValidStatus) {
                     $sql = "UPDATE products SET status = :status, updated_at = NOW() WHERE id = :id AND deleted_at IS NULL";
                     $stmt = $this->conn->prepare($sql);
@@ -772,7 +805,7 @@ class ProductController {
                 $sql .= ", updated_at = NOW() WHERE id = :id AND deleted_at IS NULL";
                 
                 $stmt = $this->conn->prepare($sql);
-                $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+                $stmt->bindParam(':quantity', $quantity, PDO::PARAM_STR);
                 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
                 if ($hasValidStatus) $stmt->bindParam(':status', $status, PDO::PARAM_STR);
                 $stmt->execute();
@@ -791,7 +824,7 @@ class ProductController {
                 }
                 
                 // LOG ACTIVITY
-                $changeText = "+{$quantity} units added (Restock to " . ($batchAction==='existing' ? "existing batch" : "new batch") . ")";
+                $changeText = "+{$quantityLabel} added (Restock to " . ($batchAction==='existing' ? "existing batch" : "new batch") . ")";
                 if ($hasValidStatus) $changeText .= ", status set to $status";
                 $this->logActivity($id, 'restock', $changeText);
                 
@@ -808,7 +841,7 @@ class ProductController {
                 $checkStmt->execute([':id' => $id]);
                 $pRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
                 
-                if (!$pRow || $pRow['stock'] < $quantity) {
+                if (!$pRow || qty_to_hundredths($pRow['stock']) < $quantityHundredths) {
                     $this->conn->rollBack();
                     return ['success' => false, 'message' => 'Insufficient global stock'];
                 }
@@ -819,7 +852,7 @@ class ProductController {
                     $bCheck->execute([':bid' => $batchId, ':pid' => $id]);
                     $bRow = $bCheck->fetch(PDO::FETCH_ASSOC);
                     
-                    if (!$bRow || $bRow['stock'] < $quantity) {
+                    if (!$bRow || qty_to_hundredths($bRow['stock']) < $quantityHundredths) {
                         $this->conn->rollBack();
                         return ['success' => false, 'message' => 'Insufficient stock in the selected batch'];
                     }
@@ -830,12 +863,12 @@ class ProductController {
                     $batches = $this->conn->prepare("SELECT id, stock FROM product_batches WHERE product_id = :id AND stock > 0 AND status = 'active' ORDER BY CASE WHEN expiration_date IS NULL THEN 1 ELSE 0 END, expiration_date ASC, date_added ASC FOR UPDATE");
                     $batches->execute([':id' => $id]);
                     
-                    $remainingToRemove = $quantity;
+                    $remainingToRemove = $quantityHundredths;
                     while ($batch = $batches->fetch(PDO::FETCH_ASSOC)) {
                         if ($remainingToRemove <= 0) break;
-                        
-                        $deduct = min($batch['stock'], $remainingToRemove);
-                        $this->conn->prepare("UPDATE product_batches SET stock = stock - :qty WHERE id = :bid")->execute([':qty'=>$deduct, ':bid'=>$batch['id']]);
+
+                        $deduct = min(qty_to_hundredths($batch['stock']), $remainingToRemove);
+                        $this->conn->prepare("UPDATE product_batches SET stock = stock - :qty WHERE id = :bid")->execute([':qty'=>hundredths_to_qty($deduct), ':bid'=>$batch['id']]);
                         $remainingToRemove -= $deduct;
                     }
                     
@@ -851,7 +884,7 @@ class ProductController {
                 $sql .= ", updated_at = NOW() WHERE id = :id AND deleted_at IS NULL";
                 
                 $stmt = $this->conn->prepare($sql);
-                $stmt->bindParam(':quantity', $quantity, PDO::PARAM_INT);
+                $stmt->bindParam(':quantity', $quantity, PDO::PARAM_STR);
                 $stmt->bindParam(':id', $id, PDO::PARAM_INT);
                 if ($hasValidStatus) $stmt->bindParam(':status', $status, PDO::PARAM_STR);
                 $stmt->execute();
@@ -863,7 +896,7 @@ class ProductController {
                 $this->syncProductExpiryFromBatches($id);
 
                 // LOG ACTIVITY
-                $changeText = "-{$quantity} units removed";
+                $changeText = "-{$quantityLabel} removed";
                 if ($hasValidStatus) $changeText .= ", status set to $status";
                 $this->logActivity($id, 'reduction', $changeText);
                 

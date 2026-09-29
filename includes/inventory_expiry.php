@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/product_units.php';
+
 /**
  * Remove expired stock from inventory so the fresh stock behind it can be sold.
  *
@@ -25,7 +27,7 @@ function inventory_expire_batches(PDO $pdo): int
         $pdo->beginTransaction();
         try {
             // Locked so two requests arriving together cannot both write it off
-            $st = $pdo->prepare("SELECT b.product_id, b.batch_no, b.stock, b.expiration_date, p.name, p.cost_price
+            $st = $pdo->prepare("SELECT b.product_id, b.batch_no, b.stock, b.expiration_date, p.name, p.cost_price, p.unit
                                  FROM product_batches b
                                  JOIN products p ON p.id = b.product_id
                                  WHERE b.id = ? AND b.status = 'active' AND b.stock > 0
@@ -37,7 +39,7 @@ function inventory_expire_batches(PDO $pdo): int
                 $pdo->rollBack();
                 continue;
             }
-            $units = (int)$batch['stock'];
+            $units = hundredths_to_qty(qty_to_hundredths($batch['stock'])); // exact, kilograms included
 
             $pdo->prepare("UPDATE product_batches SET stock = 0, status = 'expired' WHERE id = ?")
                 ->execute([$batchId]);
@@ -63,11 +65,11 @@ function inventory_expire_batches(PDO $pdo): int
                 ->execute([
                     $batch['product_id'],
                     $batch['name'],
-                    sprintf('Expired stock removed: -%d units from batch %s (expired %s), ₱%s at cost',
-                        $units,
+                    sprintf('Expired stock removed: -%s from batch %s (expired %s), ₱%s at cost',
+                        format_unit_amount($units, $batch['unit']),
                         $batch['batch_no'],
                         date('M j, Y', strtotime($batch['expiration_date'])),
-                        number_format($units * (float)$batch['cost_price'], 2)),
+                        number_format((float)$units * (float)$batch['cost_price'], 2)),
                 ]);
 
             $pdo->commit();

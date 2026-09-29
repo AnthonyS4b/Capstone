@@ -332,22 +332,22 @@ if ($toast_message) {
                             <h3 class="inv-form-section-title">Price &amp; stock</h3>
                             <div class="inv-form-grid inv-form-grid-3">
                                 <div class="inv-field">
-                                    <label class="form-label" for="productCostPrice">Cost <span class="inv-optional">optional</span></label>
+                                    <label class="form-label" for="productCostPrice">Cost <span class="inv-optional inv-per-kg" hidden>per kg ·</span> <span class="inv-optional">optional</span></label>
                                     <div class="inv-money">
                                         <span>₱</span>
                                         <input type="text" class="form-control" id="productCostPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00">
                                     </div>
                                 </div>
                                 <div class="inv-field">
-                                    <label class="form-label" for="productPrice">Selling price <span class="inv-req">*</span></label>
+                                    <label class="form-label" for="productPrice">Selling price <span class="inv-optional inv-per-kg" hidden>per kg</span> <span class="inv-req">*</span></label>
                                     <div class="inv-money">
                                         <span>₱</span>
                                         <input type="text" class="form-control" id="productPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00" required>
                                     </div>
                                 </div>
-                                <!-- Stock: hidden for weight (auto=1), shown for packaged/medicine -->
+                                <!-- Stock: hidden for Per Gram (auto=1); kilograms (decimals) for Per Kilo; whole numbers otherwise -->
                                 <div class="inv-field" id="stockFieldWrapper" style="display:none;">
-                                    <label class="form-label" for="productStock">Stock <span class="inv-req">*</span></label>
+                                    <label class="form-label" for="productStock">Stock <span class="inv-optional inv-per-kg" hidden>in kg</span> <span class="inv-req">*</span></label>
                                     <input type="text" class="form-control" id="productStock" inputmode="numeric" data-numeric="int" maxlength="7" autocomplete="off" placeholder="0">
                                 </div>
                             </div>
@@ -397,7 +397,7 @@ if ($toast_message) {
                 </div>
                 <div class="inv-form-foot">
                     <button type="button" class="inv-btn" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="inv-btn inv-btn-primary" onclick="saveProduct()">Save product</button>
+                    <button type="button" class="inv-btn inv-btn-primary" id="saveProductBtn" onclick="saveProduct()">Save product</button>
                 </div>
             </div>
         </div>

@@ -6,6 +6,9 @@
 // which put PHP's dates 6 hours behind MySQL's (Asia/Singapore, also UTC+8).
 date_default_timezone_set('Asia/Manila');
 
+// Per Kilo quantities (decimal kilograms) vs whole-number units, used across pages
+require_once __DIR__ . '/product_units.php';
+
 function security_start_session(): void
 {
     if (session_status() === PHP_SESSION_NONE) {

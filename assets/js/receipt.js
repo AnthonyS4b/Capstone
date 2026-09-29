@@ -5,7 +5,7 @@
  *
  *   Receipt.html({
  *       number: 'TRX-001527', date: Date|string, cashier: 'Name',
- *       items: [{ name, price, quantity }],   // price = unit price charged
+ *       items: [{ name, price, quantity, unit }], // price = unit price charged; unit 'Per Kilo' = kg
  *       total, payment, change,
  *       method: 'cash' | 'gcash', reference: '123456',
  *       status: 'completed' | 'voided'
@@ -54,6 +54,24 @@
         return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
+    // Per Kilo lines are decimal kilograms ("2.5 kg × ₱100.00/kg"); other units stay "3 × ₱85.00"
+    function isPerKilo(item) {
+        return String(item.unit || '').trim().toLowerCase() === 'per kilo';
+    }
+
+    // quantity × price rounded to the centavo, the way checkout charged it
+    function lineTotal(item) {
+        const cents = Math.round(Math.round(Number(item.quantity || 0) * 100) * Math.round(Number(item.price || 0) * 100) / 100);
+        return cents / 100;
+    }
+
+    function itemLine(item) {
+        const price = Number(item.price) === 0 ? 'Free' : peso(item.price);
+        if (!isPerKilo(item)) return `${Number(item.quantity)} × ${price}`;
+        const kg = Math.round(Number(item.quantity || 0) * 100) / 100;
+        return `${kg} kg × ${price}${Number(item.price) === 0 ? '' : '/kg'}`;
+    }
+
     function formatDate(value) {
         const d = value instanceof Date ? value : new Date(String(value).replace(' ', 'T'));
         if (isNaN(d)) return esc(value);
@@ -78,15 +96,16 @@
         // Prices are VAT-inclusive (12%, Philippines)
         const subtotal = total / 1.12;
         const vat = total - subtotal;
-        const units = items.reduce((n, i) => n + Number(i.quantity || 0), 0);
+        // A weighed (Per Kilo) line counts as one item, whatever it weighs
+        const units = items.reduce((n, i) => n + (isPerKilo(i) ? 1 : Number(i.quantity || 0)), 0);
 
         const itemsHtml = items.length
             ? items.map(i => `
                 <div class="rc-item">
                     <div class="rc-item-name">${esc(i.name)}</div>
                     <div class="rc-item-line">
-                        <span>${Number(i.quantity)} × ${Number(i.price) === 0 ? 'Free' : peso(i.price)}</span>
-                        <span>${peso(Number(i.price) * Number(i.quantity))}</span>
+                        <span>${itemLine(i)}</span>
+                        <span>${peso(lineTotal(i))}</span>
                     </div>
                 </div>`).join('')
             : '<div class="rc-item rc-muted">No items recorded</div>';
