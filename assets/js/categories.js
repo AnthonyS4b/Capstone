@@ -25,9 +25,30 @@ function hideLoading() {
     if (spinner) spinner.style.display = 'none';
 }
 
+const MAX_VISIBLE_TOASTS = 3;
+
+// Remove the same message if it is already showing (clicking Save again shows it once),
+// then the oldest toasts so at most MAX_VISIBLE_TOASTS stay on screen
+function makeRoomForToast(toastContainer, key) {
+    const visible = [...toastContainer.querySelectorAll('.toast')];
+    const keep = visible.filter(el => {
+        if (el.dataset.toastKey !== key) return true;
+        bootstrap.Toast.getInstance(el)?.dispose();
+        el.remove();
+        return false;
+    });
+    keep.slice(0, Math.max(0, keep.length - MAX_VISIBLE_TOASTS + 1)).forEach(el => {
+        bootstrap.Toast.getInstance(el)?.dispose();
+        el.remove();
+    });
+}
+
 function showToast(type, title, message) {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) return;
+
+    const toastKey = [type, title, message].join('|');
+    makeRoomForToast(toastContainer, toastKey);
 
     const icons = {
         success: 'fa-check-circle',
@@ -49,6 +70,7 @@ function showToast(type, title, message) {
     toastContainer.insertAdjacentHTML('beforeend', toastHtml);
     const toastElement = document.getElementById(toastId);
     if (toastElement) {
+        toastElement.dataset.toastKey = toastKey;
         const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 3000 });
         toast.show();
         setTimeout(() => {

@@ -848,9 +848,38 @@ body {
     margin: -2px 0 12px;
 }
 
+.quick-cash-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.quick-cash-hint {
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.quick-cash-clear {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #2c5530;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.quick-cash-clear:hover,
+.quick-cash-clear:focus-visible {
+    text-decoration: underline;
+    outline: none;
+}
+
 .quick-cash-label {
     display: block;
-    margin-bottom: 5px;
     color: #64748b;
     font-size: 11px;
     font-weight: 700;

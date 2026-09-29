@@ -230,10 +230,13 @@ if ($toast_message) {
                                 <input type="text" id="paymentAmount" placeholder="Enter amount" inputmode="decimal" autocomplete="off" maxlength="12">
                             </div>
                             <div class="quick-cash-wrap" aria-label="Quick cash amounts">
-                                <small class="quick-cash-label">Quick cash</small>
+                                <div class="quick-cash-head">
+                                    <small class="quick-cash-label">Quick cash <span class="quick-cash-hint">· tap bills to add</span></small>
+                                    <button type="button" class="quick-cash-clear" id="quickCashClear" data-cash-target="paymentAmount">Clear</button>
+                                </div>
                                 <div class="quick-cash-grid">
                                     <?php foreach ([100, 200, 500, 1000, 5000, 10000] as $cashAmount): ?>
-                                        <button type="button" class="quick-cash-btn" data-cash-amount="<?php echo $cashAmount; ?>" data-cash-target="paymentAmount">₱<?php echo number_format($cashAmount); ?></button>
+                                        <button type="button" class="quick-cash-btn" data-cash-amount="<?php echo $cashAmount; ?>" data-cash-target="paymentAmount" data-cash-mode="add">+₱<?php echo number_format($cashAmount); ?></button>
                                     <?php endforeach; ?>
                                 </div>
                             </div>

@@ -3,14 +3,29 @@
     // Toast notification function
     function showToast(type, title, message) {
         const toastContainer = document.getElementById('toastContainer');
+        if (!toastContainer) return;
+
+        // At most 3 on screen, and the same message only once
+        const toastKey = [type, title, message].join('|');
+        const visible = [...toastContainer.querySelectorAll('.toast')].filter(el => {
+            if (el.dataset.toastKey !== toastKey) return true;
+            bootstrap.Toast.getInstance(el)?.dispose();
+            el.remove();
+            return false;
+        });
+        visible.slice(0, Math.max(0, visible.length - 2)).forEach(el => {
+            bootstrap.Toast.getInstance(el)?.dispose();
+            el.remove();
+        });
+
         const icons = {
             success: 'fa-check-circle',
             error: 'fa-exclamation-circle',
             warning: 'fa-exclamation-triangle',
             info: 'fa-info-circle'
         };
-        
-        const toastId = 'toast-' + Date.now();
+
+        const toastId = 'toast-' + Date.now() + '-' + Math.random().toString(36).slice(2);
         const icon = icons[type] || 'fa-bell';
         
         const toastHtml = `
@@ -27,6 +42,7 @@
         
         toastContainer.insertAdjacentHTML('beforeend', toastHtml);
         const toastElement = document.getElementById(toastId);
+        toastElement.dataset.toastKey = toastKey;
         const toast = new bootstrap.Toast(toastElement, { autohide: true, delay: 3000 });
         toast.show();
         

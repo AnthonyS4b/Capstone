@@ -60,10 +60,19 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+const MAX_VISIBLE_TOASTS = 3;
+
 function showToast(type, title, message) {
     const toastContainer = document.getElementById('toastContainer');
     if (!toastContainer) return;
-    
+
+    // Keep at most MAX_VISIBLE_TOASTS on screen: drop the oldest to make room
+    const visible = toastContainer.querySelectorAll('.toast');
+    for (let i = 0; i <= visible.length - MAX_VISIBLE_TOASTS; i++) {
+        bootstrap.Toast.getInstance(visible[i])?.dispose();
+        visible[i].remove();
+    }
+
     const icons = { 
         success: 'fa-check-circle', 
         error: 'fa-exclamation-circle', 
@@ -639,14 +648,26 @@ function setQuickCashAmount(button) {
 
     if (!input || !Number.isFinite(amount)) return;
 
-    input.value = String(amount);
+    // Bill buttons add up (₱5,000 then ₱10,000 = ₱15,000); suggested totals replace the amount
+    if (button.dataset.cashMode === 'add') {
+        const current = parseFloat(input.value) || 0;
+        input.value = String(Math.round((current + amount) * 100) / 100);
+    } else {
+        input.value = String(amount);
+        const group = button.closest('.quick-cash-grid');
+        group?.querySelectorAll('.quick-cash-btn').forEach(candidate => {
+            candidate.classList.toggle('active', candidate === button);
+        });
+    }
     input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.focus();
+}
 
-    const group = button.closest('.quick-cash-grid');
-    group?.querySelectorAll('.quick-cash-btn').forEach(candidate => {
-        candidate.classList.toggle('active', candidate === button);
-    });
-
+function clearQuickCash(button) {
+    const input = document.getElementById(button.dataset.cashTarget);
+    if (!input) return;
+    input.value = '';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
     input.focus();
 }
 
@@ -1131,7 +1152,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.quick-cash-btn').forEach(button => {
         button.addEventListener('click', () => setQuickCashAmount(button));
     });
-    
+    const quickCashClear = document.getElementById('quickCashClear');
+    if (quickCashClear) quickCashClear.addEventListener('click', () => clearQuickCash(quickCashClear));
+
     // Sidebar collapse
     const sidebar = document.getElementById('sidebar');
     const collapseBtn = document.getElementById('collapseBtn');

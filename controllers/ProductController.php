@@ -415,9 +415,12 @@ class ProductController {
                 $attempts++;
             }
             
-            // Handle barcode
-            $barcode = isset($data['barcode']) ? $data['barcode'] : '';
-            
+            // Handle barcode - each barcode may belong to only one product
+            $barcode = $this->normalizeBarcode($data['barcode'] ?? null);
+            if ($conflict = $this->findBarcodeConflict($barcode)) {
+                return ['success' => false, 'message' => $conflict];
+            }
+
             // Handle unit - required field
             $unit = isset($data['unit']) ? $data['unit'] : '';
             
@@ -559,8 +562,37 @@ class ProductController {
         } catch (Exception $e) {
             error_log("Error in createProduct: " . $e->getMessage());
             error_log("Data: " . print_r($data, true));
+            if ($this->isDuplicateBarcodeError($e)) {
+                return ['success' => false, 'message' => 'That barcode is already used by another product.'];
+            }
             return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
+    }
+
+    // Blank barcodes are stored as NULL so any number of products can have none
+    private function normalizeBarcode($barcode) {
+        $barcode = trim((string)($barcode ?? ''));
+        return $barcode === '' ? null : $barcode;
+    }
+
+    // Message naming the product that already has this barcode, or null if it is free.
+    // Archived products keep their barcode, so restoring one can't create a duplicate.
+    private function findBarcodeConflict($barcode, $excludeId = null) {
+        if ($barcode === null) return null;
+
+        $stmt = $this->conn->prepare("SELECT name, deleted_at FROM products WHERE barcode = :barcode AND id <> :id LIMIT 1");
+        $stmt->execute([':barcode' => $barcode, ':id' => (int)($excludeId ?? 0)]);
+        $owner = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$owner) return null;
+
+        return 'Barcode ' . $barcode . ' is already used by "' . $owner['name'] . '"'
+            . ($owner['deleted_at'] ? ' (in the archive)' : '') . '. Each product needs its own barcode.';
+    }
+
+    // The unique key on products.barcode catches two saves racing past the check above
+    private function isDuplicateBarcodeError($e) {
+        return $e instanceof PDOException && $e->getCode() == 23000
+            && stripos($e->getMessage(), 'uniq_products_barcode') !== false;
     }
 
     // Update product
@@ -582,7 +614,10 @@ class ProductController {
             }
             
             $sku = isset($data['sku']) ? $data['sku'] : '';
-            $barcode = isset($data['barcode']) ? $data['barcode'] : '';
+            $barcode = $this->normalizeBarcode($data['barcode'] ?? null);
+            if ($conflict = $this->findBarcodeConflict($barcode, $id)) {
+                return ['success' => false, 'message' => $conflict];
+            }
             $unit = isset($data['unit']) ? $data['unit'] : '';
             $cost_price = isset($data['cost_price']) ? floatval($data['cost_price']) : 0;
             $expiration_date = isset($data['expiration_date']) && !empty($data['expiration_date']) ? $data['expiration_date'] : null;
@@ -658,6 +693,9 @@ class ProductController {
                 $this->conn->rollBack();
             }
             error_log("Error in updateProduct: " . $e->getMessage());
+            if ($this->isDuplicateBarcodeError($e)) {
+                return ['success' => false, 'message' => 'That barcode is already used by another product.'];
+            }
             return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
     }

@@ -141,3 +141,59 @@ Press Ctrl+C to stop
 2026-09-27 23:06:01,083 [INFO] recommendation_model: Model trained successfully. R² = 0.9903, RMSE = 0.0846
 2026-09-27 23:06:01,121 [INFO] werkzeug: 127.0.0.1 - - [27/Sep/2026 23:06:01] "POST /api/train-model HTTP/1.1" 200 -
 2026-09-27 23:06:03,366 [INFO] werkzeug: 127.0.0.1 - - [27/Sep/2026 23:06:03] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+
+--- started 2026-09-28 21:56:27 (pid 4776) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-09-28 21:56:51,992 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-09-28 21:56:51,992 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-09-28 21:56:53,257 [INFO] recommendation_model: Model loaded successfully
+2026-09-28 21:56:55,092 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 21:56:55] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 21:56:55,155 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 21:56:55] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 21:57:00,162 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 21:57:00] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 21:57:00,171 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 21:57:00] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:10:27,906 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:10:27] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 22:39:13,305 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:13] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:39:13,323 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:13] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:39:23,298 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:23] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:39:23,314 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:23] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:39:27,848 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:27] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:39:27,864 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:27] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:39:39,483 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:39] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:39:39,514 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:39] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:39:46,764 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:46] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:39:46,779 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:39:46] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:40:15,655 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:40:15] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:40:15,685 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:40:15] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:51:37,170 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:37] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:51:37,212 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:37] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:51:46,142 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:46] "GET /api/pairing-products?product_id=32 HTTP/1.1" 200 -
+2026-09-28 22:51:53,632 [INFO] __main__: Strategy 'emergency_clearance' applied to product #32: promotional price ₱41.25 (25.0% off, 3 days), required partner: None
+2026-09-28 22:51:53,633 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:53] "[35m[1mPOST /api/save-recommendation HTTP/1.1[0m" 201 -
+2026-09-28 22:51:57,455 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:57] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:51:58,318 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:51:58] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 22:52:22,363 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:52:22] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 22:52:22,381 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:52:22] "GET /health HTTP/1.1" 200 -
+2026-09-28 22:54:26,212 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:54:26] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 22:54:31,457 [INFO] __main__: Strategy ID 24 cancelled for product #32
+2026-09-28 22:54:31,459 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:54:31] "POST /api/cancel-strategy HTTP/1.1" 200 -
+2026-09-28 22:54:31,480 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 22:54:31] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-09-28 23:07:45,802 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:07:45] "GET /health HTTP/1.1" 200 -
+2026-09-28 23:07:48,670 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:07:48] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 23:08:22,366 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:08:22] "GET /health HTTP/1.1" 200 -
+2026-09-28 23:08:27,581 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:08:27] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 23:09:26,467 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:09:26] "GET /api/pairing-products?product_id=32 HTTP/1.1" 200 -
+2026-09-28 23:09:53,978 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:09:53] "GET /api/pairing-products?product_id=32 HTTP/1.1" 200 -
+2026-09-28 23:11:36,681 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:11:36] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 23:11:36,713 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:11:36] "GET /health HTTP/1.1" 200 -
+2026-09-28 23:13:04,490 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:13:04] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-28 23:13:04,516 [INFO] werkzeug: 127.0.0.1 - - [28/Sep/2026 23:13:04] "GET /health HTTP/1.1" 200 -
