@@ -373,3 +373,49 @@
 [29-Sep-2026 20:49:43 Asia/Manila] Transaction data: User_ID=1, Total=160, Payment=200, Method=cash
 [29-Sep-2026 20:49:43 Asia/Manila] Transaction inserted with ID: 1555
 [29-Sep-2026 20:49:44 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[29-Sep-2026 23:48:51 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 3
+    [name] => VPro
+    [description] => 
+    [price] => 85
+    [cost_price] => 65
+    [stock] => 50
+    [unit] => Per Kilo
+    [sku] => POU-59604612
+    [barcode] => 
+    [image] => assets/uploads/products/prod_1790696931_cd6a9514.jpg
+    [expiration_date] => 2027-02-22
+    [date_added] => 2026-09-29
+)
+
+[29-Sep-2026 23:49:00 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 104
+    [data] => Array
+        (
+            [id] => 104
+            [sku] => POU-59604612
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 65
+            [image] => assets/uploads/products/prod_1790696931_cd6a9514.jpg
+            [expiration_date] => 2027-02-22
+        )
+
+)
+
+[29-Sep-2026 23:50:12 Asia/Manila] Found user_id in session: 1
+[29-Sep-2026 23:50:12 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[29-Sep-2026 23:50:12 Asia/Manila] Transaction data: User_ID=1, Total=425, Payment=500, Method=cash
+[29-Sep-2026 23:50:12 Asia/Manila] Transaction inserted with ID: 1556
+[29-Sep-2026 23:50:13 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[29-Sep-2026 23:52:17 Asia/Manila] Found user_id in session: 1
+[29-Sep-2026 23:52:17 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[29-Sep-2026 23:52:17 Asia/Manila] Transaction data: User_ID=1, Total=127.5, Payment=500, Method=cash
+[29-Sep-2026 23:52:17 Asia/Manila] Transaction inserted with ID: 1557
+[29-Sep-2026 23:52:18 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
