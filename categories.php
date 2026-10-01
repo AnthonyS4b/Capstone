@@ -113,9 +113,11 @@ if ($toast_message) {
                 <button class="inv-btn inv-btn-quiet inv-btn-danger-text" onclick="showExpiredProducts()">
                     <i class="fas fa-hourglass-end"></i>Expired products
                 </button>
+                <?php if ($is_owner): // creating categories is owner-only (the server refuses it for employees too) ?>
                 <button class="inv-btn inv-btn-primary" onclick="openCategoryModal()">
                     <i class="fas fa-plus"></i>New category
                 </button>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -134,9 +136,15 @@ if ($toast_message) {
                     <span id="selectedCategoryName">Category</span>
                     <span id="selectedCategoryBadge" class="category-badge" style="display: none;"></span>
                 </h5>
-                <button id="addProductBtn" class="inv-btn inv-btn-primary" onclick="openProductModal()">
-                    <i class="fas fa-plus"></i>Add product<span id="addProductCategoryName" hidden>Category</span>
-                </button>
+                <div class="inv-section-actions">
+                    <label class="inv-product-search" for="productSearch">
+                        <i class="fas fa-search" aria-hidden="true"></i>
+                        <input type="search" id="productSearch" placeholder="Search name, SKU or barcode" autocomplete="off" aria-label="Search products in this category">
+                    </label>
+                    <button id="addProductBtn" class="inv-btn inv-btn-primary" onclick="openProductModal()">
+                        <i class="fas fa-plus"></i>Add product<span id="addProductCategoryName" hidden>Category</span>
+                    </button>
+                </div>
             </div>
 
             <div class="table-responsive">

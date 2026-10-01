@@ -107,10 +107,18 @@ function loadRecommendations() {
                 showEmptyState('No recommendations available', 'All products are performing well.');
             }
         },
-        error() {
+        error(xhr) {
+            // The server says why: first-time setup, no Python, failed install, or start failure
+            const res = xhr.responseJSON || {};
+            if (res.reason === 'installing') {
+                showEmptyState('Setting up the recommendation engine', res.error);
+                clearTimeout(window.__recoRetry);
+                window.__recoRetry = setTimeout(() => { loadRecommendations(); checkApiHealth(); }, (res.retry_after || 20) * 1000);
+                return;
+            }
             showEmptyState(
                 'Recommendation Engine Offline',
-                'The ML server could not be started automatically. Check ml/logs/ml_server.log, then refresh.'
+                res.error || 'The ML server could not be started automatically. Check ml/logs/ml_server.log, then refresh.'
             );
         },
     });

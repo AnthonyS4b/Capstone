@@ -38,10 +38,12 @@ try {
         exit;
     }
 
+    // Employees may add products and manage stock (add/remove stock, status, batch
+    // expiry); editing a product's details, archiving and categories stay owner-only
     $ownerOnlyActions = [
         'create_category', 'update_category', 'delete_category', 'archive_category',
-        'restore_category', 'update_category_status', 'create_product', 'update_product',
-        'update_stock', 'update_batch_expiry', 'archive_product', 'restore_product',
+        'restore_category', 'update_category_status', 'update_product',
+        'archive_product', 'restore_product',
         'permanent_delete', 'empty_archive'
     ];
     if (in_array($action, $ownerOnlyActions, true)) {

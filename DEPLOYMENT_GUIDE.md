@@ -53,6 +53,8 @@ There is only one file to import: **`Database SQL\espenida_pos.sql`**. It create
 
 The recommendation engine is a Python server. You only install its libraries once; the system starts the server by itself whenever it is needed.
 
+> **Automatic:** you can skip this phase. The first time someone opens **Recommendations**, the system installs the libraries by itself (it needs internet and takes a few minutes; the page says "Setting up the recommendation engine" and retries on its own). Doing the steps below just makes that first visit faster.
+
 1. Open a terminal on the new laptop. You can press `Win + R`, type `cmd`, and press Enter.
 2. Navigate into the Machine Learning directory by typing:
    ```cmd
@@ -63,6 +65,15 @@ The recommendation engine is a Python server. You only install its libraries onc
    pip install -r requirements.txt
    ```
    *(Wait for it to finish installing pandas, scikit-learn, flask, etc.)*
+
+   > **If you get "'pip' is not recognized"** (this happens on newer Python versions such as 3.14, where the `pip` shortcut is not always added), run pip through Python instead. Try the first command, and if it says Python is not found, the second:
+   > ```cmd
+   > python -m pip install -r requirements.txt
+   > ```
+   > ```cmd
+   > py -m pip install -r requirements.txt
+   > ```
+   > Both do exactly the same thing as `pip install -r requirements.txt`. Run them inside the `ml` folder, as in step 2.
 
 There is no need to run `python api_server.py` or keep a terminal open.
 
@@ -76,4 +87,4 @@ There is no need to run `python api_server.py` or keep a terminal open.
 3. Log in using your default Administrator/Owner credentials.
 4. Navigate to the **Recommendations** dashboard. The first visit starts the Python server in the background (about 15 seconds the very first time, a few seconds after that), loads the Random Forest model, and analyzes your inventory.
 
-> **Troubleshooting Tip:** If the Recommendation dashboard says "Recommendation Engine Offline", open `C:\xampp\htdocs\Capstone\ml\logs\ml_server.log` to see why the server could not start. The usual cause is that Phase 4 was skipped or Python was installed without "Add Python to PATH".
+> **Troubleshooting Tip:** If the Recommendation dashboard says "Recommendation Engine Offline", the page now says why. The usual cause is that Python was installed without "Add python.exe to PATH" (reinstall or modify it and tick that box). Details are in `C:\xampp\htdocs\Capstone\ml\logs\ml_server.log` (server) and `ml\logs\pip_install.log` (library install).

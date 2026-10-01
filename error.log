@@ -419,3 +419,10 @@
 [29-Sep-2026 23:52:17 Asia/Manila] Transaction data: User_ID=1, Total=127.5, Payment=500, Method=cash
 [29-Sep-2026 23:52:17 Asia/Manila] Transaction inserted with ID: 1557
 [29-Sep-2026 23:52:18 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[02-Oct-2026 02:20:14 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [category_id] => 1
+    [name] => 
+)
+

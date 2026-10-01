@@ -1581,3 +1581,51 @@ body.inv-ui {
         gap: 6px;
     }
 }
+
+/* Search box in the product list header (filters the open category as you type) */
+.inv-ui .inv-section-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.inv-ui .inv-product-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+.inv-ui .inv-product-search i {
+    position: absolute;
+    left: 11px;
+    font-size: 13px;
+    color: var(--ink-subtle);
+    pointer-events: none;
+}
+.inv-ui .inv-product-search input {
+    width: 260px;
+    max-width: 100%;
+    height: 34px;
+    padding: 0 12px 0 32px;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-sm);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.inv-ui .inv-product-search input::placeholder {
+    color: var(--ink-subtle);
+}
+.inv-ui .inv-product-search input:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-tint);
+}
+@media (max-width: 576px) {
+    .inv-ui .inv-section-actions,
+    .inv-ui .inv-product-search,
+    .inv-ui .inv-product-search input {
+        width: 100%;
+    }
+}

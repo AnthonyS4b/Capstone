@@ -375,7 +375,7 @@ function displayCategories(categories) {
     if (!container) return;
 
     if (!categories || categories.length === 0) {
-        container.innerHTML = `<div class="text-center py-5"><i class="fas fa-layer-group fa-3x text-muted mb-3"></i><h5>No Categories Found</h5><p class="text-muted">Click "New Category" to create your first category</p></div>`;
+        container.innerHTML = `<div class="text-center py-5"><i class="fas fa-layer-group fa-3x text-muted mb-3"></i><h5>No Categories Found</h5><p class="text-muted">${isOwner ? 'Click "New category" to create your first category' : 'Ask the owner to add a category'}</p></div>`;
         return;
     }
     let html = '';
@@ -421,6 +421,8 @@ function selectCategory(categoryId, categoryName) {
     document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
     if (event && event.currentTarget) event.currentTarget.classList.add('active');
 
+    // A new category starts unfiltered (reloads after saving keep the search)
+    clearProductSearch();
     loadCategoryProducts(categoryId);
 }
 
@@ -437,6 +439,7 @@ function showExpiredProducts() {
     if (addProductBtn) addProductBtn.style.display = 'none';
 
     document.querySelectorAll('.category-card').forEach(card => card.classList.remove('active'));
+    clearProductSearch();
 
     showLoading();
     $.ajax({
@@ -447,7 +450,7 @@ function showExpiredProducts() {
         success: function (response) {
             hideLoading();
             if (response.success) {
-                displayProducts(response.data);
+                setSectionProducts(response.data);
             } else {
                 showToast('error', 'Error', response.message);
             }
@@ -634,6 +637,43 @@ function confirmArchiveCategory(categoryId) {
 
 // ==================== PRODUCT FUNCTIONS ====================
 
+// ── Product search in the open category ──────────────────────────
+// Everything the open category (or the Expired view) loaded; the search box filters it
+let sectionProducts = [];
+
+function setSectionProducts(products) {
+    sectionProducts = products || [];
+    applyProductSearch();
+}
+
+function clearProductSearch() {
+    const box = document.getElementById('productSearch');
+    if (box) box.value = '';
+}
+
+// Matches name, SKU or barcode; every word typed must appear ("pedigree 3kg")
+function applyProductSearch() {
+    const query = (document.getElementById('productSearch')?.value || '').trim().toLowerCase();
+    if (!query) {
+        displayProducts(sectionProducts);
+        return;
+    }
+    const words = query.split(/\s+/);
+    const matches = sectionProducts.filter(p => {
+        const text = [p.name, p.sku, p.barcode].filter(Boolean).join(' ').toLowerCase();
+        return words.every(w => text.includes(w));
+    });
+    if (matches.length === 0) {
+        productNames = new Map();
+        const tbody = document.getElementById('productsTableBody');
+        if (tbody) tbody.innerHTML = `<tr><td colspan="9" class="inv-empty-cell"><p>No products match "${escapeHtml(query)}".</p></td></tr>`;
+        return;
+    }
+    displayProducts(matches);
+}
+
+document.getElementById('productSearch')?.addEventListener('input', applyProductSearch);
+
 function loadCategoryProducts(categoryId) {
     showLoading();
     $.ajax({
@@ -644,7 +684,7 @@ function loadCategoryProducts(categoryId) {
         success: function (response) {
             hideLoading();
             if (response.success) {
-                displayProducts(response.data);
+                setSectionProducts(response.data);
             } else {
                 showToast('error', 'Error', response.message);
             }
@@ -774,7 +814,7 @@ function displayProducts(products) {
                 <td class="inv-actions">
                     ${isOwner ? `<button class="btn-icon" onclick="editProduct(${product.id})" title="Edit product"><i class="fas fa-pen"></i></button>` : ''}
                     <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${parseFloat(product.stock) || 0}, '${currentStatus}', '${escapeHtml(product.unit || '').replace(/'/g, "\\'")}')" title="Manage stock & status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
-                    <button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to archive"><i class="fas fa-box-archive"></i></button>
+                    ${isOwner ? `<button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to archive"><i class="fas fa-box-archive"></i></button>` : ''}
                 </td>
             </tr>`;
     });

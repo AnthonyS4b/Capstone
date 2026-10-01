@@ -19,15 +19,23 @@ define('ML_API_TIMEOUT', 30);
 // If the Python server (ml/api_server.py) is not running, the first request
 // that needs it starts it in the background - nobody has to use a terminal.
 //  - Only one request launches it; others wait on a lock, then use it.
-//  - The Python that has the ML packages is found once and remembered in
-//    ml/logs/python_path.txt. Set the ML_PYTHON environment variable (full
-//    path to python.exe) to force one; delete the file to search again.
-//  - Server output goes to ml/logs/ml_server.log (ml/ is not web-accessible).
+//  - The Python that has the ML packages is remembered in ml/logs/python_path.txt
+//    (checked again each start, so a path copied from another PC is harmless).
+//    Set the ML_PYTHON environment variable (full path to python.exe) to force one.
+//  - On a new PC where Python is installed but the packages are not, it runs
+//    "pip install -r ml/requirements.txt" once in the background (needs internet)
+//    and the Recommendations page shows "setting up" until it is done.
+//  - Server output goes to ml/logs/ml_server.log, pip's to ml/logs/pip_install.log.
 define('ML_SERVER_HOST', '127.0.0.1');   // must match API_CONFIG in ml/ml_config.py
 define('ML_SERVER_PORT', 5000);
 define('ML_START_TIMEOUT', 45);          // seconds to wait for a new server to come up
 define('ML_RETRY_COOLDOWN', 60);         // after a failed start, don't retry for this long
+define('ML_INSTALL_TIMEOUT', 1200);      // a package install still running after this is treated as stuck
 define('ML_REQUIRED_MODULES', 'flask, flask_cors, pandas, numpy, sklearn, pymysql, joblib');
+
+// Why the last start attempt failed, for the message on the Recommendations page:
+// 'no_python' | 'installing' | 'install_failed' | 'start_failed'
+$GLOBALS['ml_autostart_problem'] = null;
 
 function ml_server_dir() {
     return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'ml';
@@ -49,37 +57,108 @@ function ml_server_is_up($timeout = 0.5) {
 /**
  * Full path of a Python interpreter that can run api_server.py, or null.
  */
-function ml_find_python() {
+function ml_python_candidates() {
     $cacheFile = ml_log_dir() . DIRECTORY_SEPARATOR . 'python_path.txt';
     $cached = is_file($cacheFile) ? trim((string)file_get_contents($cacheFile)) : '';
-    if ($cached !== '' && is_file($cached)) return $cached;
-
     $root = dirname(__DIR__);
-    $candidates = array_filter([
+    return array_values(array_unique(array_filter([
         getenv('ML_PYTHON') ?: null,
+        $cached ?: null,
         $root . '\\.venv\\Scripts\\python.exe',
         $root . '\\ml\\.venv\\Scripts\\python.exe',
         'py',      // Windows Python launcher
         'python',  // whatever is on PATH
         'python3',
-    ]);
+    ])));
+}
 
-    foreach ($candidates as $candidate) {
-        if (strpbrk($candidate, '\\/') !== false && !is_file($candidate)) continue;
+/** Run $code with a candidate interpreter; returns sys.executable it printed, or null. */
+function ml_probe_python($candidate, $imports) {
+    if (strpbrk($candidate, '\\/') !== false && !is_file($candidate)) return null;
+    $output = [];
+    $code = 1;
+    @exec('"' . $candidate . '" -c "import sys' . ($imports !== '' ? ', ' . $imports : '') .
+        '; assert sys.version_info >= (3, 9); print(sys.executable)" 2>' .
+        (PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null'), $output, $code);
+    $exe = trim((string)end($output));
+    return ($code === 0 && $exe !== '' && is_file($exe)) ? $exe : null;
+}
 
-        // Prints the real interpreter path only if every package imports
-        $output = [];
-        $code = 1;
-        @exec('"' . $candidate . '" -c "import sys, ' . ML_REQUIRED_MODULES . '; print(sys.executable)" 2>' .
-            (PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null'), $output, $code);
-
-        $exe = trim((string)end($output));
-        if ($code === 0 && $exe !== '' && is_file($exe)) {
-            @file_put_contents($cacheFile, $exe);
+/**
+ * Full path of a Python interpreter that can run api_server.py, or null.
+ * Every candidate, the remembered one included, must import all ML packages.
+ */
+function ml_find_python() {
+    foreach (ml_python_candidates() as $candidate) {
+        if ($exe = ml_probe_python($candidate, ML_REQUIRED_MODULES)) {
+            @file_put_contents(ml_log_dir() . DIRECTORY_SEPARATOR . 'python_path.txt', $exe);
             return $exe;
         }
     }
     return null;
+}
+
+/** Any Python 3.9+ at all (packages or not), or null when none is installed. */
+function ml_find_any_python() {
+    foreach (ml_python_candidates() as $candidate) {
+        if ($exe = ml_probe_python($candidate, '')) return $exe;
+    }
+    return null;
+}
+
+/**
+ * Package install state: 'none' (never started), 'running', 'done' or 'failed'.
+ * The background job writes pip_install.done with pip's exit code when it ends.
+ */
+function ml_install_state() {
+    $dir = ml_log_dir();
+    $started = $dir . DIRECTORY_SEPARATOR . 'pip_install.started';
+    $done = $dir . DIRECTORY_SEPARATOR . 'pip_install.done';
+    if (!is_file($started)) return 'none';
+    if (is_file($done)) return trim((string)file_get_contents($done)) === '0' ? 'done' : 'failed';
+    return (time() - filemtime($started) < ML_INSTALL_TIMEOUT) ? 'running' : 'failed';
+}
+
+/** Start "pip install -r requirements.txt" in the background with $python. */
+function ml_start_package_install($python) {
+    $dir = ml_log_dir();
+    @unlink($dir . DIRECTORY_SEPARATOR . 'pip_install.done');
+    @file_put_contents($dir . DIRECTORY_SEPARATOR . 'pip_install.started', date('c'));
+
+    $req = ml_server_dir() . DIRECTORY_SEPARATOR . 'requirements.txt';
+    $log = $dir . DIRECTORY_SEPARATOR . 'pip_install.log';
+    $doneFile = $dir . DIRECTORY_SEPARATOR . 'pip_install.done';
+
+    if (PHP_OS_FAMILY !== 'Windows') {
+        @exec('nohup sh -c ' . escapeshellarg(escapeshellarg($python) . ' -m pip install --disable-pip-version-check -r ' .
+            escapeshellarg($req) . ' > ' . escapeshellarg($log) . ' 2>&1; echo $? > ' . escapeshellarg($doneFile)) . ' >/dev/null 2>&1 &');
+        return;
+    }
+
+    // A hidden PowerShell runs pip and records its exit code. The job is written to a
+    // small script file and started through Start-Process, so it inherits nothing
+    // from Apache (same as the server launch) and the command line stays short.
+    $q = function ($s) { return "'" . str_replace("'", "''", $s) . "'"; };
+    $jobFile = $dir . DIRECTORY_SEPARATOR . 'pip_install.ps1';
+    @file_put_contents($jobFile,
+        '& ' . $q($python) . ' -m pip install --disable-pip-version-check -r ' . $q($req) . ' *> ' . $q($log) . "\r\n" .
+        'Set-Content -Path ' . $q($doneFile) . " -Value \$LASTEXITCODE\r\n");
+    $script = "Start-Process -FilePath 'powershell' -WindowStyle Hidden -ArgumentList '-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File'," . $q($jobFile);
+    $encoded = base64_encode(mb_convert_encoding($script, 'UTF-16LE', 'UTF-8'));
+    @exec('powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -EncodedCommand ' . $encoded);
+}
+
+/** Last useful line of the pip log, to say why an install failed. */
+function ml_install_error_hint() {
+    $log = ml_log_dir() . DIRECTORY_SEPARATOR . 'pip_install.log';
+    if (!is_file($log)) return '';
+    $text = (string)file_get_contents($log);
+    if (substr($text, 0, 2) === "\xFF\xFE") $text = mb_convert_encoding(substr($text, 2), 'UTF-8', 'UTF-16LE');
+    $lines = array_values(array_filter(array_map('trim', preg_split('/\r?\n/', $text))));
+    foreach (array_reverse($lines) as $line) {
+        if (stripos($line, 'error') !== false) return $line;
+    }
+    return $lines ? end($lines) : '';
 }
 
 /**
@@ -123,8 +202,15 @@ function ml_server_ensure_running() {
     $logDir = ml_log_dir();
     $failedFile = $logDir . DIRECTORY_SEPARATOR . 'autostart_failed_at.txt';
 
+    // Packages are still installing: nothing to start yet
+    if (ml_install_state() === 'running') {
+        $GLOBALS['ml_autostart_problem'] = 'installing';
+        return false;
+    }
+
     // A start just failed: answer fast instead of making every request wait
     if (is_file($failedFile) && time() - (int)file_get_contents($failedFile) < ML_RETRY_COOLDOWN) {
+        $GLOBALS['ml_autostart_problem'] = trim((string)@file_get_contents($logDir . DIRECTORY_SEPARATOR . 'autostart_problem.txt')) ?: 'start_failed';
         return false;
     }
 
@@ -138,7 +224,38 @@ function ml_server_ensure_running() {
         @set_time_limit(ML_START_TIMEOUT + 60);
 
         $python = ml_find_python();
-        if ($python !== null && ml_launch_server($python)) {
+
+        if ($python === null) {
+            // New PC: Python may be installed without the ML packages yet
+            $installState = ml_install_state();
+            if ($installState === 'running') {
+                $GLOBALS['ml_autostart_problem'] = 'installing';
+                return false;
+            }
+            $anyPython = ml_find_any_python();
+            if ($anyPython === null) {
+                $GLOBALS['ml_autostart_problem'] = 'no_python';
+                @file_put_contents($logDir . DIRECTORY_SEPARATOR . 'autostart_problem.txt', 'no_python');
+                error_log('ML autostart failed: no Python 3.9+ found (install it from python.org with "Add to PATH")');
+                @file_put_contents($failedFile, (string)time());
+                return false;
+            }
+            // Install when never tried, or retry 10 minutes after one that did not
+            // work (no internet at the time, for example)
+            $doneFile = $logDir . DIRECTORY_SEPARATOR . 'pip_install.done';
+            $lastEnded = is_file($doneFile) ? filemtime($doneFile) : 0;
+            if ($installState === 'none' || time() - $lastEnded > 600) {
+                ml_start_package_install($anyPython);
+                $GLOBALS['ml_autostart_problem'] = 'installing';
+                return false;
+            }
+            $GLOBALS['ml_autostart_problem'] = 'install_failed';
+            @file_put_contents($logDir . DIRECTORY_SEPARATOR . 'autostart_problem.txt', 'install_failed');
+            @file_put_contents($failedFile, (string)time());
+            return false;
+        }
+
+        if (ml_launch_server($python)) {
             $deadline = microtime(true) + ML_START_TIMEOUT;
             while (microtime(true) < $deadline) {
                 usleep(500000);
@@ -149,9 +266,11 @@ function ml_server_ensure_running() {
             }
         }
 
-        error_log('ML autostart failed: ' . ($python === null
-            ? 'no Python with the ML packages found (set ML_PYTHON or install ml/requirements.txt)'
-            : 'server did not start within ' . ML_START_TIMEOUT . 's, see ml/logs/ml_server.log'));
+        error_log('ML autostart failed: server did not start within ' . ML_START_TIMEOUT . 's, see ml/logs/ml_server.log');
+        $GLOBALS['ml_autostart_problem'] = 'start_failed';
+        @file_put_contents($logDir . DIRECTORY_SEPARATOR . 'autostart_problem.txt', 'start_failed');
+        // Search again next time instead of reusing an interpreter that just failed
+        @unlink($logDir . DIRECTORY_SEPARATOR . 'python_path.txt');
         @file_put_contents($failedFile, (string)time());
         return false;
     } finally {
@@ -159,6 +278,27 @@ function ml_server_ensure_running() {
             flock($lock, LOCK_UN);
             fclose($lock);
         }
+    }
+}
+
+/** What to tell the Recommendations page when the ML server is not available. */
+function ml_unavailable_response() {
+    switch ($GLOBALS['ml_autostart_problem'] ?? null) {
+        case 'installing':
+            return ['reason' => 'installing', 'retry_after' => 20, 'error' =>
+                'Setting up the recommendation engine for the first time: installing its Python packages. ' .
+                'This needs internet and can take a few minutes. The page will retry by itself.'];
+        case 'no_python':
+            return ['reason' => 'no_python', 'error' =>
+                'Python is not installed. Install Python 3 from python.org (tick "Add python.exe to PATH"), then refresh this page.'];
+        case 'install_failed':
+            $hint = ml_install_error_hint();
+            return ['reason' => 'install_failed', 'error' =>
+                'Installing the recommendation engine\'s Python packages did not work' . ($hint !== '' ? ' (' . $hint . ')' : '') .
+                '. Check the internet connection; it tries again automatically in 10 minutes. Details: ml/logs/pip_install.log.'];
+        default:
+            return ['reason' => 'start_failed', 'error' =>
+                'The ML server could not be started automatically. See ml/logs/ml_server.log, then refresh.'];
     }
 }
 
@@ -265,10 +405,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'get_all_recommendations') {
         ]);
     } else {
         http_response_code(503);
-        echo json_encode([
-            'success' => false,
-            'error'   => 'The ML server could not be started automatically. See ml/logs/ml_server.log.',
-        ]);
+        echo json_encode(['success' => false] + ml_unavailable_response());
     }
     exit;
 }

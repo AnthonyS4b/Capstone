@@ -216,3 +216,43 @@ Press Ctrl+C to stop
 2026-09-29 19:57:41,316 [INFO] werkzeug: 127.0.0.1 - - [29/Sep/2026 19:57:41] "GET /health HTTP/1.1" 200 -
 2026-09-29 19:57:41,718 [INFO] werkzeug: 127.0.0.1 - - [29/Sep/2026 19:57:41] "GET /health HTTP/1.1" 200 -
 2026-09-29 19:57:42,238 [INFO] werkzeug: 127.0.0.1 - - [29/Sep/2026 19:57:42] "GET /api/recommendations?limit=5 HTTP/1.1" 200 -
+2026-09-29 23:52:49,929 [INFO] werkzeug: 127.0.0.1 - - [29/Sep/2026 23:52:49] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-09-29 23:52:49,972 [INFO] werkzeug: 127.0.0.1 - - [29/Sep/2026 23:52:49] "GET /health HTTP/1.1" 200 -
+
+--- started 2026-09-30 23:15:54 (pid 16008) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-09-30 23:16:12,199 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-09-30 23:16:12,199 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+
+--- started 2026-10-02 02:23:17 (pid 14552) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-02 02:23:36,625 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-02 02:23:36,625 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-02 02:23:41,839 [INFO] recommendation_model: Model loaded successfully
+2026-10-02 02:23:41,839 [INFO] werkzeug: 127.0.0.1 - - [02/Oct/2026 02:23:41] "GET /health HTTP/1.1" 200 -
+2026-10-02 02:23:56,365 [INFO] werkzeug: 127.0.0.1 - - [02/Oct/2026 02:23:56] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-02 02:23:59,723 [INFO] __main__: Starting model retraining...
+2026-10-02 02:23:59,723 [INFO] recommendation_model: Starting model training...
+2026-10-02 02:24:00,841 [INFO] recommendation_model: Model trained successfully. R² = 0.9492, RMSE = 0.1259
+2026-10-02 02:24:15,546 [INFO] werkzeug: 127.0.0.1 - - [02/Oct/2026 02:24:15] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-02 02:24:18,038 [INFO] werkzeug: 127.0.0.1 - - [02/Oct/2026 02:24:18] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
