@@ -108,6 +108,14 @@ try {
             // ===== TRACK THIS LOGIN =====
             recordLogin($user['id']);
 
+            // They signed in, so they no longer need the owner to reset their PIN:
+            // take their "forgot PIN" request out of the owner's notification bell
+            try {
+                pin_recovery_resolve($db, (int)$user['id'], (int)$user['id']);
+            } catch (PDOException $e) {
+                error_log('Login: closing PIN request failed: ' . $e->getMessage());
+            }
+
             // Set welcome toast message
             $_SESSION['toast_message'] = [
                 'type' => 'success',

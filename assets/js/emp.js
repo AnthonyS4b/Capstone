@@ -208,15 +208,16 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             items.forEach(item => {
                 const name     = escHtml(item.product_name || item.name || 'Unknown Product');
-                // Per Kilo lines are decimal kilograms (2.5 kg); others whole units
-                const perKilo  = String(item.unit || '').trim().toLowerCase() === 'per kilo';
+                // Per Kilo lines are decimal kilograms (2.5 kg), Per Gram whole grams (250 g); others whole units
+                const unitName = String(item.unit || '').trim().toLowerCase();
+                const weightUnit = unitName === 'per kilo' ? 'kg' : (unitName === 'per gram' ? 'g' : '');
                 const qty      = Math.round((parseFloat(item.quantity) || 0) * 100) / 100;
                 const price    = parseFloat(item.price) || 0;
                 const subtotal = Math.round(Math.round(qty * 100) * Math.round(price * 100) / 100) / 100;
                 itemsHTML += `
                     <div class="receipt-item-row">
                         <span class="receipt-item-name">${name}</span>
-                        <span class="receipt-item-qty">${perKilo ? `${qty} kg` : `×${qty}`}</span>
+                        <span class="receipt-item-qty">${weightUnit ? `${qty} ${weightUnit}` : `×${qty}`}</span>
                         <span class="receipt-item-price">₱${fmtMoney(subtotal)}</span>
                     </div>`;
             });

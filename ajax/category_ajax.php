@@ -266,7 +266,13 @@ try {
                     'image'         => $p['image']         ?? '',
                     'discount_applied' => isset($p['discount_applied']) ? (float)$p['discount_applied'] : 0.0,
                     'original_price'   => isset($p['original_price']) ? (float)$p['original_price'] : 0.0,
-                    'strategy_id'   => $p['strategy_id']   ?? null
+                    'strategy_id'   => $p['strategy_id']   ?? null,
+                    // The POS needs these to price a "Pair & save" line; without them a
+                    // scanned product showed the full price while checkout charged the pair price
+                    'discounted_price'    => isset($p['discounted_price']) ? (float)$p['discounted_price'] : null,
+                    'paired_product_id'   => isset($p['paired_product_id']) ? (int)$p['paired_product_id'] : null,
+                    'paired_product_name' => $p['paired_product_name'] ?? null,
+                    'strategy_ended_at'   => $p['strategy_ended_at'] ?? null
                 ];
             }
 

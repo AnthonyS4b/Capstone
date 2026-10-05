@@ -1,4 +1,4 @@
-    <?php
+<?php
     require_once dirname(__DIR__) . '/includes/security.php';
     security_start_session();
     header('Content-Type: application/json');

@@ -57,21 +57,35 @@ const changeSpan   = document.getElementById('changeAmount');
     document.head.appendChild(style);
 })();
 
-// ── Per Kilo products: quantity is decimal kilograms (0.5, 1.25, 2.5) ──
-const KILO_STEP = 0.5; // what + / − change on a Per Kilo cart line
+// ── Products sold by weight ──
+// Per Kilo: quantity is decimal kilograms (0.5, 1.25, 2.5)
+// Per Gram: quantity is whole grams (50, 250), priced per gram
+const KILO_STEP = 0.5;  // what + / − change on a Per Kilo cart line
+const GRAM_STEP = 50;   // what + / − change on a Per Gram cart line
+const GRAM_START = 100; // grams put in the cart before the cashier types the weight
 
 function isPerKiloUnit(unit) {
     return String(unit || '').trim().toLowerCase() === 'per kilo';
+}
+
+function isPerGramUnit(unit) {
+    return String(unit || '').trim().toLowerCase() === 'per gram';
+}
+
+// 'kg', 'g' or '' — same as unit_weight_suffix() on the server
+function weightSuffix(unit) {
+    return isPerKiloUnit(unit) ? 'kg' : (isPerGramUnit(unit) ? 'g' : '');
 }
 
 function roundQty(qty) {
     return Math.round((Number(qty) || 0) * 100) / 100;
 }
 
-// "2.5 kg" for Per Kilo, "4" otherwise (stock arrives as DECIMAL text, e.g. "4.00")
+// "2.5 kg" for Per Kilo, "250 g" for Per Gram, "4" otherwise (stock arrives as DECIMAL text, e.g. "4.00")
 function formatQty(qty, unit) {
     const n = Number(qty) || 0;
-    return isPerKiloUnit(unit) ? `${roundQty(n)} kg` : String(Math.round(n));
+    if (isPerKiloUnit(unit)) return `${roundQty(n)} kg`;
+    return isPerGramUnit(unit) ? `${Math.round(n)} g` : String(Math.round(n));
 }
 
 // quantity × price in centavos, rounded to the centavo like priced_line_cents() on the server
@@ -280,7 +294,8 @@ function displayProducts(productsToShow) {
     productsToShow.forEach(product => {
         const perKilo = isPerKiloUnit(product.unit);
         const stock = perKilo ? roundQty(product.stock) : (parseInt(product.stock) || 0);
-        const perKg = perKilo ? '<small>/kg</small>' : '';
+        const weightUnit = weightSuffix(product.unit);
+        const perKg = weightUnit ? `<small>/${weightUnit}</small>` : '';
         const price = parseFloat(product.price) || 0;
         const discountApplied = parseFloat(product.discount_applied) || 0;
         const originalPrice = parseFloat(product.original_price) || 0;
@@ -323,7 +338,7 @@ function displayProducts(productsToShow) {
                     <div class="product-category">${escapeHtml(product.category_name || 'Uncategorized')}</div>
                     ${priceHtml}
                     ${isPairing ? `<div class="small text-success">₱${Number(product.discounted_price).toFixed(2)} when bought with ${escapeHtml(product.paired_product_name || 'the paired product')} (one per pair)</div>` : ''}
-                    ${isBogo && !perKilo ? '<div class="small text-success">Every 2nd unit free</div>' : ''}
+                    ${isBogo && !weightUnit ? '<div class="small text-success">Every 2nd unit free</div>' : ''}
                     <div class="product-stock ${stockClass}"><i class="fas fa-box"></i> Stock: ${formatQty(stock, product.unit)}</div>
                 </div>
             </div>`;
@@ -442,9 +457,11 @@ function addToCart(productId, productName, productPrice, productStock, productIm
     promotion = promotion || products.find(p => Number(p.id) === productId) || {};
     const unit = promotion.unit || '';
     const perKilo = isPerKiloUnit(unit);
-    // Per Kilo starts at 1 kg (or whatever is left) and the cashier types the weight;
-    // Buy 1 Take 1 counts whole units, so it does not apply to Per Kilo
+    const weightUnit = weightSuffix(unit);
+    // Weighed products start at 1 kg / 100 g (or whatever is left) and the cashier types
+    // the weight; Buy 1 Take 1 counts whole units, so it does not apply to them
     const qtyToAdd = perKilo ? roundQty(Math.min(1, productStock))
+        : weightUnit ? Math.min(GRAM_START, Math.floor(productStock))
         : (strategyId === 'buy_one_take_one') ? 2 : 1;
 
     if (!(qtyToAdd > 0) || productStock < qtyToAdd) {
@@ -477,14 +494,14 @@ function addToCart(productId, productName, productPrice, productStock, productIm
             strategy_id: strategyId || '',
             promotion: promotion
         });
-        showToast('success', 'Added to Cart', perKilo
-            ? `${productName} added — enter the weight in kg`
+        showToast('success', 'Added to Cart', weightUnit
+            ? `${productName} added — enter the weight in ${weightUnit}`
             : `${productName} has been added ${qtyToAdd > 1 ? '(Buy 1 Take 1 applied)' : ''}`);
     }
     updateCartDisplay();
 
-    // Weighed products: put the cursor in the kg box so the cashier can type the weight
-    if (perKilo) {
+    // Weighed products: put the cursor in the weight box so the cashier can type it
+    if (weightUnit) {
         const index = cart.findIndex(item => item.id === productId);
         const input = cartItemsEl?.querySelector(`.qty-input[data-index="${index}"]`);
         if (input) { input.focus(); input.select(); }
@@ -503,7 +520,7 @@ function getPairingQuantity(item) {
 // Buy 1 Take 1: every second unit is free, matching price_promotion_items() on the server
 function getFreeQuantity(item) {
     const promo = item.promotion || {};
-    if (promo.strategy_id !== 'buy_one_take_one' || isPerKiloUnit(item.unit)) return 0;
+    if (promo.strategy_id !== 'buy_one_take_one' || weightSuffix(item.unit)) return 0;
     if (promo.strategy_ended_at && new Date(promo.strategy_ended_at.replace(' ', 'T')) <= new Date()) return 0;
     return Math.floor(item.quantity / 2);
 }
@@ -530,6 +547,7 @@ function updateCartDisplay() {
             <p class="small">Click products or scan barcode</p>
         </div>`;
         updateSummary();
+        setTimeout(restoreBarcodeFocus, 0);
         return;
     }
     
@@ -539,13 +557,14 @@ function updateCartDisplay() {
             ? `<div class="cart-item-icon cart-item-thumb"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.name)}"></div>`
             : `<div class="cart-item-icon"><i class="fas fa-paw"></i></div>`;
         const perKilo = isPerKiloUnit(item.unit);
+        const weightUnit = weightSuffix(item.unit);
         html += `
             <div class="cart-item">
                 ${cartVisual}
                 <div class="cart-item-details">
                     <div class="cart-item-title">${escapeHtml(item.name)}</div>
-                    <div class="cart-item-price">₱${item.price.toFixed(2)}${perKilo ? '/kg' : ' each'}</div>
-                    ${perKilo ? `<div class="small text-muted cart-item-kg-total">${formatQty(item.quantity, item.unit)} × ₱${item.price.toFixed(2)}/kg = ${formatPeso(getCartLineTotal(item))}</div>` : ''}
+                    <div class="cart-item-price">₱${item.price.toFixed(2)}${weightUnit ? '/' + weightUnit : ' each'}</div>
+                    ${weightUnit ? `<div class="small text-muted cart-item-kg-total">${weightLineText(item)}</div>` : ''}
                     ${item.promotion?.strategy_id === 'cross_sell_pairing' ? `<div class="small text-success">${getPairingQuantity(item)} paired at ₱${Number(item.promotion.discounted_price).toFixed(2)} each. Pair with ${escapeHtml(item.promotion.paired_product_name || 'the selected partner')}.</div>` : ''}
                     ${item.promotion?.strategy_id === 'buy_one_take_one' ? `<div class="small text-success">Buy 1 Take 1 · ${getFreeQuantity(item)} free</div>` : ''}
                     <div class="cart-item-quantity">
@@ -560,11 +579,11 @@ function updateCartDisplay() {
                             step="${perKilo ? '0.01' : '1'}"
                             max="${item.stock}"
                             data-index="${index}"
-                            title="${perKilo ? 'Weight in kg' : 'Edit quantity'}"
+                            title="${weightUnit ? 'Weight in ' + weightUnit : 'Edit quantity'}"
                             onclick="this.select()"
                             onchange="setQuantityDirect(${index}, this)"
                             onkeydown="if(event.key==='Enter'){this.blur();}"
-                        >${perKilo ? '<span class="qty-unit">kg</span>' : ''}
+                        >${weightUnit ? `<span class="qty-unit">${weightUnit}</span>` : ''}
                         <button class="qty-btn" onclick="updateQuantity(${index},'increase')" title="Increase">
                             <i class="fas fa-plus"></i>
                         </button>
@@ -578,14 +597,17 @@ function updateCartDisplay() {
     
     cartItemsEl.innerHTML = html;
     updateSummary();
+    // Redrawing removes the + / − button that was just clicked, leaving the cursor
+    // nowhere; give it back to the scanner box (skipped while another field is in use)
+    setTimeout(restoreBarcodeFocus, 0);
 }
 
 function updateQuantity(index, action) {
     const item = cart[index];
     if (!item) return;
-    // Per Kilo lines move in half kilos; other units one at a time
+    // Per Kilo lines move in half kilos, Per Gram in 50 g; other units one at a time
     const perKilo = isPerKiloUnit(item.unit);
-    const step = perKilo ? KILO_STEP : 1;
+    const step = perKilo ? KILO_STEP : (isPerGramUnit(item.unit) ? GRAM_STEP : 1);
 
     if (action === 'increase') {
         if (item.quantity < item.stock) {
@@ -605,30 +627,43 @@ function updateQuantity(index, action) {
     updateCartDisplay();
 }
 
+// "250 g × ₱0.85/g = ₱212.50": the line under a weighed product's name
+function weightLineText(item) {
+    return `${formatQty(item.quantity, item.unit)} × ₱${item.price.toFixed(2)}/${weightSuffix(item.unit)} = ${formatPeso(getCartLineTotal(item))}`;
+}
+
 function setQuantityDirect(index, inputEl) {
     const item = cart[index];
     if (!item) return;
     const perKilo = isPerKiloUnit(item.unit);
+    const weightUnit = weightSuffix(item.unit);
 
-    // Per Kilo: kilograms with up to 2 decimals (0.5, 1.25); other units whole numbers
+    // A slow scanner's digits can still arrive here as a "quantity". A whole number of
+    // 6+ digits that is more than the stock is a barcode, not an amount: look it up
+    // and leave this line as it was. (Fast scanners are caught earlier, on keydown.)
+    const typed = String(inputEl.value).trim();
+    if (/^\d{6,}$/.test(typed) && Number(typed) > item.stock) {
+        inputEl.value = perKilo ? roundQty(item.quantity) : item.quantity;
+        findProductByBarcode(typed);
+        return;
+    }
+
+    // Per Kilo: kilograms with up to 2 decimals (0.5, 1.25); Per Gram: whole grams;
+    // other units whole numbers
     let val = perKilo ? roundQty(parseFloat(inputEl.value)) : parseInt(inputEl.value);
 
     if (isNaN(val) || val < (perKilo ? 0.01 : 1)) {
         if (perKilo) showToast('warning', 'Invalid Weight', 'Enter the weight in kg, e.g. 0.5 or 2.5');
-        val = perKilo ? item.quantity : 1;
+        else if (weightUnit) showToast('warning', 'Invalid Weight', 'Enter the weight in grams, e.g. 50 or 250');
+        val = weightUnit ? item.quantity : 1;
     } else if (val > item.stock) {
-        showToast('warning', 'Stock Limit', perKilo
+        showToast('warning', 'Stock Limit', weightUnit
             ? `Only ${formatQty(item.stock, item.unit)} available`
             : `Only ${item.stock} units available`);
         val = item.stock;
     }
 
     item.quantity = val;
-    if (perKilo) {
-        // The kg line under the name shows the new total
-        updateCartDisplay();
-        return;
-    }
     // Promotion lines show a free/paired count that depends on the quantity
     const promoId = cart[index].promotion?.strategy_id;
     if (promoId === 'buy_one_take_one' || promoId === 'cross_sell_pairing') {
@@ -636,7 +671,54 @@ function setQuantityDirect(index, inputEl) {
         return;
     }
     inputEl.value = val; // fix displayed value without full re-render
+    if (weightUnit) {
+        // The weight line under the name shows the new total; updated in place so the
+        // cursor is not thrown out of whichever box the cashier moved to
+        const line = inputEl.closest('.cart-item')?.querySelector('.cart-item-kg-total');
+        if (line) line.textContent = weightLineText(item);
+    }
     updateSummary();
+    // Quantity entered: the next scan must reach the scanner box again
+    setTimeout(restoreBarcodeFocus, 80);
+}
+
+// ── A scanner typing into a quantity box ─────────────────────────────────────
+// A scanner "types" its digits a few milliseconds apart and ends with Enter. When a
+// quantity box has the cursor (it does right after a Per Kilo product is added), the
+// digits land there and would become a huge quantity. A burst that fast is taken as
+// a scan instead: the box gets its value back and the product is looked up.
+const SCAN_KEY_GAP_MS = 60;   // nobody types six keys in a row this fast
+const SCAN_MIN_CHARS = 6;
+let qtyScan = { input: null, valueBefore: '', chars: '', lastKey: 0 };
+
+if (cartItemsEl) {
+    cartItemsEl.addEventListener('keydown', function (e) {
+        const input = e.target.closest ? e.target.closest('.qty-input') : null;
+        if (!input) return;
+        const now = performance.now();
+        const fast = qtyScan.input === input && now - qtyScan.lastKey <= SCAN_KEY_GAP_MS;
+
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            // A key after a pause starts a new burst; remember what the box held before it
+            if (!fast) qtyScan = { input: input, valueBefore: input.value, chars: '', lastKey: now };
+            qtyScan.chars += e.key;
+            qtyScan.lastKey = now;
+            return;
+        }
+
+        if (e.key === 'Enter' && fast && qtyScan.chars.length >= SCAN_MIN_CHARS) {
+            e.preventDefault();
+            e.stopPropagation(); // the box's own Enter handler must not commit the digits
+            const code = qtyScan.chars;
+            input.value = qtyScan.valueBefore;
+            qtyScan = { input: null, valueBefore: '', chars: '', lastKey: 0 };
+            // Keep a weight the cashier typed just before scanning, then look the product up
+            const index = Number(input.dataset.index);
+            if (cart[index] && Number(input.value) !== Number(cart[index].quantity)) setQuantityDirect(index, input);
+            input.blur();
+            findProductByBarcode(code);
+        }
+    }, true); // capture: runs before the box's inline Enter handler
 }
 
 function removeFromCart(index) {
@@ -814,14 +896,14 @@ function showPaymentConfirmation(total, paymentAmount) {
     }
     if (confirmPayment) confirmPayment.value = paymentAmount || '';
 
-    // A weighed (Per Kilo) line counts as one item, whatever it weighs
-    const units = cart.reduce((sum, item) => sum + (isPerKiloUnit(item.unit) ? 1 : Number(item.quantity || 0)), 0);
+    // A weighed (Per Kilo / Per Gram) line counts as one item, whatever it weighs
+    const units = cart.reduce((sum, item) => sum + (weightSuffix(item.unit) ? 1 : Number(item.quantity || 0)), 0);
     if (itemCount) itemCount.textContent = `${units} item${units === 1 ? '' : 's'} · view list`;
     if (confirmItems) {
         confirmItems.innerHTML = cart.map(item =>
             `<div class="pay-item">
                 <span class="pay-item-name">${escapeHtml(item.name)}</span>
-                <span class="pay-item-qty">${isPerKiloUnit(item.unit) ? formatQty(item.quantity, item.unit) : '×' + item.quantity}</span>
+                <span class="pay-item-qty">${weightSuffix(item.unit) ? formatQty(item.quantity, item.unit) : '×' + item.quantity}</span>
                 <span class="pay-item-amt">${formatPeso(getCartLineTotal(item))}</span>
             </div>`
         ).join('');
@@ -890,6 +972,28 @@ function updateConfirmChange() {
 // One checkout at a time: a second submit while the first is still saving would record the sale twice
 let paymentInFlight = false;
 
+// One reference per cart. Paying the same cart again (the browser gave up waiting on a
+// slow server) sends the same reference, and the server answers with the sale it already
+// saved instead of recording it, and taking the stock, a second time. A changed cart or
+// a finished sale gets a new one.
+let saleAttempt = { cart: '', ref: '' };
+
+function newSaleRef() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    // randomUUID needs https or localhost; this works on a plain LAN address too
+    const bytes = new Uint8Array(16);
+    (window.crypto || window.msCrypto).getRandomValues(bytes);
+    return 'pos-' + Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function saleRefFor(cartSnapshot) {
+    const signature = JSON.stringify(cartSnapshot.map(i => [i.id, i.quantity]));
+    if (saleAttempt.cart !== signature || !saleAttempt.ref) {
+        saleAttempt = { cart: signature, ref: newSaleRef() };
+    }
+    return saleAttempt.ref;
+}
+
 function processPayment(total, payment, change, paymentMethod, reference) {
     if (paymentInFlight) return;
     showLoading();
@@ -926,6 +1030,7 @@ function processPayment(total, payment, change, paymentMethod, reference) {
         complete: function() { paymentInFlight = false; },
         data: {
             action: 'save_transaction',
+            client_ref: saleRefFor(cartSnapshot),
             user_id: userId,
             first_name: firstName,
             last_name: lastName,
@@ -983,6 +1088,7 @@ function processPayment(total, payment, change, paymentMethod, reference) {
 function finishTransaction(response, items, total, payment, change, paymentMethod, reference, cashierName) {
     // Clear cart
     cart = [];
+    saleAttempt = { cart: '', ref: '' }; // this sale is done; the next cart gets a new reference
     updateCartDisplay();
     
     // Track used GCash reference
@@ -1004,7 +1110,12 @@ function finishTransaction(response, items, total, payment, change, paymentMetho
     };
     
     showReceipt(transaction);
-    showToast('success', 'Success', 'Transaction completed successfully!');
+    if (response.duplicate) {
+        // The earlier attempt had gone through; nothing was charged or deducted twice
+        showToast('info', 'Already recorded', 'This sale was saved on the first try. Here is its receipt.');
+    } else {
+        showToast('success', 'Success', 'Transaction completed successfully!');
+    }
     
     // Reset payment input
     if (paymentInput) paymentInput.value = '';

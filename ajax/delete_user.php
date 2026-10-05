@@ -28,7 +28,7 @@ try {
     $pdo = getDBConnection();
     
     // Check if user exists
-    $check = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
+    $check = $pdo->prepare("SELECT id, role, first_name, last_name FROM users WHERE id = ?");
     $check->execute([$user_id]);
     $target = $check->fetch(PDO::FETCH_ASSOC);
 
@@ -47,16 +47,51 @@ try {
         }
     }
     
-    // Delete user
-    $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
-    
-    if ($stmt->execute([$user_id])) {
-        echo json_encode(['success' => true, 'message' => 'User deleted successfully']);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Failed to delete user']);
+    $name = trim($target['first_name'] . ' ' . $target['last_name']);
+
+    // Someone who has made sales, changed stock or set up products is part of the
+    // store's records. Deleting the row would leave all of that with no name
+    // ("Unknown User" in Log history), so the account is switched off instead:
+    // it can no longer sign in, and its name stays on everything it did.
+    $history = $pdo->prepare("
+        SELECT (SELECT COUNT(*) FROM transactions      WHERE user_id = :u1)
+             + (SELECT COUNT(*) FROM sales             WHERE user_id = :u2)
+             + (SELECT COUNT(*) FROM inventory_history WHERE user_id = :u3)
+             + (SELECT COUNT(*) FROM strategy_history  WHERE created_by = :u4)
+             + (SELECT COUNT(*) FROM products WHERE created_by = :u5 OR updated_by = :u6 OR deleted_by = :u7 OR archived_by = :u8)
+             + (SELECT COUNT(*) FROM categories        WHERE deleted_by = :u9)
+    ");
+    $history->execute(array_fill_keys([':u1', ':u2', ':u3', ':u4', ':u5', ':u6', ':u7', ':u8', ':u9'], $user_id));
+
+    // Either way they stop waiting on a "forgot PIN" request
+    try {
+        require_once dirname(__DIR__) . '/includes/pin_recovery.php';
+        pin_recovery_resolve($pdo, $user_id, (int)$_SESSION['user_id']);
+    } catch (PDOException $e) {
+        error_log('delete_user.php PIN request: ' . $e->getMessage());
     }
+
+    if ((int)$history->fetchColumn() > 0) {
+        $pdo->prepare("UPDATE users SET is_active = 0 WHERE id = ?")->execute([$user_id]);
+        echo json_encode([
+            'success' => true,
+            'deactivated' => true,
+            'message' => $name . ' has sales or activity on record, so the account was deactivated instead of deleted. '
+                . 'They can no longer sign in, and their name stays on past records.',
+        ]);
+        exit();
+    }
+
+    // Nothing on record: remove the account and the sign-in entries only it used
+    $pdo->beginTransaction();
+    $pdo->prepare("DELETE FROM login_sessions WHERE user_id = ?")->execute([$user_id]);
+    $pdo->prepare("DELETE FROM pin_reset_requests WHERE user_id = ?")->execute([$user_id]);
+    $pdo->prepare("DELETE FROM users WHERE id = ?")->execute([$user_id]);
+    $pdo->commit();
+    echo json_encode(['success' => true, 'deactivated' => false, 'message' => $name . ' has been deleted.']);
     
 } catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     error_log('delete_user.php: ' . $e->getMessage());
     security_json_error('Unable to delete the user right now.', 500);
 }

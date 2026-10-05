@@ -1,11 +1,13 @@
-    <?php
+<?php
     require_once dirname(__DIR__) . '/includes/security.php';
     security_start_session();
     header('Content-Type: application/json');
 
-    // Enable error reporting for debugging
+    // Warnings go to the log, never into the reply: one printed line makes the JSON
+    // unreadable, and a save that worked then looks like "invalid response"
     error_reporting(E_ALL);
-    ini_set('display_errors', 1);
+    ini_set('display_errors', 0);
+    ini_set('log_errors', 1);
 
     // Log to PHP error log
     error_log("=== add_user.php called ===");

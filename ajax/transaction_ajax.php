@@ -25,6 +25,53 @@ require_once dirname(__DIR__) . '/includes/promotion_pricing.php';
 security_require_login();
 security_require_post_csrf();
 
+// ── One sale per cart, even when it is sent twice ─────────────────────────────
+// The POS sends a reference with every checkout and reuses it when the same cart is
+// paid again (the browser gave up waiting on a slow server and the cashier retried).
+// A reference that is already saved returns that sale instead of recording a second
+// one and taking the stock twice. Stored in transactions.client_ref (unique).
+
+/** Add transactions.client_ref when a database from an older export lacks it. */
+function sale_ref_ensure_schema(PDO $pdo): void
+{
+    if ($pdo->query("SHOW COLUMNS FROM transactions LIKE 'client_ref'")->fetch()) return;
+    try {
+        $pdo->exec("ALTER TABLE transactions
+                    ADD COLUMN client_ref VARCHAR(64) NULL DEFAULT NULL,
+                    ADD UNIQUE KEY uniq_transactions_client_ref (client_ref)");
+    } catch (PDOException $e) {
+        // Another checkout added it a moment ago
+        if (!$pdo->query("SHOW COLUMNS FROM transactions LIKE 'client_ref'")->fetch()) throw $e;
+    }
+}
+
+/** The reply for a sale already saved under this reference, or null when there is none. */
+function sale_ref_existing_reply(PDO $pdo, string $ref): ?array
+{
+    $st = $pdo->prepare("SELECT t.id, t.items, t.total_amount, t.payment_method, s.amount_paid, s.change_amount
+                         FROM transactions t
+                         LEFT JOIN sales s ON s.transaction_id = t.id
+                         WHERE t.client_ref = ? LIMIT 1");
+    $st->execute([$ref]);
+    $sale = $st->fetch(PDO::FETCH_ASSOC);
+    if (!$sale) return null;
+
+    return [
+        'success' => true,
+        'duplicate' => true,
+        'message' => 'This sale was already recorded.',
+        'data' => [
+            'id' => (int)$sale['id'],
+            'transaction_number' => 'TRX-' . str_pad((string)$sale['id'], 6, '0', STR_PAD_LEFT),
+            'items' => json_decode((string)$sale['items'], true) ?: [],
+            'total' => (float)$sale['total_amount'],
+            'payment' => (float)($sale['amount_paid'] ?? $sale['total_amount']),
+            'change' => (float)($sale['change_amount'] ?? 0),
+            'payment_method' => $sale['payment_method'],
+        ],
+    ];
+}
+
 try {
     require_once dirname(__DIR__) . '/config/database.php';
 
@@ -96,7 +143,20 @@ try {
                 echo json_encode(['success' => false, 'message' => 'No items in transaction']);
                 exit;
             }
-            
+
+            // Same cart sent again? Return the sale that is already saved (see top of file).
+            // Checked before anything else so a retried GCash sale is not refused for
+            // reusing its own reference number.
+            $client_ref = trim((string)($_POST['client_ref'] ?? ''));
+            if (!preg_match('/^[A-Za-z0-9-]{16,64}$/', $client_ref)) {
+                $client_ref = null;
+            }
+            sale_ref_ensure_schema($pdo); // the insert below always names the column
+            if ($client_ref !== null && ($already = sale_ref_existing_reply($pdo, $client_ref))) {
+                echo json_encode($already);
+                exit;
+            }
+
             // Get transaction data
             $total = isset($_POST['total']) ? (float)$_POST['total'] : 0;
             $payment = isset($_POST['payment']) ? (float)$_POST['payment'] : 0;
@@ -165,7 +225,8 @@ try {
 
                 // Combine duplicate product lines before checking stock or pairing quantities.
                 // Quantities are held in hundredths: Per Kilo products sell decimal kilograms
-                // (2.5 kg = 250), every other unit must be whole (checked per product below).
+                // (2.5 kg = 250), every other unit must be whole (checked per product below);
+                // Per Gram sells whole grams.
                 $cartQuantities = [];
                 foreach ($items as $submittedItem) {
                     $id = filter_var($submittedItem['id'] ?? null, FILTER_VALIDATE_INT);
@@ -186,7 +247,8 @@ try {
                     }
                     $perKilo = unit_is_per_kilo($product['unit']);
                     if (!$perKilo && $quantityHundredths % 100 !== 0) {
-                        throw new Exception('Quantity for ' . $product['name'] . ' must be a whole number');
+                        throw new Exception('Quantity for ' . $product['name'] . ' must be a whole number'
+                            . (unit_is_per_gram($product['unit']) ? ' of grams' : ''));
                     }
                     $quantity = $quantityHundredths / 100;
                     if (qty_to_hundredths($product['stock']) < $quantityHundredths) {
@@ -240,13 +302,15 @@ try {
                         user_id, 
                         items, 
                         total_amount, 
-                        payment_method, 
+                        payment_method,
+                        client_ref,
                         created_at
                     ) VALUES (
-                        :user_id, 
-                        :items, 
-                        :total, 
-                        :payment_method, 
+                        :user_id,
+                        :items,
+                        :total,
+                        :payment_method,
+                        :client_ref,
                         NOW()
                     )
                 ");
@@ -255,7 +319,8 @@ try {
                     ':user_id' => $user_id,
                     ':items' => json_encode($items),
                     ':total' => $total,
-                    ':payment_method' => $payment_method
+                    ':payment_method' => $payment_method,
+                    ':client_ref' => $client_ref
                 ]);
                 
                 if (!$result) {
@@ -433,6 +498,14 @@ try {
                 
             } catch (Exception $e) {
                 $pdo->rollBack();
+
+                // A retry can fail because the first attempt finished in the meantime: its
+                // reference is taken, or it already sold the stock. That sale is the answer.
+                if ($client_ref !== null && ($already = sale_ref_existing_reply($pdo, $client_ref))) {
+                    echo json_encode($already);
+                    break;
+                }
+
                 error_log("TRANSACTION ERROR: " . $e->getMessage());
                 error_log("Stack trace: " . $e->getTraceAsString());
                 echo json_encode([

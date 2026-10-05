@@ -179,6 +179,28 @@
             }
             break;
 
+        // ── Owner switches a deactivated account back on ───────────────────────
+        // "Delete" keeps an account that has sales or activity and only switches it
+        // off (ajax/delete_user.php); this lets that person sign in again.
+        case 'reactivate_user':
+            if (($_SESSION['role'] ?? '') !== 'owner') {
+                echo json_encode(['success' => false, 'message' => 'Unauthorized — owners only']);
+                exit();
+            }
+            $target_id = intval($_POST['user_id'] ?? 0);
+            try {
+                $pdo = getDBConnection();
+                $stmt = $pdo->prepare("UPDATE users SET is_active = 1 WHERE id = ? AND is_active = 0");
+                $stmt->execute([$target_id]);
+                echo json_encode($stmt->rowCount() > 0
+                    ? ['success' => true, 'message' => 'Account reactivated. They can sign in again with their PIN.']
+                    : ['success' => false, 'message' => 'That account was not found or is already active.']);
+            } catch (PDOException $e) {
+                error_log('reactivate_user: ' . $e->getMessage());
+                echo json_encode(['success' => false, 'message' => 'Unable to reactivate the account right now.']);
+            }
+            break;
+
         // ── Owner sets the recovery PIN used for "Forgot PIN" at the login screen ──
         // A separate 4-digit PIN, never the same as the sign-in PIN; confirmed with the owner's current sign-in PIN.
         case 'set_recovery_pin':

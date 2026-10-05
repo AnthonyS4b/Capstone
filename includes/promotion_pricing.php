@@ -17,12 +17,12 @@ function price_promotion_items(array $items): array
     foreach ($items as $item) {
         $quantity = qty_to_hundredths($item['quantity']);
         $base = ['id' => (int)$item['id'], 'name' => $item['name'], 'unit' => $item['unit'] ?? ''];
-        $perKilo = unit_is_per_kilo($item['unit'] ?? '');
+        $byWeight = unit_weight_suffix($item['unit'] ?? '') !== '';
 
         // Buy 1 Take 1: every second unit of the same product is free, so an odd
         // unit (or a single one) is charged the regular price. It counts whole
-        // units, so it does not apply to products sold by the kilo.
-        if (($item['strategy_id'] ?? '') === 'buy_one_take_one' && !$perKilo) {
+        // units, so it does not apply to products sold by the kilo or gram.
+        if (($item['strategy_id'] ?? '') === 'buy_one_take_one' && !$byWeight) {
             $free = intdiv(intdiv($quantity, 100), 2) * 100;
             $priced[] = $base + ['price' => round((float)$item['price'], 2), 'quantity' => ($quantity - $free) / 100];
             if ($free > 0) {

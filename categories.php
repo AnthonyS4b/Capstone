@@ -340,22 +340,22 @@ if ($toast_message) {
                             <h3 class="inv-form-section-title">Price &amp; stock</h3>
                             <div class="inv-form-grid inv-form-grid-3">
                                 <div class="inv-field">
-                                    <label class="form-label" for="productCostPrice">Cost <span class="inv-optional inv-per-kg" hidden>per kg ·</span> <span class="inv-optional">optional</span></label>
+                                    <label class="form-label" for="productCostPrice">Cost <span class="inv-optional inv-per-kg" data-text="per {u} ·" hidden>per kg ·</span> <span class="inv-optional">optional</span></label>
                                     <div class="inv-money">
                                         <span>₱</span>
                                         <input type="text" class="form-control" id="productCostPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00">
                                     </div>
                                 </div>
                                 <div class="inv-field">
-                                    <label class="form-label" for="productPrice">Selling price <span class="inv-optional inv-per-kg" hidden>per kg</span> <span class="inv-req">*</span></label>
+                                    <label class="form-label" for="productPrice">Selling price <span class="inv-optional inv-per-kg" data-text="per {u}" hidden>per kg</span> <span class="inv-req">*</span></label>
                                     <div class="inv-money">
                                         <span>₱</span>
                                         <input type="text" class="form-control" id="productPrice" inputmode="decimal" data-numeric="money" maxlength="12" autocomplete="off" placeholder="0.00" required>
                                     </div>
                                 </div>
-                                <!-- Stock: hidden for Per Gram (auto=1); kilograms (decimals) for Per Kilo; whole numbers otherwise -->
+                                <!-- Stock: kilograms (decimals) for Per Kilo; whole grams for Per Gram; whole numbers otherwise -->
                                 <div class="inv-field" id="stockFieldWrapper" style="display:none;">
-                                    <label class="form-label" for="productStock">Stock <span class="inv-optional inv-per-kg" hidden>in kg</span> <span class="inv-req">*</span></label>
+                                    <label class="form-label" for="productStock">Stock <span class="inv-optional inv-per-kg" data-text="in {u}" hidden>in kg</span> <span class="inv-req">*</span></label>
                                     <input type="text" class="form-control" id="productStock" inputmode="numeric" data-numeric="int" maxlength="7" autocomplete="off" placeholder="0">
                                 </div>
                             </div>
@@ -369,7 +369,7 @@ if ($toast_message) {
                                 <div class="inv-field">
                                     <label class="form-label" for="productSku">SKU</label>
                                     <input type="text" class="form-control" id="productSku" placeholder="e.g. DOG-001" autocomplete="off">
-                                    <span class="inv-hint">Leave empty to generate one</span>
+                                    <span class="inv-hint" id="skuHint">Leave empty to generate one</span>
                                 </div>
                                 <!-- Barcode: optional for weight, required for packaged/medicine -->
                                 <div class="inv-field">

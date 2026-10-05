@@ -91,7 +91,7 @@ function escapeHtml(str) {
 
 // ── Unit type classification ─────────────────────────────────────
 // 'kilo'   : Per Kilo — stock and prices are per kilogram, decimals allowed (25.5 kg)
-// 'weight' : Per Gram — stock is not tracked (set to 1)
+// 'weight' : Per Gram — stock and prices are per gram, whole grams only (500 g)
 // 'packaged': every other unit — whole-number stock
 const WEIGHT_UNIT_TYPES = ['per gram'];
 
@@ -99,86 +99,67 @@ function isPerKiloUnit(unit) {
     return String(unit || '').trim().toLowerCase() === 'per kilo';
 }
 
+function isPerGramUnit(unit) {
+    return WEIGHT_UNIT_TYPES.includes(String(unit || '').trim().toLowerCase());
+}
+
+// 'kg', 'g' or '' — same as unit_weight_suffix() on the server
+function weightSuffix(unit) {
+    return isPerKiloUnit(unit) ? 'kg' : (isPerGramUnit(unit) ? 'g' : '');
+}
+
 // Stock/quantity as people read it. The database sends DECIMAL values ("4.00"),
-// so whole-number units are rounded to "4" and Per Kilo shows "25.5 kg".
+// so whole-number units are rounded to "4", Per Gram shows "500 g" and Per Kilo "25.5 kg".
 function formatQty(qty, unit, withUnit = true) {
     const n = Number(qty) || 0;
-    if (!isPerKiloUnit(unit)) return String(Math.round(n));
+    if (!isPerKiloUnit(unit)) {
+        const whole = String(Math.round(n));
+        return withUnit && isPerGramUnit(unit) ? whole + ' g' : whole;
+    }
     const text = String(Math.round(n * 100) / 100);
     return withUnit ? text + ' kg' : text;
 }
 
-// "12 units" / "1 unit" / "2.5 kg"
+// "12 units" / "1 unit" / "2.5 kg" / "500 g"
 function formatQtyAmount(qty, unit) {
-    if (isPerKiloUnit(unit)) return formatQty(qty, unit);
+    if (weightSuffix(unit)) return formatQty(qty, unit);
     const n = Math.round(Number(qty) || 0);
     return `${n} unit${n === 1 ? '' : 's'}`;
 }
 
-function getUnitTypeFromValue(val) {
-    if (!val) return 'packaged';
-    const parsed = parseStoredUnit(val);
-    const ut = parsed.unitType.toLowerCase();
-    if (ut === 'per kilo') return 'kilo';
-    if (WEIGHT_UNIT_TYPES.includes(ut)) return 'weight';
-    return 'packaged';
-}
+// ── A product's saved unit while it is being edited ──────────────────────────
+// Older products carry units the "Sold by" list does not offer ("half sack",
+// "per bag", "per set"...) or spell differently ("per piece"). The form used to
+// swap them for the nearest list entry, so merely opening and saving a product
+// rewrote its unit ("half sack" and "whole sack" both became "Per Sack"). Now the
+// saved unit is shown as it is and sent back unchanged unless another is picked.
+let editUnitSaved = '';   // the unit exactly as stored
+let editUnitOption = '';  // the list entry that stands for it
 
-/**
- * Parse a stored unit string (e.g. "Per Kilo", "3 Per Pack", legacy "per 250g")
- * into { unitType: string, qty: number }.
- */
-function parseStoredUnit(val) {
-    if (!val) return { unitType: '', qty: 1 };
-    val = val.trim();
+function selectStoredUnit(stored) {
+    const sel = document.getElementById('productUnitType');
+    const saved = String(stored || '').trim();
+    if (!sel || !saved) return;
 
-    // Legacy format mapping (old → new)
-    const legacyMap = {
-        'per 250g': { unitType: 'Per Gram', qty: 250 },
-        'per 500g': { unitType: 'Per Gram', qty: 500 },
-        'per 1kg':  { unitType: 'Per Kilo', qty: 1 },
-        'per 2kg':  { unitType: 'Per Kilo', qty: 2 },
-        'per 3kg':  { unitType: 'Per Kilo', qty: 3 },
-        'per 5kg':  { unitType: 'Per Kilo', qty: 5 },
-        'per 10kg': { unitType: 'Per Kilo', qty: 10 },
-        'per 20kg': { unitType: 'Per Kilo', qty: 20 },
-        'per kilo': { unitType: 'Per Kilo', qty: 1 },
-        'whole sack': { unitType: 'Per Sack', qty: 1 },
-        'half sack': { unitType: 'Per Sack', qty: 0.5 },
-        'per bag':    { unitType: 'Per Pack', qty: 1 },
-        'per box':    { unitType: 'Per Box', qty: 1 },
-        'per can':    { unitType: 'Per Can', qty: 1 },
-        'per pouch':  { unitType: 'Per Pouch', qty: 1 },
-        'per pack':   { unitType: 'Per Pack', qty: 1 },
-        'per bottle': { unitType: 'Per Bottle', qty: 1 },
-        'per sachet': { unitType: 'Per Sachet', qty: 1 },
-        'per tray':   { unitType: 'Per Pack', qty: 1 },
-        'per piece':  { unitType: 'Per Piece', qty: 1 },
-        'per set':    { unitType: 'Per Pack', qty: 1 },
-        'per liter':  { unitType: 'Per Bottle', qty: 1 },
-        'per 100ml':  { unitType: 'Per Bottle', qty: 1 },
-        'per 250ml':  { unitType: 'Per Bottle', qty: 1 },
-        'per 500ml':  { unitType: 'Per Bottle', qty: 1 },
-        'per tablet': { unitType: 'Per Piece', qty: 1 },
-        'per capsule':{ unitType: 'Per Piece', qty: 1 },
-        'per vial':   { unitType: 'Per Bottle', qty: 1 },
-        'per ampoule':{ unitType: 'Per Bottle', qty: 1 },
-        'per tube':   { unitType: 'Per Piece', qty: 1 },
-        'per syringe':{ unitType: 'Per Piece', qty: 1 },
-        'per dose':   { unitType: 'Per Piece', qty: 1 },
-    };
-    const lower = val.toLowerCase();
-    if (legacyMap[lower]) return { ...legacyMap[lower] };
-
-    // New format: "3 Per Pack" or just "Per Kilo"
-    const match = val.match(/^([\d.]+)\s+(.+)$/);
-    if (match) {
-        return { qty: parseFloat(match[1]), unitType: match[2] };
+    let option = [...sel.options].find(o => o.value && o.value.toLowerCase() === saved.toLowerCase());
+    if (!option) {
+        // Not in the list: offer it as its own entry so it can stay selected
+        option = new Option(saved.replace(/\b[a-z]/g, c => c.toUpperCase()), saved);
+        option.dataset.savedUnit = '1';
+        sel.add(option);
     }
-    return { qty: 1, unitType: val };
+    sel.value = option.value;
+    editUnitSaved = saved;
+    editUnitOption = option.value;
 }
 
-/** Build the combined unit string from the two visible fields. */
+function clearStoredUnit() {
+    document.querySelectorAll('#productUnitType option[data-saved-unit]').forEach(o => o.remove());
+    editUnitSaved = '';
+    editUnitOption = '';
+}
+
+/** Set the hidden unit field from the "Sold by" list. */
 function buildUnitString() {
     const typeSel = document.getElementById('productUnitType');
     const hidden = document.getElementById('productUnit');
@@ -187,7 +168,8 @@ function buildUnitString() {
     const unitType = typeSel.value;
     if (!unitType) { hidden.value = ''; return ''; }
 
-    hidden.value = unitType;
+    // Untouched on an edit: keep the stored text exactly
+    hidden.value = (editUnitSaved && unitType === editUnitOption) ? editUnitSaved : unitType;
     return hidden.value;
 }
 
@@ -259,9 +241,14 @@ function onUnitChange() {
         expirationRow.style.display = (catType === 'accessory') ? 'none' : '';
     }
 
-    // Per Kilo: prices are per kg and stock is kilograms with decimals (25.5)
+    // Sold by weight: prices are per kg / per g. Per Kilo stock is kilograms with
+    // decimals (25.5); Per Gram stock is whole grams (500)
     const perKilo = unitType === 'kilo';
-    document.querySelectorAll('#productModal .inv-per-kg').forEach(el => { el.hidden = !perKilo; });
+    const weightUnit = perKilo ? 'kg' : (unitType === 'weight' ? 'g' : '');
+    document.querySelectorAll('#productModal .inv-per-kg').forEach(el => {
+        el.hidden = !weightUnit;
+        if (weightUnit && el.dataset.text) el.textContent = el.dataset.text.replace('{u}', weightUnit);
+    });
     if (stockInput) {
         stockInput.dataset.numeric = perKilo ? 'money' : 'int';
         stockInput.inputMode = perKilo ? 'decimal' : 'numeric';
@@ -296,15 +283,15 @@ function onUnitChange() {
             unitHint.innerHTML = '<i class="fas fa-weight-hanging me-1"></i>Sold by weight — enter stock in kilograms (e.g. 25.5). Cost and selling price are per kg. Barcode is optional.';
         }
     } else if (unitType === 'weight') {
-        if (stockWrapper) stockWrapper.style.display = 'none';
+        if (stockWrapper) stockWrapper.style.display = 'block';
         if (barcodeReqStar) barcodeReqStar.style.display = 'none';
         if (barcodeOptTag) barcodeOptTag.style.display = '';
         if (barcodeInput) barcodeInput.required = false;
-        if (stockInput) stockInput.required = false;
+        if (stockInput) stockInput.required = true;
         if (unitHint) {
             unitHint.style.display = 'block';
             unitHint.className = 'unit-hint unit-hint-weight mt-1';
-            unitHint.innerHTML = '<i class="fas fa-info-circle me-1"></i>Stock will be set to <strong>1</strong> automatically. Barcode is optional.';
+            unitHint.innerHTML = '<i class="fas fa-weight-hanging me-1"></i>Sold by weight — enter stock in grams, whole numbers only (e.g. 500). Cost and selling price are per gram. Barcode is optional.';
         }
     } else {
         if (stockWrapper) stockWrapper.style.display = 'block';
@@ -745,20 +732,13 @@ function displayProducts(products) {
 
     let html = '';
     products.forEach(product => {
-        const unitType = getUnitTypeFromValue(product.unit);
-        const isWeight = (unitType === 'weight');
-        const perKilo = (unitType === 'kilo');
+        const weightUnit = weightSuffix(product.unit);
 
-        // Stock: plain number (kilograms for Per Kilo), coloured only when low or out
-        let stockHtml;
-        if (isWeight) {
-            stockHtml = '<span class="inv-muted">By weight</span>';
-        } else {
-            const stockValue = parseFloat(product.stock) || 0;
-            const stockCls = stockValue <= 5 ? 'is-bad' : stockValue <= 15 ? 'is-warn' : '';
-            stockHtml = `<span class="${stockCls}">${stockValue <= 0 ? 'Out' : formatQty(stockValue, product.unit)}</span>`;
-        }
-        const perKgHtml = perKilo ? '<small class="inv-muted">/kg</small>' : '';
+        // Stock: plain number (kilograms for Per Kilo, grams for Per Gram), coloured only when low or out
+        const stockValue = parseFloat(product.stock) || 0;
+        const stockCls = stockValue <= 5 ? 'is-bad' : stockValue <= 15 ? 'is-warn' : '';
+        const stockHtml = `<span class="${stockCls}">${stockValue <= 0 ? 'Out' : formatQty(stockValue, product.unit)}</span>`;
+        const perKgHtml = weightUnit ? `<small class="inv-muted">/${weightUnit}</small>` : '';
 
         const unitHtml = product.unit ? escapeHtml(product.unit) : '<span class="inv-muted">—</span>';
 
@@ -813,7 +793,7 @@ function displayProducts(products) {
                 <td><span class="inv-status ${statusClass}" title="${statusTitle}">${displayStatus}</span></td>
                 <td class="inv-actions">
                     ${isOwner ? `<button class="btn-icon" onclick="editProduct(${product.id})" title="Edit product"><i class="fas fa-pen"></i></button>` : ''}
-                    <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${parseFloat(product.stock) || 0}, '${currentStatus}', '${escapeHtml(product.unit || '').replace(/'/g, "\\'")}')" title="Manage stock & status"><i class="fas ${isWeight ? 'fa-toggle-on' : 'fa-boxes'}"></i></button>
+                    <button class="btn-icon" onclick="openStockModal(${product.id},'${safeName}',${parseFloat(product.stock) || 0}, '${currentStatus}', '${escapeHtml(product.unit || '').replace(/'/g, "\\'")}')" title="Manage stock & status"><i class="fas fa-boxes"></i></button>
                     ${isOwner ? `<button class="btn-icon archive" onclick="archiveProduct(${product.id})" title="Move to archive"><i class="fas fa-box-archive"></i></button>` : ''}
                 </td>
             </tr>`;
@@ -868,7 +848,7 @@ function updateMarginHint() {
     const profit = price - cost;
     const pct = Math.round((profit / price) * 100);
     const peso = n => '₱' + Math.abs(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const per = getUnitType() === 'kilo' ? 'per kg' : 'per unit';
+    const per = ({ kilo: 'per kg', weight: 'per g' })[getUnitType()] || 'per unit';
     if (profit <= 0) {
         hint.classList.add('is-bad');
         hint.textContent = profit === 0 ? 'Selling at cost — no profit.' : `Selling at a loss of ${peso(profit)} ${per}.`;
@@ -910,12 +890,7 @@ function saveProduct() {
     const expiration = document.getElementById('productExpiration')?.value || '';
     const unitType = getUnitType();
 
-    let stock = 0;
-    if (unitType === 'weight') {
-        stock = 1;
-    } else {
-        stock = (document.getElementById('productStock')?.value || '').trim() || 0;
-    }
+    const stock = (document.getElementById('productStock')?.value || '').trim() || 0;
 
     const formData = {
         action: productId ? 'update_product' : 'create_product',
@@ -961,6 +936,11 @@ function saveProduct() {
         document.getElementById('productStock')?.focus();
         return;
     }
+    if (unitType === 'weight' && !/^\d+$/.test(String(stock))) {
+        showToast('warning', 'Invalid Stock', 'Stock must be a whole number of grams, 0 or more (e.g. 500)');
+        document.getElementById('productStock')?.focus();
+        return;
+    }
     if (unitType === 'packaged' && !/^\d+$/.test(String(stock))) {
         showToast('warning', 'Invalid Stock', 'Stock must be a whole number of 0 or more');
         document.getElementById('productStock')?.focus();
@@ -993,6 +973,10 @@ function saveProduct() {
     }
     if (!productId && unitType === 'kilo' && !(parseFloat(stock) > 0)) {
         showToast('warning', 'Warning', 'Please enter the stock in kilograms');
+        return;
+    }
+    if (!productId && unitType === 'weight' && !(parseInt(stock, 10) > 0)) {
+        showToast('warning', 'Warning', 'Please enter the stock in grams');
         return;
     }
 
@@ -1418,6 +1402,9 @@ function openProductModal(productId = null) {
     if (expirationWarning) expirationWarning.style.display = 'none';
     if (unitQtyWrapper) unitQtyWrapper.style.display = 'none';
     if (unitPreview) unitPreview.style.display = 'none';
+    clearStoredUnit();
+    const skuHintEl = document.getElementById('skuHint');
+    if (skuHintEl) skuHintEl.textContent = 'Leave empty to generate one';
     if (unitTypeSelect) unitTypeSelect.value = '';
     if (unitQtyInput) unitQtyInput.value = '1';
     if (unitHidden) unitHidden.value = '';
@@ -1466,14 +1453,10 @@ function openProductModal(productId = null) {
                     if (descField) descField.value = product.description || '';
                     if (priceField) priceField.value = product.price;
                     if (costField) costField.value = product.cost_price || '';
-                    // Parse unit into two fields
-                    if (product.unit) {
-                        const parsed = parseStoredUnit(product.unit);
-                        const utSel = document.getElementById('productUnitType');
-                        const utQty = document.getElementById('productUnitQty');
-                        if (utSel) utSel.value = parsed.unitType;
-                        if (utQty) utQty.value = parsed.qty;
-                    }
+                    // Show the saved unit as it is; it is only changed if another is picked
+                    if (product.unit) selectStoredUnit(product.unit);
+                    const skuHint = document.getElementById('skuHint');
+                    if (skuHint) skuHint.textContent = 'Leave empty to keep the current SKU';
                     if (unitField) unitField.value = product.unit || '';
                     // DECIMAL stock arrives as "4.00": whole units show 4, Per Kilo shows 25.5
                     if (stockField) stockField.value = formatQty(product.stock, product.unit, false);
@@ -1541,7 +1524,7 @@ function openProductModal(productId = null) {
 
 // ==================== STOCK FUNCTIONS ====================
 
-// Unit of the product open in the stock modal ('Per Kilo' takes decimal kilograms)
+// Unit of the product open in the stock modal ('Per Kilo' takes decimal kilograms, 'Per Gram' whole grams)
 let stockModalUnit = '';
 
 function openStockModal(productId, productName, currentStock, currentStatus, unit) {
@@ -1552,6 +1535,7 @@ function openStockModal(productId, productName, currentStock, currentStatus, uni
     const statusField = document.getElementById('stockProductStatus');
     const actionField = document.getElementById('stockAction');
     const perKilo = isPerKiloUnit(unit);
+    const perGram = isPerGramUnit(unit);
     stockModalUnit = unit || '';
 
     if (idField) idField.value = productId;
@@ -1564,10 +1548,11 @@ function openStockModal(productId, productName, currentStock, currentStatus, uni
         quantityField.value = '';
         quantityField.dataset.numeric = perKilo ? 'money' : 'int';
         quantityField.inputMode = perKilo ? 'decimal' : 'numeric';
-        quantityField.placeholder = perKilo ? 'How many kg? (e.g. 2.5)' : 'How many units?';
+        quantityField.placeholder = perKilo ? 'How many kg? (e.g. 2.5)'
+            : perGram ? 'How many grams? (e.g. 250)' : 'How many units?';
     }
     const qtyLabel = document.getElementById('qtyLabel');
-    if (qtyLabel) qtyLabel.textContent = perKilo ? 'Quantity (kg)' : 'Quantity';
+    if (qtyLabel) qtyLabel.textContent = perKilo ? 'Quantity (kg)' : perGram ? 'Quantity (g)' : 'Quantity';
 
     if (statusField) {
         statusField.value = currentStatus || 'active';
@@ -1575,9 +1560,6 @@ function openStockModal(productId, productName, currentStock, currentStatus, uni
 
     // Fetch and render batches
     refreshBatchList(productId);
-
-    // Per Gram products keep stock at 1 and are managed by status; Per Kilo has real stock
-    const isWeightProduct = !perKilo && (parseInt(currentStock) === 1);
 
     if (actionField) {
         // Bind UI toggling to batch radios as well
@@ -1587,7 +1569,7 @@ function openStockModal(productId, productName, currentStock, currentStatus, uni
         actionField.onchange = toggleBatchFields;
         
         // Default state
-        actionField.value = isWeightProduct ? 'none' : 'add';
+        actionField.value = 'add';
         toggleBatchFields();
     }
 
@@ -1634,7 +1616,7 @@ function refreshBatchList(productId) {
                                      onclick="toggleBatchExpiryEditor(this)"
                                      role="button" tabindex="0" title="Change this batch's expiry date">
                                     <span class="inv-batch-order">${isFirst ? 'Sells first' : 'Next'}</span>
-                                    <span class="inv-batch-qty">${formatQty(batch.stock, stockModalUnit, false)} <small>${isPerKiloUnit(stockModalUnit) ? 'kg' : 'units'}</small></span>
+                                    <span class="inv-batch-qty">${formatQty(batch.stock, stockModalUnit, false)} <small>${weightSuffix(stockModalUnit) || 'units'}</small></span>
                                     <span class="inv-batch-exp batch-exp-display">${expText}</span>
                                     <span class="inv-batch-recv">Received ${fmtDate(batch.date_added)}</span>
                                     <i class="fas fa-pen inv-batch-edit" aria-hidden="true"></i>
@@ -1820,7 +1802,7 @@ function updateStock() {
 
     // Determine the effective action:
     // If action is 'none' OR quantity is empty/zero, treat as status-only update
-    // Per Kilo takes kilograms with up to 2 decimals (2.5), other units whole numbers
+    // Per Kilo takes kilograms with up to 2 decimals (2.5), other units (and grams) whole numbers
     const qtyText = (rawQuantity || '').trim();
     const perKilo = isPerKiloUnit(stockModalUnit);
     const validQty = perKilo
@@ -1832,7 +1814,9 @@ function updateStock() {
         effectiveType = action;
     } else if (action !== 'none' && qtyText !== '') {
         // Anything else typed ("0", "-5", "--22") is a mistake, not a status-only save
-        showToast('warning', 'Invalid Quantity', perKilo ? 'Enter the weight in kg, more than 0 (e.g. 2.5)' : 'Enter a whole number greater than 0');
+        showToast('warning', 'Invalid Quantity', perKilo ? 'Enter the weight in kg, more than 0 (e.g. 2.5)'
+            : isPerGramUnit(stockModalUnit) ? 'Enter the weight in whole grams, more than 0 (e.g. 250)'
+            : 'Enter a whole number greater than 0');
         document.getElementById('stockQuantity')?.focus();
         return;
     } else {

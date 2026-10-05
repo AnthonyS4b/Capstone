@@ -16,8 +16,9 @@ header('Content-Type: application/json');
 require_once dirname(__DIR__) . '/includes/security.php';
 security_start_session();
 
-// Auth check
-security_require_role(['owner']);
+// Auth check: anyone signed in. Employees can add products (ajax/category_ajax.php),
+// so they need to be able to attach the photo too; the checks below still apply.
+security_require_login();
 
 // Validate request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

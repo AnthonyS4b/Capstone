@@ -74,7 +74,7 @@ function testConnection() {
         method: 'POST',
         data: { action: 'test_connection' },
         dataType: 'json',
-        timeout: 5000,
+        timeout: 30000, // a slow disk can take well over 5 seconds to answer
         success: function(response) {
             hideLoading();
             showToast('success', 'Connection OK', 'Successfully connected to server');
@@ -206,7 +206,7 @@ function loadArchivedProducts() {
         method: 'POST',
         data: { action: 'get_archived_products' },
         dataType: 'json',
-        timeout: 10000,
+        timeout: 60000, // slow is not broken: see the timeout message below
         success: function(response) {
             hideLoading();
             if (response.success) {
@@ -219,7 +219,11 @@ function loadArchivedProducts() {
         error: function(xhr, status, error) {
             hideLoading();
             let errorMsg = 'Failed to connect to server';
-            if (xhr.status === 404) {
+            if (status === 'timeout') {
+                // Only the list failed to load. A restore or delete done just before this
+                // already went through, so the message must not suggest it failed.
+                errorMsg = 'The list is taking too long to load. Anything you just restored or deleted was saved: wait a moment, then refresh the page.';
+            } else if (xhr.status === 404) {
                 errorMsg = 'AJAX endpoint not found at: ' + ajaxUrl;
             } else if (xhr.status === 500) {
                 errorMsg = 'Server error - check PHP error logs';
@@ -294,7 +298,7 @@ function displayArchivedProducts(products) {
                 <td class="inv-num">₱${price}</td>
                 <td class="inv-num">${String(product.unit || '').trim().toLowerCase() === 'per kilo'
                     ? `${Math.round((parseFloat(product.stock) || 0) * 100) / 100} kg`
-                    : (parseInt(product.stock, 10) || 0)}</td>
+                    : (parseInt(product.stock, 10) || 0) + (String(product.unit || '').trim().toLowerCase() === 'per gram' ? ' g' : '')}</td>
                 <td class="inv-muted-cell">${escHtml(deletedDate)}</td>
                 <td class="inv-actions">
                     <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(${product.id})" title="Restore to inventory">

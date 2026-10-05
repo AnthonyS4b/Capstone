@@ -44,8 +44,8 @@ $dailyStmt = $pdo->prepare("
         COALESCE(SUM(t.total_amount), 0) AS daily_sales,
         COUNT(*)                         AS orders_today,
         COALESCE(SUM((
-            -- A weighed (Per Kilo) line counts as one item, whatever it weighs
-            SELECT COALESCE(SUM(CASE WHEN LOWER(TRIM(p.unit)) = 'per kilo' THEN 1 ELSE ti.quantity END), 0)
+            -- A weighed (Per Kilo / Per Gram) line counts as one item, whatever it weighs
+            SELECT COALESCE(SUM(CASE WHEN LOWER(TRIM(p.unit)) IN ('per kilo', 'per gram') THEN 1 ELSE ti.quantity END), 0)
             FROM transaction_items ti
             LEFT JOIN products p ON p.id = ti.product_id
             WHERE ti.transaction_id = t.id

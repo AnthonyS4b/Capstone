@@ -54,9 +54,11 @@
         return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    // Per Kilo lines are decimal kilograms ("2.5 kg × ₱100.00/kg"); other units stay "3 × ₱85.00"
-    function isPerKilo(item) {
-        return String(item.unit || '').trim().toLowerCase() === 'per kilo';
+    // Weighed lines carry their unit: "2.5 kg × ₱100.00/kg" for Per Kilo (decimal kilograms),
+    // "250 g × ₱0.85/g" for Per Gram (whole grams); other units stay "3 × ₱85.00"
+    function weightSuffix(item) {
+        const unit = String(item.unit || '').trim().toLowerCase();
+        return unit === 'per kilo' ? 'kg' : (unit === 'per gram' ? 'g' : '');
     }
 
     // quantity × price rounded to the centavo, the way checkout charged it
@@ -67,9 +69,10 @@
 
     function itemLine(item) {
         const price = Number(item.price) === 0 ? 'Free' : peso(item.price);
-        if (!isPerKilo(item)) return `${Number(item.quantity)} × ${price}`;
-        const kg = Math.round(Number(item.quantity || 0) * 100) / 100;
-        return `${kg} kg × ${price}${Number(item.price) === 0 ? '' : '/kg'}`;
+        const suffix = weightSuffix(item);
+        if (!suffix) return `${Number(item.quantity)} × ${price}`;
+        const weight = Math.round(Number(item.quantity || 0) * 100) / 100;
+        return `${weight} ${suffix} × ${price}${Number(item.price) === 0 ? '' : '/' + suffix}`;
     }
 
     function formatDate(value) {
@@ -96,8 +99,8 @@
         // Prices are VAT-inclusive (12%, Philippines)
         const subtotal = total / 1.12;
         const vat = total - subtotal;
-        // A weighed (Per Kilo) line counts as one item, whatever it weighs
-        const units = items.reduce((n, i) => n + (isPerKilo(i) ? 1 : Number(i.quantity || 0)), 0);
+        // A weighed (Per Kilo / Per Gram) line counts as one item, whatever it weighs
+        const units = items.reduce((n, i) => n + (weightSuffix(i) ? 1 : Number(i.quantity || 0)), 0);
 
         const itemsHtml = items.length
             ? items.map(i => `

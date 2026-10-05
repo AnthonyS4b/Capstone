@@ -92,7 +92,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['pi
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['position'] = $user['position'];
-            
+
+            // They signed in with their PIN, so a "forgot PIN" request of theirs is moot
+            try {
+                require_once __DIR__ . '/includes/pin_recovery.php';
+                pin_recovery_resolve($pdo, (int)$user['id'], (int)$user['id']);
+            } catch (PDOException $e) {
+                error_log('switch_account: closing PIN request failed: ' . $e->getMessage());
+            }
+
             // Preserve store progress
             if (isset($current_session_data['cart'])) {
                 $_SESSION['cart'] = $current_session_data['cart'];

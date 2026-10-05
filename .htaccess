@@ -9,6 +9,18 @@ Options -Indexes
     Require all denied
 </Files>
 
+# Dot-folders (.git, .claude, .vscode ...) hold the source history and local
+# tooling. The rule above only matches a file's own name, so files inside them
+# (.git/HEAD, .git/objects/...) need a rule on the whole path. Answered with
+# 404 so nothing shows they exist. Either module is enough; XAMPP has both.
+<IfModule mod_alias.c>
+    RedirectMatch 404 "(?i)(^|/)\.(?!well-known/)[^/]+(/|$)"
+</IfModule>
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule "(^|/)\.(?!well-known/)[^/]+(/|$)" - [R=404,L,NC]
+</IfModule>
+
 # Basic response hardening. Content-Type is intentionally left to PHP/assets.
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"

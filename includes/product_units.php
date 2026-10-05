@@ -14,6 +14,19 @@ function unit_is_per_kilo($unit): bool
     return strtolower(trim((string)$unit)) === 'per kilo';
 }
 
+/** "Per Gram": sold by weight too, but in whole grams (250 g), priced per gram. */
+function unit_is_per_gram($unit): bool
+{
+    return strtolower(trim((string)$unit)) === 'per gram';
+}
+
+/** 'kg', 'g' or '': what is written beside the quantities and prices of a product sold by weight. */
+function unit_weight_suffix($unit): string
+{
+    if (unit_is_per_kilo($unit)) return 'kg';
+    return unit_is_per_gram($unit) ? 'g' : '';
+}
+
 /**
  * Validate a quantity typed by a person or sent by the browser.
  * Returns it as a float, or null when it is not allowed for this unit:
@@ -42,22 +55,23 @@ function hundredths_to_qty(int $hundredths): string
 }
 
 /**
- * Quantity as people read it: "2.5 kg" / "0.75 kg" for Per Kilo, "4" otherwise.
- * $withUnit=false drops the " kg" suffix.
+ * Quantity as people read it: "2.5 kg" / "0.75 kg" for Per Kilo, "250 g" for
+ * Per Gram, "4" otherwise. $withUnit=false drops the " kg" / " g" suffix.
  */
 function format_unit_quantity($qty, $unit, bool $withUnit = true): string
 {
     if (!unit_is_per_kilo($unit)) {
-        return (string)(int)round((float)$qty);
+        $whole = (string)(int)round((float)$qty);
+        return ($withUnit && unit_is_per_gram($unit)) ? $whole . ' g' : $whole;
     }
     $text = rtrim(rtrim(number_format((float)$qty, 2, '.', ''), '0'), '.');
     return $withUnit ? $text . ' kg' : $text;
 }
 
-/** "4 units" / "1 unit" / "2.5 kg", for sentences such as low-stock alerts. */
+/** "4 units" / "1 unit" / "2.5 kg" / "250 g", for sentences such as low-stock alerts. */
 function format_unit_amount($qty, $unit): string
 {
-    if (unit_is_per_kilo($unit)) return format_unit_quantity($qty, $unit);
+    if (unit_weight_suffix($unit) !== '') return format_unit_quantity($qty, $unit);
     $n = (int)round((float)$qty);
     return $n . ' unit' . ($n === 1 ? '' : 's');
 }

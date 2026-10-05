@@ -607,7 +607,9 @@ def _pick_strategies_from_db(
         # almost every packaged, slow-moving item regardless of expiry.
         if any(not observable_matches[c] for c in required):
             continue
-        if str(strategy.get("id")) == "buy_one_take_one" and not bogo_margin_safe:
+        # Buy 1 Take 1 gives every second unit free: it needs a healthy margin and a
+        # product counted in whole units (not one sold by the kilo or gram)
+        if str(strategy.get("id")) == "buy_one_take_one" and (not bogo_margin_safe or not is_packaged):
             continue
 
         condition_weights = {
@@ -906,12 +908,18 @@ def save_recommendation() -> Tuple[Any, int]:
                 with conn.cursor() as cursor:
                     # 1. Get current product price
                     cursor.execute(
-                        "SELECT id, price, name, category_id FROM products WHERE id = %s AND deleted_at IS NULL FOR UPDATE",
+                        "SELECT id, price, name, category_id, unit FROM products WHERE id = %s AND deleted_at IS NULL FOR UPDATE",
                         (product_id,)
                     )
                     product = cursor.fetchone()
                     if not product:
                         return jsonify({"error": "Product not found"}), 404
+
+                    # Buy 1 Take 1 counts whole units (every second one is free). A product sold
+                    # by weight is charged by the kilo or gram at the POS, so nothing would be free.
+                    unit_text = str(product.get("unit") or "").lower()
+                    if strategy_id == "buy_one_take_one" and ("kilo" in unit_text or "gram" in unit_text):
+                        return jsonify({"error": "Buy 1 Take 1 cannot be used on a product sold by weight. Choose a discount strategy instead."}), 400
 
                     if paired_product_id:
                         cursor.execute(

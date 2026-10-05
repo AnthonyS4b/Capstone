@@ -199,7 +199,11 @@ function updateUsersTable(users) {
                     <button type="button" class="um-icon-btn" onclick="editUserById(${user.id})" title="Edit ${escapeHtml(name)}" aria-label="Edit ${escapeHtml(name)}">
                         <i class="fas fa-pen"></i>
                     </button>
-                    ${isMe ? '' : `
+                    ${active ? '' : `
+                    <button type="button" class="um-icon-btn" onclick="reactivateUserById(${user.id})" title="Reactivate ${escapeHtml(name)}" aria-label="Reactivate ${escapeHtml(name)}">
+                        <i class="fas fa-user-check"></i>
+                    </button>`}
+                    ${isMe || !active ? '' : `
                     <button type="button" class="um-icon-btn um-danger" onclick="deleteUserById(${user.id})" title="Delete ${escapeHtml(name)}" aria-label="Delete ${escapeHtml(name)}">
                         <i class="fas fa-trash-alt"></i>
                     </button>`}
@@ -219,6 +223,23 @@ function editUserById(id) {
 function deleteUserById(id) {
     const u = umUsers.get(String(id));
     if (u) deleteUser(u.id, `${u.first_name} ${u.last_name}`);
+}
+
+// A deactivated account (deleted while it had sales or activity on record) can be switched back on
+function reactivateUserById(id) {
+    const u = umUsers.get(String(id));
+    if (!u) return;
+    fetch(getUserManagementBaseUrl() + 'ajax/user_ajax.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: new URLSearchParams({ action: 'reactivate_user', user_id: u.id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        showToast(data.success ? 'success' : 'error', data.success ? 'Reactivated' : 'Error', data.message || '');
+        if (data.success) refreshUserList(true);
+    })
+    .catch(() => showToast('error', 'Connection Error', 'Failed to connect to server'));
 }
 
 // Helper function to escape HTML
@@ -553,7 +574,7 @@ async function deleteUser(userId, userName) {
         ? await confirmDialog({
             title: 'Delete user?',
             message: `${userName} will no longer be able to sign in.`,
-            detail: 'Their past sales stay on record. This cannot be undone.',
+            detail: 'If they have sales or activity on record, the account is deactivated and kept, so their name stays on past records (you can reactivate it later). Otherwise it is removed for good.',
             confirmText: 'Delete user',
             tone: 'danger'
         })
@@ -581,8 +602,10 @@ async function deleteUser(userId, userName) {
     })
     .then(data => {
         if (data.success) {
-            showToast('success', 'Deleted', `User ${userName} has been removed`);
-            refreshUserList();
+            // The server says whether it deleted the account or kept it switched off
+            showToast(data.deactivated ? 'info' : 'success', data.deactivated ? 'Deactivated' : 'Deleted',
+                data.message || `User ${userName} has been removed`);
+            refreshUserList(true);
         } else {
             showToast('error', 'Error', data.message || 'Failed to delete user');
         }

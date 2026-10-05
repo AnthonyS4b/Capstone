@@ -431,3 +431,39 @@
 [06-Oct-2026 00:33:18 Asia/Manila] Transaction data: User_ID=9, Total=735, Payment=1000, Method=cash
 [06-Oct-2026 00:33:18 Asia/Manila] Transaction inserted with ID: 1558
 [06-Oct-2026 00:33:23 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[06-Oct-2026 02:33:26 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => BMEG
+    [description] => 
+    [price] => 25
+    [cost_price] => 22
+    [stock] => 500
+    [unit] => Per Gram
+    [sku] => CAT-72514337
+    [barcode] => 
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-10-05
+)
+
+[06-Oct-2026 02:33:33 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 105
+    [data] => Array
+        (
+            [id] => 105
+            [sku] => CAT-72514337
+            [barcode] => 
+            [unit] => Per Gram
+            [cost_price] => 22
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+

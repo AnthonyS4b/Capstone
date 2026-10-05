@@ -390,11 +390,15 @@ class ProductController {
         if ($cost !== '' && $cost !== null && !$isMoney($cost)) {
             return 'Cost price must be 0 or a positive number.';
         }
-        // Per Kilo stock is kilograms with up to 2 decimals (10.5); other units are whole numbers
+        // Per Kilo stock is kilograms with up to 2 decimals (10.5); Per Gram is whole grams;
+        // other units are whole numbers
         $stock = $data['stock'] ?? 0;
         if (parse_unit_quantity($stock, unit_is_per_kilo($data['unit'] ?? ''), true) === null) {
-            return unit_is_per_kilo($data['unit'] ?? '')
-                ? 'Stock must be 0 or more kilograms, with up to 2 decimals (e.g. 25.5).'
+            if (unit_is_per_kilo($data['unit'] ?? '')) {
+                return 'Stock must be 0 or more kilograms, with up to 2 decimals (e.g. 25.5).';
+            }
+            return unit_is_per_gram($data['unit'] ?? '')
+                ? 'Stock must be a whole number of grams, 0 or more (e.g. 500).'
                 : 'Stock must be a whole number of 0 or more.';
         }
         return null;
@@ -591,6 +595,16 @@ class ProductController {
         }
     }
 
+    // A SKU no product has yet, for a product that ended up without one
+    private function generateSku() {
+        $check = $this->conn->prepare("SELECT 1 FROM products WHERE sku = :sku LIMIT 1");
+        do {
+            $sku = 'PRD' . time() . rand(1000, 9999);
+            $check->execute([':sku' => $sku]);
+        } while ($check->fetchColumn());
+        return $sku;
+    }
+
     // Blank barcodes are stored as NULL so any number of products can have none
     private function normalizeBarcode($barcode) {
         $barcode = trim((string)($barcode ?? ''));
@@ -636,7 +650,24 @@ class ProductController {
                 }
             }
             
-            $sku = isset($data['sku']) ? $data['sku'] : '';
+            // SKU on an edit. An emptied box keeps the SKU the product already has: it used to
+            // be saved as '' and the next product edited that way failed on the unique key.
+            // A SKU that another product uses is refused by name instead of a database error.
+            $sku = trim((string)($data['sku'] ?? ''));
+            $currentSkuStmt = $this->conn->prepare("SELECT sku FROM products WHERE id = :id");
+            $currentSkuStmt->execute([':id' => $id]);
+            $currentSku = (string)$currentSkuStmt->fetchColumn();
+            if ($sku === '') {
+                $sku = $currentSku !== '' ? $currentSku : $this->generateSku();
+            } elseif ($sku !== $currentSku) {
+                $skuOwner = $this->conn->prepare("SELECT name, deleted_at FROM products WHERE sku = :sku AND id <> :id LIMIT 1");
+                $skuOwner->execute([':sku' => $sku, ':id' => (int)$id]);
+                if ($owner = $skuOwner->fetch(PDO::FETCH_ASSOC)) {
+                    return ['success' => false, 'message' => 'SKU ' . $sku . ' is already used by "' . $owner['name'] . '"'
+                        . ($owner['deleted_at'] ? ' (in the archive)' : '') . '. Each product needs its own SKU.'];
+                }
+            }
+
             $barcode = $this->normalizeBarcode($data['barcode'] ?? null);
             if ($conflict = $this->findBarcodeConflict($barcode, $id)) {
                 return ['success' => false, 'message' => $conflict];
@@ -725,16 +756,19 @@ class ProductController {
     
     // Update stock and status
     public function updateStock($id, $quantity, $type = 'add', $status = null, $batchData = null) {
-        // A stock change needs a positive amount: a whole number, or kilograms with up to
-        // 2 decimals for Per Kilo products. "-5", "5.5 pcs" or "--22" are rejected instead
-        // of being silently treated as a status-only update.
+        // A stock change needs a positive amount: a whole number (units, or grams for Per
+        // Gram), or kilograms with up to 2 decimals for Per Kilo products. "-5", "5.5 pcs"
+        // or "--22" are rejected instead of being silently treated as a status-only update.
         $unitStmt = $this->conn->prepare("SELECT unit FROM products WHERE id = :id");
         $unitStmt->execute([':id' => $id]);
         $unit = (string)$unitStmt->fetchColumn();
         $perKilo = unit_is_per_kilo($unit);
         if (in_array($type, ['add', 'remove'], true) && parse_unit_quantity($quantity, $perKilo) === null) {
-            return ['success' => false, 'message' => $perKilo
-                ? 'Quantity must be more than 0 kg, with up to 2 decimals (e.g. 2.5).'
+            if ($perKilo) {
+                return ['success' => false, 'message' => 'Quantity must be more than 0 kg, with up to 2 decimals (e.g. 2.5).'];
+            }
+            return ['success' => false, 'message' => unit_is_per_gram($unit)
+                ? 'Quantity must be a whole number of grams greater than 0 (e.g. 250).'
                 : 'Quantity must be a whole number greater than 0.'];
         }
         try {
