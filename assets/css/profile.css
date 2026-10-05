@@ -402,3 +402,25 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Recovery PIN (owner): state tag in the toggle and the explanation above the fields */
+.pf-modal .pf-recovery-state {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--pf-accent-tint);
+    color: var(--pf-accent);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pf-modal .pf-recovery-state.is-set {
+    background: var(--pf-brand-tint);
+    color: var(--pf-brand-strong);
+}
+
+.pf-modal .pf-recovery-note {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--pf-muted);
+}

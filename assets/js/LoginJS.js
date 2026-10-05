@@ -382,8 +382,126 @@
 
         document.getElementById('lgBack')?.addEventListener('click', backToAccounts);
 
+        // ── Forgot PIN ──────────────────────────────────────────────────────
+        // Owner: recovery PIN + new PIN. Employee: a request the owner sees in the bell.
+        const loginForm = document.getElementById('loginForm');
+        const stepForgot = document.getElementById('lgStepForgot');
+        const forgotMsg = document.getElementById('lgForgotMsg');
+        const forgotOwner = document.getElementById('lgForgotOwner');
+        const forgotEmployee = document.getElementById('lgForgotEmployee');
+        let forgotRole = null;
+        let forgotBusy = false;
+
+        function setForgotMessage(text, ok) {
+            if (!forgotMsg) return;
+            forgotMsg.textContent = text || '';
+            forgotMsg.hidden = !text;
+            forgotMsg.classList.toggle('is-ok', !!ok);
+        }
+
+        function openForgot() {
+            const card = document.querySelector('.account-card.selected');
+            if (!card || !stepForgot || loginInFlight) return;
+            forgotRole = card.getAttribute('data-user-role') === 'owner' ? 'owner' : 'employee';
+            document.getElementById('lgForgotFor').textContent = 'For ' + card.getAttribute('data-user-name');
+            forgotOwner.hidden = forgotRole !== 'owner';
+            forgotEmployee.hidden = forgotRole === 'owner';
+            ['lgRecoveryPin', 'lgNewPin', 'lgConfirmPin'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            const requestBtn = document.getElementById('lgEmployeeRequestBtn');
+            if (requestBtn) requestBtn.disabled = false;
+            setForgotMessage('');
+            resetPin();
+            clearLoginError();
+            loginForm.style.display = 'none';
+            stepForgot.hidden = false;
+            if (forgotRole === 'owner') document.getElementById('lgRecoveryPin')?.focus();
+            else stepForgot.focus({ preventScroll: true });
+        }
+
+        function closeForgot(newPinPrompt) {
+            if (!stepForgot || forgotBusy) return;
+            stepForgot.hidden = true;
+            loginForm.style.display = '';
+            showStep('pin');
+            if (newPinPrompt) pinPrompt.textContent = 'Enter your new PIN';
+        }
+
+        document.getElementById('lgForgotBtn')?.addEventListener('click', openForgot);
+        document.getElementById('lgForgotBack')?.addEventListener('click', () => closeForgot(false));
+
+        // Digits only in the PIN boxes
+        stepForgot?.addEventListener('input', function (e) {
+            if (e.target.classList.contains('lg-input')) e.target.value = e.target.value.replace(/\D/g, '');
+        });
+
+        stepForgot?.addEventListener('submit', function (e) {
+            e.preventDefault();
+            if (forgotBusy) return;
+
+            const body = new FormData();
+            body.append('csrf_token', loginForm.querySelector('[name="csrf_token"]').value);
+            body.append('user_id', userIdInput.value);
+
+            if (forgotRole === 'owner') {
+                const recovery = document.getElementById('lgRecoveryPin').value;
+                const newPin = document.getElementById('lgNewPin').value;
+                const confirmPin = document.getElementById('lgConfirmPin').value;
+                if (!/^\d{4}$/.test(recovery)) return setForgotMessage('The recovery PIN is 4 digits.');
+                if (!/^\d{4}$/.test(newPin)) return setForgotMessage('The new PIN must be exactly 4 digits.');
+                // Same rule as security_weak_pin_reason() on the server
+                if (/^(\d)\1{3}$/.test(newPin)) return setForgotMessage('A PIN cannot be the same digit four times (like 1111). Choose a harder one.');
+                if ('0123456789'.includes(newPin) || '9876543210'.includes(newPin)) return setForgotMessage('A PIN cannot be consecutive numbers (like 1234 or 4321). Choose a harder one.');
+                if (newPin !== confirmPin) return setForgotMessage('The new PIN and its confirmation do not match.');
+                body.append('forgot_action', 'owner_reset');
+                body.append('recovery_pin', recovery);
+                body.append('new_pin', newPin);
+                body.append('confirm_pin', confirmPin);
+            } else {
+                body.append('forgot_action', 'employee_request');
+            }
+
+            const submitBtn = forgotRole === 'owner'
+                ? document.getElementById('lgOwnerResetBtn')
+                : document.getElementById('lgEmployeeRequestBtn');
+            forgotBusy = true;
+            submitBtn.disabled = true;
+            setForgotMessage('');
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: body,
+                credentials: 'same-origin'
+            })
+            .then(res => res.json())
+            .then(data => {
+                forgotBusy = false;
+                setForgotMessage(data.message || 'Something went wrong.', !!data.success);
+                if (data.success && forgotRole === 'owner') {
+                    // Back to the keypad to sign in with the new PIN
+                    setTimeout(() => closeForgot(true), 1600);
+                } else {
+                    // An employee's request stays sent; a failed owner reset can be retried
+                    submitBtn.disabled = !!data.success;
+                }
+            })
+            .catch(() => {
+                forgotBusy = false;
+                submitBtn.disabled = false;
+                setForgotMessage('Could not reach the server. Please try again.');
+            });
+        });
+
         // Keyboard input handler
         document.addEventListener('keydown', function(e) {
+            // Forgot PIN step: its own fields; Escape goes back to the PIN keypad
+            if (stepForgot && !stepForgot.hidden) {
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeForgot(false);
+                }
+                return;
+            }
             // Don't handle keys if typing in an input field
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                 return;

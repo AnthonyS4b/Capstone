@@ -202,6 +202,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const salesTotalEl = document.getElementById('salesTotal');
     const salesRangeLabelEl = document.getElementById('salesRangeLabel');
     const rangeLabels = { day: 'today', week: 'last 7 days', month: 'last 30 days', year: 'this year' };
+    const salesYearSelect = document.getElementById('salesYear');
+    const thisYear = new Date().getFullYear();
+
+    // "this year" or "in 2025"
+    function salesRangeLabel(range, year) {
+        if (range === 'year' && Number(year) !== thisYear) return 'in ' + year;
+        return rangeLabels[range] || '';
+    }
 
     const salesChart = new Chart(ctx, {
         type: 'bar',
@@ -237,10 +245,15 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch chart data from server
     function loadSalesChart(range) {
         salesWrapper.classList.add('is-loading');
+        // "Year" shows the months of the year picked in the dropdown; Day/Week/Month
+        // are always recent, so the dropdown goes back to this year for them
+        if (salesYearSelect && range !== 'year') salesYearSelect.value = String(thisYear);
+        const year = salesYearSelect ? salesYearSelect.value : thisYear;
         fetch('ajax/dashboard_chart_ajax.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'action=get_sales_chart&range=' + encodeURIComponent(range)
+            body: 'action=get_sales_chart&range=' + encodeURIComponent(range) +
+                  (range === 'year' ? '&year=' + encodeURIComponent(year) : '')
         })
         .then(r => r.json())
         .then(response => {
@@ -250,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 salesChart.data.datasets[0].data = response.values;
                 salesChart.update();
                 salesTotalEl.textContent = pesoFull(total);
-                salesRangeLabelEl.textContent = rangeLabels[range] || '';
+                salesRangeLabelEl.textContent = salesRangeLabel(range, year);
                 salesWrapper.classList.toggle('is-empty', total === 0);
             } else {
                 console.error('Chart data error:', response.message);
@@ -274,6 +287,12 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('active');
             loadSalesChart(this.dataset.range);
         });
+    });
+
+    // Picking a year switches to the "Year" view for that year
+    salesYearSelect?.addEventListener('change', () => {
+        document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.toggle('active', b.dataset.range === 'year'));
+        loadSalesChart('year');
     });
 
     // ── Sales by Category Chart (vertical bar, real data from PHP) ───────────
@@ -712,3 +731,115 @@ function changeOwnPin() {
     })
     .catch(() => showToast('error', 'Error', 'Failed to connect to server.'));
 }
+// ── Stat card details ────────────────────────────────────────────────────────
+// Clicking a key-figure card opens a window with what is behind the number:
+// today's sales transactions, the products ordered today, all transactions, or
+// the last 30 days' sales behind the average. The server sends titles, summary
+// figures, columns and rows display-ready (get_stat_details).
+(function () {
+    const modalEl = document.getElementById('statDetailModal');
+    if (!modalEl) return;
+
+    const titleEl = document.getElementById('statModalTitle');
+    const subEl = document.getElementById('statModalSub');
+    const summaryEl = document.getElementById('statModalSummary');
+    const bodyEl = document.getElementById('statModalBody');
+    const pagesEl = document.getElementById('statModalPages');
+    const linkEl = document.getElementById('statModalLink');
+    let currentType = null;
+    let requestNo = 0;
+
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    function showState(icon, text) {
+        bodyEl.innerHTML = `<div class="stat-modal-state"><i class="fa-solid ${icon}" aria-hidden="true"></i><span>${esc(text)}</span></div>`;
+    }
+
+    function render(data) {
+        titleEl.textContent = data.title || 'Details';
+        subEl.textContent = data.subtitle || '';
+        summaryEl.innerHTML = (data.summary || []).map(f =>
+            `<div class="stat-modal-figure"><span>${esc(f.label)}</span><strong>${esc(f.value)}</strong></div>`).join('');
+
+        const columns = data.columns || [];
+        const rows = data.rows || [];
+        if (rows.length === 0) {
+            showState('fa-receipt', data.empty || 'Nothing to show.');
+        } else {
+            const cls = i => (columns[i] && columns[i].align === 'right' ? ' class="is-right"' : '');
+            bodyEl.innerHTML = `
+                <table class="stat-modal-table">
+                    <thead><tr>${columns.map((c, i) => `<th scope="col"${cls(i)}>${esc(c.label)}</th>`).join('')}</tr></thead>
+                    <tbody>${rows.map(r => `<tr>${r.map((cell, i) => `<td${cls(i)}>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+                </table>`;
+            bodyEl.scrollTop = 0;
+        }
+
+        // "1–20 of 1,556" with Previous / Next when there is more than one page
+        const total = Number(data.total_rows) || 0;
+        const page = Number(data.page) || 1;
+        const pages = Number(data.total_pages) || 1;
+        const perPage = Number(data.per_page) || rows.length || 1;
+        if (total === 0) {
+            pagesEl.innerHTML = '';
+        } else {
+            const first = (page - 1) * perPage + 1;
+            const last = Math.min(page * perPage, total);
+            pagesEl.innerHTML = `<span>${first.toLocaleString()}–${last.toLocaleString()} of ${total.toLocaleString()}</span>` +
+                (pages > 1
+                    ? `<button type="button" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>Previous</button>
+                       <button type="button" data-page="${page + 1}" ${page >= pages ? 'disabled' : ''}>Next</button>`
+                    : '');
+        }
+
+        linkEl.hidden = !data.link;
+        if (data.link) {
+            linkEl.href = data.link.href;
+            linkEl.textContent = data.link.text;
+        }
+    }
+
+    function load(type, page) {
+        currentType = type;
+        const mine = ++requestNo; // a slow earlier answer must not overwrite a newer one
+        pagesEl.querySelectorAll('button').forEach(b => { b.disabled = true; });
+        if (page === 1) showState('fa-circle-notch fa-spin', 'Loading…');
+
+        fetch('ajax/dashboard_chart_ajax.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'action=get_stat_details&type=' + encodeURIComponent(type) + '&page=' + encodeURIComponent(page)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (mine !== requestNo) return;
+            if (data.success) render(data);
+            else showState('fa-triangle-exclamation', data.message || 'Could not load the details.');
+        })
+        .catch(() => {
+            if (mine === requestNo) showState('fa-triangle-exclamation', 'Could not reach the server. Please try again.');
+        });
+    }
+
+    function open(card) {
+        titleEl.textContent = card.querySelector('.stat-label')?.textContent || 'Details';
+        subEl.textContent = '';
+        summaryEl.innerHTML = '';
+        pagesEl.innerHTML = '';
+        linkEl.hidden = true;
+        load(card.dataset.stat, 1);
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+
+    document.querySelectorAll('.stat-card[data-stat]').forEach(card => {
+        card.addEventListener('click', () => open(card));
+        card.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(card); }
+        });
+    });
+
+    pagesEl.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-page]');
+        if (btn && !btn.disabled && currentType) load(currentType, Number(btn.dataset.page));
+    });
+})();

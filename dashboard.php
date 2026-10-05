@@ -37,6 +37,16 @@ $is_owner = ($role === 'owner');
 
 $pdo = getDBConnection();
 
+// Years with sales, newest first, for the Sales Overview year picker (this year is always listed)
+$salesYears = [(int)date('Y')];
+try {
+    $salesYears = array_values(array_unique(array_merge($salesYears,
+        array_map('intval', $pdo->query("SELECT DISTINCT YEAR(created_at) FROM transactions ORDER BY 1 DESC")->fetchAll(PDO::FETCH_COLUMN)))));
+    rsort($salesYears);
+} catch (PDOException $e) {
+    error_log('dashboard sales years: ' . $e->getMessage());
+}
+
 // ─── FIGURES ──────────────────────────────────────────────────────────────
 // A transaction counts unless it has a voided sale against it. This is
 // written as NOT EXISTS rather than a JOIN on `sales` on purpose: several
@@ -212,7 +222,7 @@ if ($is_owner) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="assets/css/dashboardCSS.css">
+    <link rel="stylesheet" href="assets/css/dashboardCSS.css?v=<?= filemtime(__DIR__ . '/assets/css/dashboardCSS.css') ?>">
     <link rel="stylesheet" href="assets/css/reco.css">
     <link rel="stylesheet" href="assets/css/usermod.css">
     <link rel="stylesheet" href="assets/css/notif.css?v=<?= filemtime(__DIR__ . '/assets/css/notif.css') ?>">
@@ -318,16 +328,18 @@ if ($is_owner) {
         <div class="stats-grid">
             <?php
             $stat_cards = [
-                ['key' => 'sales',     'tone' => 'revenue',   'icon' => 'fa-peso-sign',  'label' => "Today's Sales",    'value' => '₱' . number_format($sales_data['today'])],
-                ['key' => 'orders',    'tone' => 'orders',    'icon' => 'fa-cart-shopping', 'label' => 'Orders Today',     'value' => number_format($sales_data['orders_today'])],
-                ['key' => 'customers', 'tone' => 'customers', 'icon' => 'fa-receipt',    'label' => 'Total Transactions', 'value' => number_format($sales_data['transactions'])],
-                ['key' => 'avg_order', 'tone' => 'average',   'icon' => 'fa-chart-line', 'label' => 'Avg. Order Value', 'value' => '₱' . number_format($sales_data['avg_order'])],
+                // 'detail' is what a click opens (get_stat_details in ajax/dashboard_chart_ajax.php)
+                ['key' => 'sales',     'detail' => 'sales_today',  'tone' => 'revenue',   'icon' => 'fa-peso-sign',  'label' => "Today's Sales",    'value' => '₱' . number_format($sales_data['today'])],
+                ['key' => 'orders',    'detail' => 'orders_today', 'tone' => 'orders',    'icon' => 'fa-cart-shopping', 'label' => 'Orders Today',     'value' => number_format($sales_data['orders_today'])],
+                ['key' => 'customers', 'detail' => 'transactions', 'tone' => 'customers', 'icon' => 'fa-receipt',    'label' => 'Total Transactions', 'value' => number_format($sales_data['transactions'])],
+                ['key' => 'avg_order', 'detail' => 'avg_order',    'tone' => 'average',   'icon' => 'fa-chart-line', 'label' => 'Avg. Order Value', 'value' => '₱' . number_format($sales_data['avg_order'])],
             ];
             $trend_icon = ['up' => 'fa-arrow-trend-up', 'down' => 'fa-arrow-trend-down', 'flat' => 'fa-minus'];
             foreach ($stat_cards as $card):
                 $t = $trends[$card['key']];
             ?>
-            <div class="stat-card">
+            <div class="stat-card" role="button" tabindex="0" aria-haspopup="dialog"
+                 data-stat="<?php echo $card['detail']; ?>" title="View details: <?php echo htmlspecialchars($card['label']); ?>">
                 <div class="stat-head">
                     <span class="stat-label"><?php echo $card['label']; ?></span>
                     <span class="stat-icon <?php echo $card['tone']; ?>"><i class="fa-solid <?php echo $card['icon']; ?>"></i></span>
@@ -352,11 +364,19 @@ if ($is_owner) {
                             <span class="chart-summary-label" id="salesRangeLabel">last 7 days</span>
                         </div>
                     </div>
-                    <div class="time-range">
-                        <span class="range-btn" data-range="day">Day</span>
-                        <span class="range-btn active" data-range="week">Week</span>
-                        <span class="range-btn" data-range="month">Month</span>
-                        <span class="range-btn" data-range="year">Year</span>
+                    <div class="chart-controls">
+                        <!-- Picking a year shows that year's sales month by month -->
+                        <select class="range-year" id="salesYear" aria-label="Year to show">
+                            <?php foreach ($salesYears as $y): ?>
+                                <option value="<?= (int)$y ?>"><?= (int)$y ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="time-range">
+                            <span class="range-btn" data-range="day">Day</span>
+                            <span class="range-btn active" data-range="week">Week</span>
+                            <span class="range-btn" data-range="month">Month</span>
+                            <span class="range-btn" data-range="year">Year</span>
+                        </div>
                     </div>
                 </div>
                 <div class="chart-wrapper" id="salesChartWrapper">
@@ -444,6 +464,27 @@ if ($is_owner) {
         </div>
     </div>
 
+    <!-- Stat card details: filled by dashboardJS.js when a key-figure card is clicked -->
+    <div class="modal fade stat-modal" id="statDetailModal" tabindex="-1" aria-labelledby="statModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="stat-modal-head">
+                    <div>
+                        <h2 class="stat-modal-title" id="statModalTitle">Details</h2>
+                        <p class="stat-modal-sub" id="statModalSub"></p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="stat-modal-summary" id="statModalSummary"></div>
+                <div class="modal-body stat-modal-body" id="statModalBody" aria-live="polite"></div>
+                <div class="stat-modal-foot">
+                    <div class="stat-modal-pages" id="statModalPages"></div>
+                    <a class="range-btn stat-modal-link" id="statModalLink" href="Sales_Transactions.php" hidden></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <?php include __DIR__ . '/includes/profile_modal.php'; ?>
 
     <?php include __DIR__ . '/includes/user_roles_modal.php'; ?>
@@ -462,7 +503,7 @@ if ($is_owner) {
         // ── Notification seed data (shared include) ─────────────────────────────
         <?php include 'includes/notifications.php'; ?>
     </script>
-    <script src="assets/js/dashboardJS.js"></script>
+    <script src="assets/js/dashboardJS.js?v=<?= filemtime(__DIR__ . '/assets/js/dashboardJS.js') ?>"></script>
     <script src="assets/js/userManagement.js?v=<?= filemtime(__DIR__ . '/assets/js/userManagement.js') ?>"></script>
     <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>

@@ -76,8 +76,11 @@
 
     // Validate PIN (4 digits)
     if (!preg_match('/^\d{4}$/', $pin)) {
-        error_log("Invalid PIN format: $pin");
         echo json_encode(['success' => false, 'message' => 'PIN must be exactly 4 digits']);
+        exit();
+    }
+    if ($weak = security_weak_pin_reason($pin)) {
+        echo json_encode(['success' => false, 'message' => $weak]);
         exit();
     }
 

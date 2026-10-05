@@ -92,15 +92,24 @@
                     </div>
                     <span class="notif-dot" aria-label="Unread"></span>`;
 
-                item.addEventListener('click', () => markRead(n.id));
+                item.addEventListener('click', () => activate(n));
                 item.addEventListener('keydown', e => {
-                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); markRead(n.id); }
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(n); }
                 });
                 list.appendChild(item);
             });
         });
 
         renderFooter();
+    }
+
+    // ── Click: mark read, and open the modal the item points to (n.open) ──────
+    function activate(n) {
+        markRead(n.id);
+        const target = n.open ? document.querySelector(n.open) : null;
+        if (!target || typeof bootstrap === 'undefined') return;
+        closePanel();
+        bootstrap.Modal.getOrCreateInstance(target).show();
     }
 
     // ── Mark single read ─────────────────────────────────────────────────────

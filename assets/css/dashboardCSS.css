@@ -1403,3 +1403,253 @@ body {
 
 
 
+
+/* Sales Overview: year picker beside the range buttons (shown with "Year") */
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.range-year {
+    height: 31px;
+    padding: 0 26px 0 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-sm);
+    background-color: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
+.range-year:hover {
+    border-color: var(--line-strong);
+}
+
+.range-year:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 1px;
+}
+
+/* ================================================
+   Stat cards open a details window
+   ================================================ */
+.stat-card[data-stat] {
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card[data-stat]:hover {
+    border-color: var(--line-strong);
+    box-shadow: 0 4px 12px rgba(22, 34, 26, 0.08);
+}
+
+.stat-card[data-stat]:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+}
+
+.stat-modal .modal-content {
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+}
+
+.stat-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px 12px;
+}
+
+.stat-modal-title {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.stat-modal-sub {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--ink-muted);
+}
+
+.stat-modal-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: var(--canvas);
+}
+
+.stat-modal-summary:empty {
+    display: none;
+}
+
+.stat-modal-figure {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-modal-figure span {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-muted);
+}
+
+.stat-modal-figure strong {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-modal-body {
+    padding: 0;
+    min-height: 180px;
+}
+
+.stat-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.stat-modal-table th {
+    position: sticky;
+    top: 0;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.stat-modal-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-modal-table th:first-child,
+.stat-modal-table td:first-child {
+    padding-left: 20px;
+}
+
+.stat-modal-table th:last-child,
+.stat-modal-table td:last-child {
+    padding-right: 20px;
+}
+
+.stat-modal-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.stat-modal-table .is-right {
+    text-align: right;
+}
+
+.stat-modal-table td:last-child {
+    font-weight: 600;
+}
+
+.stat-modal-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 180px;
+    padding: 24px;
+    color: var(--ink-muted);
+    font-size: 13.5px;
+    text-align: center;
+}
+
+.stat-modal-state i {
+    font-size: 22px;
+    color: var(--ink-subtle);
+}
+
+.stat-modal-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 20px;
+    border-top: 1px solid var(--line);
+}
+
+.stat-modal-pages {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-muted);
+}
+
+.stat-modal-pages button,
+.stat-modal-link {
+    padding: 5px 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.stat-modal-link[hidden] {
+    display: none;
+}
+
+.stat-modal-pages button:hover:not(:disabled),
+.stat-modal-link:hover {
+    border-color: var(--brand);
+    color: var(--brand);
+}
+
+.stat-modal-pages button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+@media (max-width: 576px) {
+    .stat-modal-body {
+        overflow-x: auto;
+    }
+
+    .stat-modal-table {
+        min-width: 520px;
+    }
+}
+
+/* reco.css whitens every .btn-close for its dark headers; this header is white */
+.stat-modal .stat-modal-head .btn-close {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-size: 12px;
+    filter: none;
+    opacity: 0.55;
+}
+
+.stat-modal .stat-modal-head .btn-close:hover {
+    opacity: 0.9;
+}

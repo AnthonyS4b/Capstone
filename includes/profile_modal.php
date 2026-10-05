@@ -38,6 +38,17 @@ $pf_since    = $pf_fmt($pf_user['created_at'], 'M j, Y');
 $pf_session  = $pf_fmt($pf_logins[0] ?? null, 'M j, g:i A');
 $pf_previous = $pf_fmt($pf_logins[1] ?? null, 'M j, Y · g:i A');
 
+// Owner only: whether a recovery PIN exists for "Forgot PIN" at the login screen
+$pf_has_recovery = false;
+if ($pf_is_owner && isset($pf_pdo)) {
+    try {
+        require_once __DIR__ . '/pin_recovery.php';
+        $pf_has_recovery = pin_recovery_is_set($pf_pdo, $pf_uid);
+    } catch (Throwable $e) {
+        error_log('profile_modal recovery: ' . $e->getMessage());
+    }
+}
+
 $pf_access = $pf_is_owner
     ? ['Point of Sale & sales history', 'Inventory, archive & log history', 'Recommendations & promotions', 'User roles', 'Backup & export']
     : ['Point of Sale', 'Inventory & archive', 'Your own transactions'];
@@ -136,6 +147,36 @@ $pf_access = $pf_is_owner
                         </div>
                     </div>
                 </div>
+
+                <?php if ($pf_is_owner): ?>
+                <!-- Recovery PIN: resets the sign-in PIN from the login screen ("Forgot PIN?") -->
+                <div class="pf-section">
+                    <button class="pf-toggle collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recoveryPinCollapse" aria-expanded="false" aria-controls="recoveryPinCollapse">
+                        <span><i class="fas fa-life-ring" aria-hidden="true"></i>Recovery PIN
+                            <small class="pf-recovery-state <?php echo $pf_has_recovery ? 'is-set' : ''; ?>" id="pfRecoveryState"><?php echo $pf_has_recovery ? 'Set' : 'Not set'; ?></small>
+                        </span>
+                        <i class="fas fa-chevron-down pf-chevron" aria-hidden="true"></i>
+                    </button>
+                    <div class="collapse" id="recoveryPinCollapse">
+                        <p class="pf-recovery-note">If you forget your sign-in PIN, tap your name on the login screen, choose <strong>Forgot PIN?</strong> and enter this 4-digit recovery PIN to choose a new one. It must be different from your sign-in PIN; keep it somewhere safe.</p>
+                        <div class="pf-pin-form">
+                            <div class="pf-field">
+                                <label for="recoveryCurrentPin">Sign-in PIN</label>
+                                <input type="password" class="pf-input pf-pin" id="recoveryCurrentPin" maxlength="4" inputmode="numeric" autocomplete="current-password">
+                            </div>
+                            <div class="pf-field">
+                                <label for="recoveryPinNew">Recovery PIN</label>
+                                <input type="password" class="pf-input pf-pin" id="recoveryPinNew" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                            </div>
+                            <div class="pf-field">
+                                <label for="recoveryPinConfirm">Confirm</label>
+                                <input type="password" class="pf-input pf-pin" id="recoveryPinConfirm" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                            </div>
+                            <button type="button" class="pf-btn pf-btn-primary" onclick="saveRecoveryPin()">Save recovery PIN</button>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="pf-foot">

@@ -426,3 +426,8 @@
     [name] => 
 )
 
+[06-Oct-2026 00:33:16 Asia/Manila] Found user_id in session: 9
+[06-Oct-2026 00:33:18 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[06-Oct-2026 00:33:18 Asia/Manila] Transaction data: User_ID=9, Total=735, Payment=1000, Method=cash
+[06-Oct-2026 00:33:18 Asia/Manila] Transaction inserted with ID: 1558
+[06-Oct-2026 00:33:23 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

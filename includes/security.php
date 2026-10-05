@@ -95,6 +95,23 @@ function security_client_key(string $scope, string $subject = ''): string
  * counters used to add up (5 tries on the login page plus 5 on Switch account).
  * The id is normalised so "4" and "04" cannot open separate counters.
  */
+/**
+ * Why a new 4-digit PIN is too easy to guess, or null when it is fine.
+ * Refused: consecutive digits up or down (1234, 6789, 4321) and one digit
+ * repeated (1111). Used for sign-in PINs and the owner's recovery PIN.
+ */
+function security_weak_pin_reason(string $pin): ?string
+{
+    if (!preg_match('/^\d{4}$/', $pin)) return null; // length/format is checked separately
+    if (count(array_unique(str_split($pin))) === 1) {
+        return 'A PIN cannot be the same digit four times (like 1111). Choose a harder one.';
+    }
+    if (strpos('0123456789', $pin) !== false || strpos('9876543210', $pin) !== false) {
+        return 'A PIN cannot be consecutive numbers (like 1234 or 4321). Choose a harder one.';
+    }
+    return null;
+}
+
 function security_pin_limit_key($userId): string
 {
     return security_client_key('pin', (string)(int)$userId);

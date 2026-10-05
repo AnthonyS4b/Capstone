@@ -21,7 +21,19 @@
             $u['avatar'] = ($a && strpos($a, 'assets/uploads/avatars/') === 0 && is_file(dirname(__DIR__) . '/' . $a)) ? $a : null;
         }
         unset($u);
-        
+
+        // Who asked for a new PIN at the login screen (shown as a tag in User roles)
+        try {
+            require_once dirname(__DIR__) . '/includes/pin_recovery.php';
+            $requested = array_flip(array_map('intval', array_column(pin_recovery_open_requests($pdo), 'user_id')));
+            foreach ($users as &$u) {
+                $u['pin_requested'] = isset($requested[(int)$u['id']]);
+            }
+            unset($u);
+        } catch (PDOException $e) {
+            error_log('get_user.php PIN requests: ' . $e->getMessage());
+        }
+
         echo json_encode([
             'success' => true,
             'users' => $users

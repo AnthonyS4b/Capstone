@@ -187,7 +187,7 @@ function updateUsersTable(users) {
                     <div class="um-user">
                         <span class="um-avatar um-avatar-${user.role === 'owner' ? 'owner' : 'employee'}" aria-hidden="true">${umAvatarInner(user)}</span>
                         <div class="um-user-text">
-                            <span class="um-name">${escapeHtml(name)}${isMe ? ' <span class="um-you">You</span>' : ''}</span>
+                            <span class="um-name">${escapeHtml(name)}${isMe ? ' <span class="um-you">You</span>' : ''}${user.pin_requested ? ' <span class="um-pin-request" title="Asked for a new PIN at the login screen. Edit to set one."><i class="fas fa-key" aria-hidden="true"></i>Forgot PIN</span>' : ''}</span>
                             <span class="um-email">${escapeHtml(user.email || '')}</span>
                         </div>
                     </div>
@@ -315,6 +315,10 @@ function saveNewUser() {
     // Validate PIN format
     if (!/^\d{4}$/.test(pin)) {
         showToast('warning', 'Invalid PIN', 'PIN must be exactly 4 digits');
+        return;
+    }
+    if (weakPinReason(pin)) {
+        showToast('warning', 'Weak PIN', weakPinReason(pin));
         return;
     }
     
@@ -480,6 +484,10 @@ function saveRoleChanges() {
     if (pinNew || pinConfirm) {
         if (!/^\d{4}$/.test(pinNew)) {
             showToast('warning', 'Invalid PIN', 'New PIN must be exactly 4 digits.');
+            return;
+        }
+        if (weakPinReason(pinNew)) {
+            showToast('warning', 'Weak PIN', weakPinReason(pinNew));
             return;
         }
         if (pinNew !== pinConfirm) {
@@ -735,6 +743,15 @@ function manageUserRoles() {
 }
 
 
+// Same rule as security_weak_pin_reason() on the server: no consecutive digits
+// (1234, 4321) and no single digit repeated (1111). Returns the reason or ''.
+function weakPinReason(pin) {
+    if (!/^\d{4}$/.test(pin || '')) return '';
+    if (/^(\d)\1{3}$/.test(pin)) return 'A PIN cannot be the same digit four times (like 1111). Choose a harder one.';
+    if ('0123456789'.includes(pin) || '9876543210'.includes(pin)) return 'A PIN cannot be consecutive numbers (like 1234 or 4321). Choose a harder one.';
+    return '';
+}
+
 // ── Change own PIN (My Profile modal — all users) ─────────────────────────────
 // Requires current PIN verification. Owner can also use this for their own account.
 // For resetting OTHER users' PINs, see saveRoleChanges() in the edit user modal.
@@ -753,6 +770,10 @@ function changeOwnPin() {
     }
     if (!/^\d{4}$/.test(newPin)) {
         showToast('warning', 'Invalid PIN', 'New PIN must be exactly 4 digits.');
+        return;
+    }
+    if (weakPinReason(newPin)) {
+        showToast('warning', 'Weak PIN', weakPinReason(newPin));
         return;
     }
     if (newPin !== confirm) {
@@ -789,6 +810,55 @@ function changeOwnPin() {
         } else {
             showToast('error', 'Error', data.message);
         }
+    })
+    .catch(() => showToast('error', 'Error', 'Failed to connect to server.'));
+}
+
+// ── Recovery PIN (My Profile modal — owner) ───────────────────────────────────
+// A separate 4-digit PIN (different from the sign-in PIN) that resets the sign-in PIN from the login screen.
+function saveRecoveryPin() {
+    const current  = document.getElementById('recoveryCurrentPin')?.value?.trim();
+    const recovery = document.getElementById('recoveryPinNew')?.value?.trim();
+    const confirm  = document.getElementById('recoveryPinConfirm')?.value?.trim();
+
+    if (!/^\d{4}$/.test(current || '')) {
+        showToast('warning', 'Sign-in PIN', 'Enter your current 4-digit sign-in PIN.');
+        return;
+    }
+    if (!/^\d{4}$/.test(recovery || '')) {
+        showToast('warning', 'Recovery PIN', 'The recovery PIN must be exactly 4 digits.');
+        return;
+    }
+    if (weakPinReason(recovery)) {
+        showToast('warning', 'Weak PIN', weakPinReason(recovery));
+        return;
+    }
+    if (recovery !== confirm) {
+        showToast('warning', 'PIN Mismatch', 'The recovery PIN and its confirmation do not match.');
+        return;
+    }
+
+    const params = new URLSearchParams({ action: 'set_recovery_pin', current_pin: current, recovery_pin: recovery, confirm_recovery_pin: confirm });
+    fetch(getUserManagementBaseUrl() + 'ajax/user_ajax.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+        body: params
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success) {
+            showToast('error', 'Recovery PIN', data.message);
+            return;
+        }
+        showToast('success', 'Recovery PIN', data.message);
+        ['recoveryCurrentPin', 'recoveryPinNew', 'recoveryPinConfirm'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const state = document.getElementById('pfRecoveryState');
+        if (state) { state.textContent = 'Set'; state.classList.add('is-set'); }
+        const collapseEl = document.getElementById('recoveryPinCollapse');
+        if (collapseEl) bootstrap.Collapse.getInstance(collapseEl)?.hide();
     })
     .catch(() => showToast('error', 'Error', 'Failed to connect to server.'));
 }

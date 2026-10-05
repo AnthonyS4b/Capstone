@@ -67,6 +67,41 @@ if ($_notif_is_owner) {
     }
 }
 
+// ─── 1b. Forgot-PIN requests from employees, and the owner's recovery PIN (OWNERS ONLY) ─
+// 'open' names the modal a click opens (notif.js): User roles to set the new PIN,
+// My profile to set a recovery PIN.
+if ($_notif_is_owner) {
+    try {
+        require_once __DIR__ . '/pin_recovery.php';
+        foreach (pin_recovery_open_requests($pdo) as $req) {
+            $_notif_alerts[] = [
+                'id'   => 'pin-request-' . (int)$req['id'],
+                'type' => 'warning',
+                'icon' => 'fa-key',
+                'title'=> 'PIN reset request',
+                'body' => trim($req['first_name'] . ' ' . $req['last_name']) . ' forgot their PIN. Open User roles, edit their account and set a new PIN.',
+                'time' => date('M d, g:i A', strtotime($req['requested_at'])),
+                'read' => false,
+                'open' => '#roleManagementModal',
+            ];
+        }
+        if (!empty($_SESSION['user_id']) && !pin_recovery_is_set($pdo, (int)$_SESSION['user_id'])) {
+            $_notif_alerts[] = [
+                'id'   => 'recovery-pin-not-set',
+                'type' => 'warning',
+                'icon' => 'fa-life-ring',
+                'title'=> 'Set a recovery PIN',
+                'body' => 'If you forget your sign-in PIN, a recovery PIN lets you reset it at the login screen. Set it in My profile.',
+                'time' => 'Reminder',
+                'read' => false,
+                'open' => '#userProfileModal',
+            ];
+        }
+    } catch (PDOException $e) {
+        error_log('Notification: PIN requests failed — ' . $e->getMessage());
+    }
+}
+
 // ─── 2. Today's activity count — shown SECOND at top ──────────────────
 try {
     $todayTxStmt = $pdo->query("

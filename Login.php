@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once __DIR__ . '/includes/security.php';
 require_once __DIR__ . '/includes/avatar.php';
+require_once __DIR__ . '/includes/pin_recovery.php';
 
 // Check if user is already logged in
 if (isset($_SESSION['user_id'])) {
@@ -57,6 +58,20 @@ try {
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
         || (isset($_POST['ajax']) && $_POST['ajax'] === '1')
     );
+
+    // Forgot PIN (JSON only): owner resets with the recovery PIN, employee asks the owner
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_action'], $_POST['user_id'])) {
+        security_require_csrf();
+        $forgot = $_POST['forgot_action'] === 'owner_reset'
+            ? pin_recovery_reset_owner_pin($db, $_POST['user_id'], trim((string)($_POST['recovery_pin'] ?? '')),
+                trim((string)($_POST['new_pin'] ?? '')), trim((string)($_POST['confirm_pin'] ?? '')))
+            : ($_POST['forgot_action'] === 'employee_request'
+                ? pin_recovery_request_reset($db, $_POST['user_id'])
+                : ['success' => false, 'message' => 'Unknown request.']);
+        header('Content-Type: application/json');
+        echo json_encode($forgot);
+        exit;
+    }
 
     if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['pin'], $_POST['user_id'])) {
         security_require_csrf();
@@ -271,7 +286,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                             <p class="lg-empty">No active accounts. Ask the store owner to reactivate yours.</p>
                         <?php endif; ?>
 
-                        <p class="lg-help"><i class="fas fa-lock" aria-hidden="true"></i>Forgot your PIN? Ask the store owner to reset it.</p>
+                        <p class="lg-help"><i class="fas fa-lock" aria-hidden="true"></i>Forgot your PIN? Tap your name, then choose “Forgot PIN?”.</p>
                     </div>
 
                     <!-- Step 2: PIN for the chosen account -->
@@ -308,8 +323,47 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                             </button>
                         </div>
 
-                        <p class="lg-help"><i class="fas fa-lock" aria-hidden="true"></i>Forgot your PIN? Ask the store owner to reset it.</p>
+                        <button type="button" class="lg-forgot" id="lgForgotBtn">Forgot PIN?</button>
                     </div>
+                </form>
+
+                <!-- Step 3: forgot PIN. Its own form so its fields never reach the sign-in post. -->
+                <form class="lg-step lg-forgot-step" id="lgStepForgot" tabindex="-1" hidden autocomplete="off" novalidate>
+                    <button type="button" class="lg-back" id="lgForgotBack">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>Back to PIN
+                    </button>
+                    <h1 class="lg-title">Forgot PIN</h1>
+                    <p class="lg-sub" id="lgForgotFor"></p>
+
+                    <!-- Owner: recovery PIN + new PIN -->
+                    <div id="lgForgotOwner" hidden>
+                        <p class="lg-forgot-text">Enter your <strong>recovery PIN</strong> (the 4-digit PIN you set in My profile, not your sign-in PIN), then choose a new sign-in PIN.</p>
+                        <label class="lg-field">
+                            <span>Recovery PIN</span>
+                            <input type="password" class="lg-input" id="lgRecoveryPin" inputmode="numeric" maxlength="4" autocomplete="off">
+                        </label>
+                        <div class="lg-field-row">
+                            <label class="lg-field">
+                                <span>New PIN</span>
+                                <input type="password" class="lg-input" id="lgNewPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
+                            </label>
+                            <label class="lg-field">
+                                <span>Confirm new PIN</span>
+                                <input type="password" class="lg-input" id="lgConfirmPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
+                            </label>
+                        </div>
+                        <button type="submit" class="lg-primary" id="lgOwnerResetBtn">Reset PIN</button>
+                    </div>
+
+                    <!-- Employee: tell the owner -->
+                    <div id="lgForgotEmployee" hidden>
+                        <p class="lg-forgot-text">Only the store owner can give you a new PIN. Send them a request: it appears in their notifications, and they will set a new PIN for you.</p>
+                        <button type="submit" class="lg-primary" id="lgEmployeeRequestBtn">
+                            <i class="fas fa-bell" aria-hidden="true"></i>Notify the owner
+                        </button>
+                    </div>
+
+                    <div class="lg-forgot-msg" id="lgForgotMsg" role="status" aria-live="polite" hidden></div>
                 </form>
             </section>
         </div>
