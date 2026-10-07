@@ -802,19 +802,34 @@ function displayProducts(products) {
 }
 
 function archiveProduct(productId) {
+    const product = sectionProducts.find(p => String(p.id) === String(productId));
+    const hasStock = product && parseFloat(product.stock) > 0;
+    
     confirmDialog({
         title: 'Archive product?',
         message: `${productNames.get(String(productId)) || 'This product'} will be moved to the archive.`,
         detail: 'It leaves the POS and inventory list. You can restore it from the Archive page.',
         confirmText: 'Archive',
-        tone: 'warning'
-    }).then(ok => {
-        if (!ok) return;
+        tone: 'warning',
+        showInput: hasStock,
+        inputPlaceholder: 'Reason for archiving product with available stock...'
+    }).then(result => {
+        if (!result) return;
+        
+        let reason = '';
+        if (hasStock) {
+            reason = result.value;
+            if (!reason) {
+                showToast('error', 'Reason Required', 'Please provide a reason for archiving a product with stock.');
+                return;
+            }
+        }
+        
         showLoading();
         $.ajax({
             url: ajaxUrl,
             method: 'POST',
-            data: { action: 'archive_product', id: productId },
+            data: { action: 'archive_product', id: productId, archive_reason: reason },
             dataType: 'json',
             success: function (response) {
                 hideLoading();

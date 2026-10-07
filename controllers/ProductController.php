@@ -1041,6 +1041,7 @@ class ProductController {
                         p.created_at,
                         p.updated_at,
                         p.deleted_at,
+                        p.archive_reason,
                         c.name as category_name, 
                         c.color as category_color,
                         DATE_FORMAT(p.deleted_at, '%M %d, %Y %h:%i %p') as formatted_deleted_at
@@ -1061,11 +1062,12 @@ class ProductController {
     }
     
     // Soft delete product (move to archive)
-    public function archiveProduct($id, $deleted_by = null) {
+    public function archiveProduct($id, $deleted_by = null, $archive_reason = null) {
         try {
-            $sql = "UPDATE products SET deleted_at = NOW(), deleted_by = :deleted_by WHERE id = :id AND deleted_at IS NULL";
+            $sql = "UPDATE products SET deleted_at = NOW(), deleted_by = :deleted_by, archive_reason = :archive_reason WHERE id = :id AND deleted_at IS NULL";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':deleted_by', $deleted_by, PDO::PARAM_INT);
+            $stmt->bindParam(':archive_reason', $archive_reason, PDO::PARAM_STR);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             
             if ($stmt->execute() && $stmt->rowCount() > 0) {
@@ -1085,7 +1087,7 @@ class ProductController {
     // Restore product from archive
     public function restoreProduct($id) {
         try {
-            $sql = "UPDATE products SET deleted_at = NULL, deleted_by = NULL WHERE id = :id";
+            $sql = "UPDATE products SET deleted_at = NULL, deleted_by = NULL, archive_reason = NULL WHERE id = :id";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             

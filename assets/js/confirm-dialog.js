@@ -147,6 +147,7 @@
                             <h5 class="cd-title" id="confirmDialogTitle">${text(opts.title || 'Are you sure?')}</h5>
                             <p class="cd-message" id="confirmDialogMessage">${text(opts.message || '')}</p>
                             ${opts.detail ? `<p class="cd-detail">${text(opts.detail)}</p>` : ''}
+                            ${opts.showInput ? `<textarea id="confirmDialogInput" class="form-control mt-3" placeholder="${text(opts.inputPlaceholder || 'Reason...')}" rows="3" style="font-size: 14px; color: #3b4a41; resize: none;"></textarea>` : ''}
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="cd-btn cd-btn-cancel" data-bs-dismiss="modal">${text(opts.cancelText || 'Cancel')}</button>
@@ -161,18 +162,30 @@
 
         return new Promise(resolve => {
             let confirmed = false;
+            let inputValue = '';
             el.querySelector('[data-cd-confirm]').addEventListener('click', () => {
                 confirmed = true;
+                if (opts.showInput) {
+                    inputValue = el.querySelector('#confirmDialogInput').value.trim();
+                }
                 modal.hide();
             });
             // Resolve after the fade-out so a follow-up modal/toast does not clash
             el.addEventListener('hidden.bs.modal', () => {
                 el.remove();
-                resolve(confirmed);
+                if (opts.showInput) {
+                    resolve(confirmed ? { confirmed: true, value: inputValue } : false);
+                } else {
+                    resolve(confirmed);
+                }
             }, { once: true });
             // Default focus on Cancel for destructive actions, confirm otherwise
             el.addEventListener('shown.bs.modal', () => {
-                el.querySelector(tone === 'danger' ? '.cd-btn-cancel' : '[data-cd-confirm]').focus();
+                if (opts.showInput) {
+                    el.querySelector('#confirmDialogInput').focus();
+                } else {
+                    el.querySelector(tone === 'danger' ? '.cd-btn-cancel' : '[data-cd-confirm]').focus();
+                }
             }, { once: true });
             modal.show();
         });

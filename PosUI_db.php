@@ -310,7 +310,7 @@ if ($toast_message) {
                             <div class="pay-gcash-side">
                                 <p>Ask the customer to scan and pay the exact amount, then type the reference number from their receipt.</p>
                                 <label class="pay-label" for="gcashReference">Reference number</label>
-                                <input type="text" class="pay-input" id="gcashReference" placeholder="6 digits" maxlength="6" inputmode="numeric" pattern="\d{6}" autocomplete="off">
+                                <input type="text" class="pay-input" id="gcashReference" placeholder="13 digits" maxlength="13" inputmode="numeric" pattern="\d{13}" autocomplete="off">
                             </div>
                         </div>
                     </div>

@@ -171,11 +171,11 @@ try {
 
             // SERVER-SIDE: Check GCash reference uniqueness BEFORE starting transaction
             if ($payment_method === 'gcash' && !empty($gcash_reference)) {
-                // Validate format: exactly 6 digits only
-                if (!preg_match('/^\d{6}$/', $gcash_reference)) {
+                // Validate format: exactly 13 digits only
+                if (!preg_match('/^\d{13}$/', $gcash_reference)) {
                     echo json_encode([
                         'success' => false,
-                        'message' => 'Invalid GCash reference. Must be exactly 6 digits.'
+                        'message' => 'Invalid GCash reference. Must be exactly 13 digits.'
                     ]);
                     exit;
                 }

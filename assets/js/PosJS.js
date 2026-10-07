@@ -1396,7 +1396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // GCash reference: digits only
     gcashReferenceIn?.addEventListener('input', () => {
-        const digits = gcashReferenceIn.value.replace(/\D/g, '').slice(0, 6);
+        const digits = gcashReferenceIn.value.replace(/\D/g, '').slice(0, 13);
         if (digits !== gcashReferenceIn.value) gcashReferenceIn.value = digits;
     });
 
@@ -1442,9 +1442,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('error', 'Missing Reference', 'Please enter GCash reference number'); 
                     return; 
                 }
-                // Validate: must be exactly 6 digits only
-                if (!/^\d{6}$/.test(reference)) {
-                    showToast('error', 'Invalid Reference', 'Reference must be exactly 6 digits');
+                // Validate: must be exactly 13 digits only
+                if (!/^\d{13}$/.test(reference)) {
+                    showToast('error', 'Invalid Reference', 'Reference must be exactly 13 digits');
                     return;
                 }
                 // Validate: must be unique per session

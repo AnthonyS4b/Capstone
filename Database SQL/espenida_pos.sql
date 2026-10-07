@@ -264,6 +264,7 @@ CREATE TABLE `products` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` datetime DEFAULT NULL,
+  `archive_reason` text DEFAULT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sku` (`sku`),
@@ -304,8 +305,9 @@ CREATE TABLE `sales` (
   `notes` text DEFAULT NULL,
   `status` enum('completed','voided','pending') NOT NULL DEFAULT 'completed',
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `gcash_reference` varchar(10) DEFAULT NULL,
+  `gcash_reference` varchar(15) DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_gcash_reference` (`gcash_reference`),
   KEY `idx_sales_transaction` (`transaction_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3059 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

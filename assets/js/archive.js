@@ -299,7 +299,10 @@ function displayArchivedProducts(products) {
                 <td class="inv-num">${String(product.unit || '').trim().toLowerCase() === 'per kilo'
                     ? `${Math.round((parseFloat(product.stock) || 0) * 100) / 100} kg`
                     : (parseInt(product.stock, 10) || 0) + (String(product.unit || '').trim().toLowerCase() === 'per gram' ? ' g' : '')}</td>
-                <td class="inv-muted-cell">${escHtml(deletedDate)}</td>
+                <td class="inv-muted-cell">
+                    ${escHtml(deletedDate)}
+                    ${product.archive_reason ? `<br><small class="text-danger" title="Archive Reason"><i class="fas fa-info-circle"></i> ${escHtml(product.archive_reason)}</small>` : ''}
+                </td>
                 <td class="inv-actions">
                     <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(${product.id})" title="Restore to inventory">
                         <i class="fas fa-undo-alt"></i>Restore

@@ -46,6 +46,7 @@ $sb_groups = [
     ['Admin', [
         ['#roleManagementModal', 'fa-user-shield', 'User roles', true, 'data-bs-toggle="modal" data-bs-target="#roleManagementModal"'],
         ['admin_data_tools.php', 'fa-database', 'Backup & export', true, ''],
+        ['deployment_guide.php', 'fa-book', 'Deployment guide', true, ''],
     ]],
 ];
 ?>

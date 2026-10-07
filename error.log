@@ -467,3 +467,17 @@
 
 )
 
+[07-Oct-2026 17:47:37 Asia/Manila] Found user_id in session: 9
+[07-Oct-2026 17:47:37 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[07-Oct-2026 17:47:37 Asia/Manila] Transaction data: User_ID=9, Total=65, Payment=65, Method=gcash
+[07-Oct-2026 17:47:41 Asia/Manila] Transaction inserted with ID: 1559
+[07-Oct-2026 17:48:02 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[07-Oct-2026 17:49:39 Asia/Manila] Found user_id in session: 9
+[07-Oct-2026 17:49:39 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[07-Oct-2026 17:49:39 Asia/Manila] Transaction data: User_ID=9, Total=130, Payment=130, Method=gcash
+[07-Oct-2026 17:49:52 Asia/Manila] Found user_id in session: 9
+[07-Oct-2026 17:49:52 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[07-Oct-2026 17:49:52 Asia/Manila] Transaction data: User_ID=9, Total=130, Payment=130, Method=gcash
+[07-Oct-2026 18:21:56 Asia/Manila] Found user_id in session: 8
+[07-Oct-2026 18:21:56 Asia/Manila] Validated user: Test Account (Employee) (ID: 8, Role: employee)
+[07-Oct-2026 18:21:56 Asia/Manila] Transaction data: User_ID=8, Total=495, Payment=495, Method=gcash

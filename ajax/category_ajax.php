@@ -288,7 +288,8 @@ try {
         case 'archive_product':
             $id         = $_POST['id']  ?? 0;
             $deleted_by = $_SESSION['user_id'] ?? null;
-            echo json_encode($productController->archiveProduct($id, $deleted_by));
+            $archive_reason = $_POST['archive_reason'] ?? null;
+            echo json_encode($productController->archiveProduct($id, $deleted_by, $archive_reason));
             break;
 
         case 'restore_product':
