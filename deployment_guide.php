@@ -237,7 +237,7 @@ if (!$is_owner && $role !== 'admin') {
         <div class="welcome-banner">
             <div class="welcome-text">
                 <h1>Deployment Guide</h1>
-                <p>How to set up and run the system on a new computer — step by step.</p>
+                <p>How to set up and run the system on a new computer step by step.</p>
             </div>
         </div>
 
@@ -256,12 +256,12 @@ if (!$is_owner && $role !== 'admin') {
 
             <!-- Main card -->
             <div class="guide-card">
-                <h2>Espenida's POS &amp; Inventory System</h2>
+                <h2>Espenida's Recommendation System & POS and Inventory Management</h2>
                 <p class="subtitle">System Transfer &amp; Setup Guide · For Store Owners &amp; Administrators</p>
 
                 <p>
                     This guide will walk you through how to move the system to a new computer and get it running again from scratch.
-                    <strong>You do not need to be a computer expert</strong> — just follow each step carefully and in order.
+                    <strong>You do not need to be a computer expert</strong> just follow each step carefully and in order.
                     The whole process takes about <strong>15–30 minutes</strong>.
                 </p>
 
@@ -363,7 +363,7 @@ if (!$is_owner && $role !== 'admin') {
                     <li>
                         <span class="step-num">2</span>
                         <div class="step-body">
-                            <strong>Right-click</strong> on <code>Capstone.zip</code> and choose <strong>"Extract All…"</strong>. In the window that opens, change the destination folder to:<br>
+                            <strong>Right click</strong> on <code>Capstone.zip</code> and choose <strong>"Extract All…"</strong>. In the window that opens, change the destination folder to:<br>
                             <code>C:\xampp\htdocs\</code><br>
                             Then click <strong>Extract</strong>. This places the <code>Capstone</code> folder inside <code>htdocs</code>.
                         </div>
