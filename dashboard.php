@@ -155,6 +155,28 @@ $alertStmt = $pdo->query("
 ");
 $inventory_alerts = $alertStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Near-expiry alerts (expiring within 30 days, or already expired)
+// Status: expired = past expiry | critical = within 15 days | low = within 30 days
+$expiryStmt = $pdo->query("
+    SELECT
+        p.name           AS product,
+        p.expiration_date,
+        DATEDIFF(p.expiration_date, CURDATE()) AS days_left,
+        CASE
+            WHEN p.expiration_date < CURDATE()                THEN 'expired'
+            WHEN DATEDIFF(p.expiration_date, CURDATE()) <= 15 THEN 'critical'
+            ELSE 'low'
+        END AS status
+    FROM products p
+    WHERE p.deleted_at IS NULL
+      AND p.archived_at IS NULL
+      AND p.expiration_date IS NOT NULL
+      AND p.expiration_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+    ORDER BY p.expiration_date ASC
+    LIMIT 6
+");
+$expiry_alerts = $expiryStmt->fetchAll(PDO::FETCH_ASSOC);
+
 // Category sales breakdown (last 30 days).
 // Line items carry their own created_at, so there is no need to join
 // transactions or sales here - joining them multiplied the revenue of every
@@ -438,12 +460,28 @@ if ($is_owner) {
                 </div>
             </div>
             
-            <div class="chart-container scrollable-panel">
-                <div class="chart-header">
-                    <div class="chart-title"><i class="fas fa-triangle-exclamation is-warning"></i> Low Stock Alerts</div>
-                    <a href="categories.php" class="range-btn">Manage Stock</a>
+            <div class="chart-container scrollable-panel" id="alertsPanel">
+                <div class="chart-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="chart-title" id="alertsPanelTitle">
+                            <i class="fas fa-triangle-exclamation is-warning" id="alertsPanelIcon"></i>
+                            <span id="alertsPanelLabel">Low Stock Alerts</span>
+                        </div>
+                        <a href="categories.php" class="range-btn" style="white-space:nowrap; border-color:var(--line); background:var(--surface);">Manage Stock</a>
+                    </div>
+                    <!-- Tab-style view switcher (no dropdown = no overlap) -->
+                    <div class="alert-tab-switcher">
+                        <button class="alert-tab active" id="tabLowStock" onclick="switchAlertView('lowstock')">
+                            <i class="fas fa-box-open"></i> Low Stock
+                        </button>
+                        <button class="alert-tab" id="tabNearExpiry" onclick="switchAlertView('expiry')">
+                            <i class="fas fa-calendar-xmark"></i> Near Expiry
+                        </button>
+                    </div>
                 </div>
-                <div class="scrollable-content">
+
+                <!-- Low Stock view -->
+                <div class="scrollable-content" id="viewLowStock">
                     <?php if (!$inventory_alerts): ?>
                         <div class="panel-empty">
                             <i class="fa-solid fa-circle-check"></i>
@@ -457,6 +495,41 @@ if ($is_owner) {
                             <div class="alert-stock">Stock: <strong><?php echo htmlspecialchars(format_unit_quantity($alert['stock'], $alert['unit'] ?? '')); ?></strong> / <?php echo $alert['threshold']; ?></div>
                         </div>
                         <span class="status-badge status-<?php echo $alert['status']; ?>"><?php echo ucfirst($alert['status']); ?></span>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Near Expiry view (hidden by default) -->
+                <div class="scrollable-content" id="viewNearExpiry" style="display:none;">
+                    <?php if (!$expiry_alerts): ?>
+                        <div class="panel-empty">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <p>No products expiring within the next 30 days.</p>
+                        </div>
+                    <?php endif; ?>
+                    <?php foreach ($expiry_alerts as $exp): ?>
+                    <?php
+                        $days = (int)$exp['days_left'];
+                        $expDate = date('M j, Y', strtotime($exp['expiration_date']));
+                        if ($exp['status'] === 'expired') {
+                            $expLabel = 'Expired ' . abs($days) . ' day' . (abs($days) === 1 ? '' : 's') . ' ago';
+                        } elseif ($days === 0) {
+                            $expLabel = 'Expires today';
+                        } else {
+                            $expLabel = 'Expires in ' . $days . ' day' . ($days === 1 ? '' : 's');
+                        }
+                    ?>
+                    <div class="alert-item">
+                        <div>
+                            <div class="alert-product"><?php echo htmlspecialchars($exp['product']); ?></div>
+                            <div class="alert-stock">
+                                <strong><?php echo htmlspecialchars($expDate); ?></strong>
+                                &nbsp;·&nbsp; <?php echo htmlspecialchars($expLabel); ?>
+                            </div>
+                        </div>
+                        <span class="status-badge status-<?php echo $exp['status']; ?>">
+                            <?php echo $exp['status'] === 'expired' ? 'Expired' : ucfirst($exp['status']); ?>
+                        </span>
                     </div>
                     <?php endforeach; ?>
                 </div>
@@ -507,5 +580,32 @@ if ($is_owner) {
     <script src="assets/js/userManagement.js?v=<?= filemtime(__DIR__ . '/assets/js/userManagement.js') ?>"></script>
     <script src="assets/js/notif.js?v=<?= filemtime(__DIR__ . '/assets/js/notif.js') ?>"></script>
     <script src="assets/js/sidebar-nav.js"></script>
+    <script>
+        function switchAlertView(view) {
+            const isLowStock = view === 'lowstock';
+            const label      = document.getElementById('alertsPanelLabel');
+            const icon       = document.getElementById('alertsPanelIcon');
+            const tabLS      = document.getElementById('tabLowStock');
+            const tabNE      = document.getElementById('tabNearExpiry');
+            const viewLS     = document.getElementById('viewLowStock');
+            const viewNE     = document.getElementById('viewNearExpiry');
+
+            if (isLowStock) {
+                label.textContent    = 'Low Stock Alerts';
+                icon.className       = 'fas fa-triangle-exclamation is-warning';
+                tabLS.classList.add('active');
+                tabNE.classList.remove('active');
+                viewLS.style.display = '';
+                viewNE.style.display = 'none';
+            } else {
+                label.textContent    = 'Near Expiry Products';
+                icon.className       = 'fas fa-calendar-xmark text-danger';
+                tabNE.classList.add('active');
+                tabLS.classList.remove('active');
+                viewLS.style.display = 'none';
+                viewNE.style.display = '';
+            }
+        }
+    </script>
 </body>
 </html>

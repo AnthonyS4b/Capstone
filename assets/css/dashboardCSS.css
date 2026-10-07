@@ -784,6 +784,11 @@ body {
     color: var(--negative);
 }
 
+.status-expired {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .status-low {
     background: var(--warning-tint);
     color: var(--warning);
@@ -1058,13 +1063,56 @@ body {
 
 /* Scrollable containers for Category Performance and Low Stock Alerts */
 .chart-container.scrollable-panel {
-    overflow: hidden;
+    overflow: visible;    /* allow dropdown to escape the panel boundary */
     display: flex;
     flex-direction: column;
 }
 
 .chart-container.scrollable-panel .chart-header {
     flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    overflow: visible;
+    background: var(--surface);
+    border-radius: var(--r-md) var(--r-md) 0 0;
+}
+
+/* ── Alert view tab switcher ── */
+.alert-tab-switcher {
+    display: flex;
+    gap: 4px;
+    background: var(--canvas);
+    border-radius: var(--r-sm);
+    padding: 3px;
+    width: fit-content;
+}
+
+.alert-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ink-muted);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+
+.alert-tab:hover {
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.alert-tab.active {
+    background: var(--surface);
+    color: var(--brand);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .scrollable-content {
