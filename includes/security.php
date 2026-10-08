@@ -58,6 +58,27 @@ function security_require_role(array $roles): void
     }
 }
 
+/** The store allows at most this many owner (admin) accounts that can sign in. */
+const MAX_OWNER_ACCOUNTS = 2;
+
+/**
+ * Active owner accounts, not counting $exceptUserId. A deactivated owner cannot
+ * sign in, so it does not use up a place. The rows are locked: call this inside
+ * a transaction, so two requests cannot both take the last place.
+ */
+function security_active_owner_count(PDO $pdo, int $exceptUserId = 0): int
+{
+    $st = $pdo->prepare("SELECT COUNT(*) FROM users WHERE role = 'owner' AND is_active = 1 AND id <> ? FOR UPDATE");
+    $st->execute([$exceptUserId]);
+    return (int)$st->fetchColumn();
+}
+
+function security_owner_limit_message(): string
+{
+    return 'Only ' . MAX_OWNER_ACCOUNTS . ' owner accounts are allowed, and both are in use. '
+        . 'Change one owner to Employee (or delete it) first, or add this person as an Employee.';
+}
+
 function security_request_token(): string
 {
     $header = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';

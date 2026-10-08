@@ -104,12 +104,21 @@
         
         // Hash PIN before storing (never store plaintext)
         $hashed_pin = password_hash($pin, PASSWORD_DEFAULT);
-        
+
+        // The count and the insert share a transaction, so two requests cannot both take the last owner place
+        $pdo->beginTransaction();
+        if ($role === 'owner' && security_active_owner_count($pdo) >= MAX_OWNER_ACCOUNTS) {
+            $pdo->rollBack();
+            echo json_encode(['success' => false, 'message' => security_owner_limit_message()]);
+            exit();
+        }
+
         // Insert new user
         $stmt = $pdo->prepare("INSERT INTO users (first_name, last_name, email, pin, role, position) VALUES (?, ?, ?, ?, ?, ?)");
-        
+
         if ($stmt->execute([$first_name, $last_name, $email, $hashed_pin, $role, $position])) {
             $newId = $pdo->lastInsertId();
+            $pdo->commit();
             error_log("User added successfully with ID: $newId");
             echo json_encode([
                 'success' => true,
@@ -117,11 +126,13 @@
                 'user_id' => $newId
             ]);
         } else {
+            $pdo->rollBack();
             error_log("Failed to insert user");
             echo json_encode(['success' => false, 'message' => 'Failed to add user']);
         }
-        
+
     } catch (PDOException $e) {
+        if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
         error_log("Database error in add_user.php: " . $e->getMessage());
         security_json_error('Unable to add the user right now.', 500);
     }

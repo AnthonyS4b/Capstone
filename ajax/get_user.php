@@ -36,7 +36,9 @@
 
         echo json_encode([
             'success' => true,
-            'users' => $users
+            'users' => $users,
+            // User roles greys out "Owner" once every owner place is taken
+            'owner_limit' => MAX_OWNER_ACCOUNTS
         ]);
         
     } catch (PDOException $e) {

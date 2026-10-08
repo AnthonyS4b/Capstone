@@ -129,6 +129,7 @@ function refreshUserList(silent = false) {
     .then(data => {
         console.log('User data received:', data);
         if (data.success) {
+            umOwnerLimit = Number(data.owner_limit) || umOwnerLimit;
             updateUsersTable(data.users);
             filterUsers();
             if (!silent) showToast('success', 'Updated', 'User list refreshed');
@@ -146,6 +147,28 @@ function refreshUserList(silent = false) {
 // Users currently listed, by id (edit/delete look details up here instead of
 // passing names through onclick strings, which broke on apostrophes)
 const umUsers = new Map();
+
+// The store allows this many owner accounts. The server sends its own figure
+// (ajax/get_user.php) and refuses a third owner whatever this page shows.
+let umOwnerLimit = 2;
+
+// Active owners, not counting exceptId (a deactivated owner cannot sign in and uses no place)
+function umActiveOwnerCount(exceptId = null) {
+    let owners = 0;
+    umUsers.forEach(u => {
+        const active = u.is_active === undefined || Number(u.is_active) === 1;
+        if (u.role === 'owner' && active && String(u.id) !== String(exceptId)) owners++;
+    });
+    return owners;
+}
+
+// Grey out "Owner" in a role picker when no owner place is left
+function umLimitOwnerOption(selectId, full) {
+    const option = document.querySelector(`#${selectId} option[value="owner"]`);
+    if (!option) return;
+    option.disabled = full;
+    option.textContent = full ? `Owner (limit of ${umOwnerLimit} reached)` : 'Owner';
+}
 
 function umInitials(first, last) {
     return ((first || '').charAt(0) + (last || '').charAt(0)).toUpperCase() || '?';
@@ -168,7 +191,8 @@ function updateUsersTable(users) {
     const summary = document.getElementById('umSummary');
     if (summary && users) {
         const owners = users.filter(u => u.role === 'owner').length;
-        summary.textContent = `${users.length} user${users.length === 1 ? '' : 's'} · ${owners} owner${owners === 1 ? '' : 's'}, ${users.length - owners} employee${users.length - owners === 1 ? '' : 's'}`;
+        summary.textContent = `${users.length} user${users.length === 1 ? '' : 's'} · ${owners} owner${owners === 1 ? '' : 's'}, ${users.length - owners} employee${users.length - owners === 1 ? '' : 's'}`
+            + ` · ${Math.min(umActiveOwnerCount(), umOwnerLimit)} of ${umOwnerLimit} owner accounts used`;
     }
 
     if (!users || users.length === 0) {
@@ -282,6 +306,8 @@ function addNewUser() {
         if (roleSelect) roleSelect.value = 'employee';
         updateRoleNote('newRoleNote', 'employee');
     }
+    // No owner place left: the new account can only be an employee
+    umLimitOwnerOption('newRole', umActiveOwnerCount() >= umOwnerLimit);
     
     // Remove any existing modal backdrops
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
@@ -450,6 +476,11 @@ function editUserRole(userId, firstName, lastName, email, currentRole, currentPo
         avatarEl.className = 'um-avatar um-avatar-lg um-avatar-' + (currentRole === 'owner' ? 'owner' : 'employee');
     }
     if (userEmailEl) userEmailEl.textContent = email;
+    // An active employee can become an owner only while an owner place is free
+    const edited = umUsers.get(String(userId));
+    const editedActive = !edited || edited.is_active === undefined || Number(edited.is_active) === 1;
+    umLimitOwnerOption('userRoleSelect',
+        currentRole !== 'owner' && editedActive && umActiveOwnerCount(userId) >= umOwnerLimit);
     if (roleSelect) roleSelect.value = currentRole;
     if (positionInput) positionInput.value = currentPosition || '';
 

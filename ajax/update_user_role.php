@@ -30,7 +30,7 @@ try {
     $pdo = getDBConnection();
     
     // Check if user exists
-    $check = $pdo->prepare("SELECT id, role FROM users WHERE id = ?");
+    $check = $pdo->prepare("SELECT id, role, is_active FROM users WHERE id = ?");
     $check->execute([$user_id]);
     $target = $check->fetch(PDO::FETCH_ASSOC);
 
@@ -49,16 +49,29 @@ try {
         }
     }
     
+    // Promoting an employee uses one of the owner places (a deactivated account takes
+    // its place when it is reactivated). Counted and saved in one transaction.
+    $pdo->beginTransaction();
+    if ($role === 'owner' && $target['role'] !== 'owner' && (int)$target['is_active'] === 1
+        && security_active_owner_count($pdo, $user_id) >= MAX_OWNER_ACCOUNTS) {
+        $pdo->rollBack();
+        echo json_encode(['success' => false, 'message' => security_owner_limit_message()]);
+        exit();
+    }
+
     // Update user
     $stmt = $pdo->prepare("UPDATE users SET role = ?, position = ? WHERE id = ?");
-    
+
     if ($stmt->execute([$role, $position, $user_id])) {
+        $pdo->commit();
         echo json_encode(['success' => true, 'message' => 'User role updated successfully']);
     } else {
+        $pdo->rollBack();
         echo json_encode(['success' => false, 'message' => 'Failed to update user role']);
     }
-    
+
 } catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     error_log('update_user_role.php: ' . $e->getMessage());
     security_json_error('Unable to update the user role right now.', 500);
 }

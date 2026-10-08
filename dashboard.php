@@ -93,49 +93,71 @@ $sales_data = [
 ];
 
 /**
- * Compare a current figure against a baseline and describe the movement.
- * When there is no baseline the card says so rather than inventing a number,
- * which is what the hard-coded "+12% from yesterday" strings used to do.
+ * Say in plain words how a figure compares with an earlier one, e.g.
+ * "65 pesos less than yesterday so far" or "3 more orders than yesterday so far".
+ * The cards used to show a percentage ("-100.0% vs yesterday"), which staff who
+ * are not used to percentages could not read; the difference itself needs no
+ * explaining. Both figures are rounded the way the card shows them, so the
+ * numbers on a card always add up (0 today, 65 yesterday, 65 less).
  *
- * $label is the comparison window, e.g. "vs yesterday".
+ * $words:
+ *   'more', 'less'  the comparing word each way ("more"/"less", "higher"/"lower")
+ *   'than'          what it is compared with ("than yesterday so far")
+ *   'same'          the whole line when there is no difference
+ *   'peso'          true for money; otherwise 'unit' => [singular, plural]
+ *   'no_baseline'   the whole line when the earlier figure does not exist
+ *                   (an average over a period with no sales), if that can happen
  */
-function trend_percent($current, $baseline, $label) {
-    $baseline = (float)$baseline;
-    $current  = (float)$current;
-
-    if ($baseline <= 0) {
-        return ['dir' => 'flat', 'text' => 'No prior data to compare'];
+function trend_plain($current, $baseline, array $words) {
+    if (isset($words['no_baseline']) && (float)$baseline <= 0) {
+        return ['dir' => 'flat', 'text' => $words['no_baseline']];
     }
 
-    $change = (($current - $baseline) / $baseline) * 100;
-    $dir    = $change >= 0.05 ? 'up' : ($change <= -0.05 ? 'down' : 'flat');
-
-    if ($dir === 'flat') {
-        return ['dir' => 'flat', 'text' => 'Unchanged ' . $label];
+    $difference = (int)round((float)$current) - (int)round((float)$baseline);
+    if ($difference === 0) {
+        return ['dir' => 'flat', 'text' => $words['same']];
     }
 
-    // PHP only expands \u{...} inside double quotes. Written as '\u2212' in a
-    // single-quoted string it printed the escape itself onto the card.
-    $sign = $change > 0 ? '+' : "\u{2212}";
-    return ['dir' => $dir, 'text' => $sign . number_format(abs($change), 1) . '% ' . $label];
+    $amount = number_format(abs($difference));
+    if (!empty($words['peso'])) {
+        // The peso sign. PHP only expands \u{...} inside double quotes.
+        $amount = "\u{20B1}" . $amount;
+    }
+    $unit = isset($words['unit']) ? ' ' . $words['unit'][abs($difference) === 1 ? 0 : 1] : '';
+
+    return [
+        'dir'  => $difference > 0 ? 'up' : 'down',
+        'text' => $amount . ' ' . ($difference > 0 ? $words['more'] : $words['less']) . $unit . ' ' . $words['than'],
+    ];
 }
 
 /**
- * Describe a plain count over a window, e.g. transactions in the last 7 days.
+ * How many sales were added in a recent window, e.g. "2 new sales in the last 7 days".
  */
 function trend_count($count, $label) {
     $count = (int)$count;
     if ($count === 0) {
-        return ['dir' => 'flat', 'text' => 'None ' . $label];
+        return ['dir' => 'flat', 'text' => 'No new sales ' . $label];
     }
-    return ['dir' => 'up', 'text' => '+' . number_format($count) . ' ' . $label];
+    return ['dir' => 'up', 'text' => number_format($count) . ' new sale' . ($count === 1 ? '' : 's') . ' ' . $label];
 }
 
 $trends = [
-    'sales'     => trend_percent($sales_data['today'], $salesRow['sales_yesterday'] ?? 0, 'vs yesterday'),
-    'orders'    => trend_percent($sales_data['orders_today'], $salesRow['orders_yesterday'] ?? 0, 'vs yesterday'),
+    // "so far": today is not over yet, so being behind yesterday early in the day is normal
+    'sales'     => trend_plain($sales_data['today'], $salesRow['sales_yesterday'] ?? 0, [
+        'peso' => true, 'more' => 'more', 'less' => 'less',
+        'than' => 'than yesterday so far', 'same' => 'Same as yesterday so far',
+    ]),
+    'orders'    => trend_plain($sales_data['orders_today'], $salesRow['orders_yesterday'] ?? 0, [
+        'unit' => ['order', 'orders'], 'more' => 'more', 'less' => 'fewer',
+        'than' => 'than yesterday so far', 'same' => 'Same as yesterday so far',
+    ]),
     'customers' => trend_count($salesRow['transactions_week'] ?? 0, 'in the last 7 days'),
-    'avg_order' => trend_percent($salesRow['avg_order_30d'] ?? 0, $salesRow['avg_order_prev30'] ?? 0, 'vs prior 30 days'),
+    'avg_order' => trend_plain($salesRow['avg_order_30d'] ?? 0, $salesRow['avg_order_prev30'] ?? 0, [
+        'peso' => true, 'more' => 'higher', 'less' => 'lower',
+        'than' => 'than the previous 30 days', 'same' => 'Same as the previous 30 days',
+        'no_baseline' => 'No earlier sales to compare with',
+    ]),
 ];
 
 // Low-stock alerts (stock < 10)
@@ -351,10 +373,14 @@ if ($is_owner) {
             <?php
             $stat_cards = [
                 // 'detail' is what a click opens (get_stat_details in ajax/dashboard_chart_ajax.php)
-                ['key' => 'sales',     'detail' => 'sales_today',  'tone' => 'revenue',   'icon' => 'fa-peso-sign',  'label' => "Today's Sales",    'value' => '₱' . number_format($sales_data['today'])],
-                ['key' => 'orders',    'detail' => 'orders_today', 'tone' => 'orders',    'icon' => 'fa-cart-shopping', 'label' => 'Orders Today',     'value' => number_format($sales_data['orders_today'])],
+                // 'compare' is the figure the trend line is measured against, shown so the percentage has a number beside it
+                ['key' => 'sales',     'detail' => 'sales_today',  'tone' => 'revenue',   'icon' => 'fa-peso-sign',  'label' => "Today's Sales",    'value' => '₱' . number_format($sales_data['today']),
+                 'compare' => ['label' => 'Yesterday', 'value' => '₱' . number_format((float)($salesRow['sales_yesterday'] ?? 0))]],
+                ['key' => 'orders',    'detail' => 'orders_today', 'tone' => 'orders',    'icon' => 'fa-cart-shopping', 'label' => 'Orders Today',     'value' => number_format($sales_data['orders_today']),
+                 'compare' => ['label' => 'Yesterday', 'value' => number_format((int)($salesRow['orders_yesterday'] ?? 0))]],
                 ['key' => 'customers', 'detail' => 'transactions', 'tone' => 'customers', 'icon' => 'fa-receipt',    'label' => 'Total Transactions', 'value' => number_format($sales_data['transactions'])],
-                ['key' => 'avg_order', 'detail' => 'avg_order',    'tone' => 'average',   'icon' => 'fa-chart-line', 'label' => 'Avg. Order Value', 'value' => '₱' . number_format($sales_data['avg_order'])],
+                ['key' => 'avg_order', 'detail' => 'avg_order',    'tone' => 'average',   'icon' => 'fa-chart-line', 'label' => 'Avg. Order Value', 'value' => '₱' . number_format($sales_data['avg_order']),
+                 'compare' => ['label' => 'Previous 30 days','value' => '₱' . number_format((float)($salesRow['avg_order_prev30'] ?? 0))]],
             ];
             $trend_icon = ['up' => 'fa-arrow-trend-up', 'down' => 'fa-arrow-trend-down', 'flat' => 'fa-minus'];
             foreach ($stat_cards as $card):
@@ -367,6 +393,9 @@ if ($is_owner) {
                     <span class="stat-icon <?php echo $card['tone']; ?>"><i class="fa-solid <?php echo $card['icon']; ?>"></i></span>
                 </div>
                 <div class="stat-value"><?php echo $card['value']; ?></div>
+                <?php if (!empty($card['compare'])): ?>
+                <div class="stat-compare"><?php echo htmlspecialchars($card['compare']['label']); ?>: <strong><?php echo htmlspecialchars($card['compare']['value']); ?></strong></div>
+                <?php endif; ?>
                 <div class="stat-change is-<?php echo $t['dir']; ?>">
                     <i class="fa-solid <?php echo $trend_icon[$t['dir']]; ?>"></i>
                     <span><?php echo htmlspecialchars($t['text']); ?></span>

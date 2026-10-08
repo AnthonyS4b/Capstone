@@ -190,12 +190,27 @@
             $target_id = intval($_POST['user_id'] ?? 0);
             try {
                 $pdo = getDBConnection();
+
+                // A reactivated owner takes one of the owner places again
+                $pdo->beginTransaction();
+                $roleStmt = $pdo->prepare("SELECT role FROM users WHERE id = ? AND is_active = 0");
+                $roleStmt->execute([$target_id]);
+                if ($roleStmt->fetchColumn() === 'owner' && security_active_owner_count($pdo, $target_id) >= MAX_OWNER_ACCOUNTS) {
+                    $pdo->rollBack();
+                    echo json_encode(['success' => false, 'message' => 'Only ' . MAX_OWNER_ACCOUNTS . ' owner accounts are allowed, and both are in use. '
+                        . 'Edit this account and change its role to Employee first, then reactivate it.']);
+                    exit();
+                }
+
                 $stmt = $pdo->prepare("UPDATE users SET is_active = 1 WHERE id = ? AND is_active = 0");
                 $stmt->execute([$target_id]);
-                echo json_encode($stmt->rowCount() > 0
+                $reactivated = $stmt->rowCount() > 0;
+                $pdo->commit();
+                echo json_encode($reactivated
                     ? ['success' => true, 'message' => 'Account reactivated. They can sign in again with their PIN.']
                     : ['success' => false, 'message' => 'That account was not found or is already active.']);
             } catch (PDOException $e) {
+                if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
                 error_log('reactivate_user: ' . $e->getMessage());
                 echo json_encode(['success' => false, 'message' => 'Unable to reactivate the account right now.']);
             }

@@ -577,7 +577,21 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+/* The figure the trend below is measured against, e.g. "Yesterday: ₱1,470" */
+.stat-compare {
+    font-size: 13px;
+    color: var(--ink-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-compare strong {
+    font-weight: 600;
+    color: var(--ink);
+}
+
 .stat-change {
+    /* Sits on the card's bottom edge, so the trend lines line up whether or not a card has a comparison line */
+    margin-top: auto;
     display: inline-flex;
     align-items: center;
     gap: 6px;
