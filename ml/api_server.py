@@ -23,7 +23,6 @@ if os.environ.get("ML_SERVER_LOG"):
     sys.stdout = sys.stderr = open(_log_path, "a", buffering=1, encoding="utf-8")
     print(f"\n--- started {datetime.now():%Y-%m-%d %H:%M:%S} (pid {os.getpid()}) ---")
 
-import numpy as np
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -318,6 +317,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             "is_slow_moving": is_slow,
             "history_count": history_count,
             "date_added": date_added,
+            "unit": row.get("unit") or "",  # the page writes kg / g for products sold by weight
             "source": "db_rules",
         }
 
@@ -738,18 +738,10 @@ def get_forecast() -> Tuple[Any, int]:
         if not features:
             return jsonify({"error": "Could not extract features"}), 400
 
-        # Build feature vector dynamically matching the trained input structure
-        X = np.array(
-            [
-                [features[k] for k in features.keys() if k not in ("product_id", "date_added")]
-            ]
-        )
-
-        # Use ML model if available, else use stats-based estimate
-        if recommender and recommender.model is not None:
-            base_predicted_sales = recommender.predict_sales(X)[0]
-        else:
-            base_predicted_sales = float(features["monthly_sales_velocity"])
+        # The model's forecast for the next 30 days, from the product's last 60 days of
+        # sales. Past sales stand in when no forecast can be made (see forecast_units).
+        forecast = recommender.forecast_units(features.get("forecast_features")) if recommender else None
+        base_predicted_sales = forecast if forecast is not None else float(features["monthly_sales_velocity"])
 
         # Strategy uplift
         risk_score = recommender.calculate_risk_score(product_id, product, features) if recommender else 0.5
@@ -1108,7 +1100,7 @@ def cancel_strategy() -> Tuple[Any, int]:
 def _get_product_data(product_id: int) -> Optional[Dict[str, Any]]:
     query = """
         SELECT p.id, p.name, p.price, p.cost_price, p.stock, p.unit, p.expiration_date,
-               p.date_added, p.created_at, c.name AS category_name
+               p.date_added, p.created_at, p.category_id, c.name AS category_name
         FROM products p
         LEFT JOIN categories c ON c.id = p.category_id
         WHERE p.id = %s AND p.deleted_at IS NULL
@@ -1140,18 +1132,10 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             features.get("days_until_expiry", 999)
         )
 
-        # Build feature vector dynamically matching the trained input structure
-        X = np.array(
-            [
-                [features[k] for k in features.keys() if k not in ("product_id", "date_added")]
-            ]
-        )
-
-        if recommender.model is not None:
-            predicted_sales = recommender.predict_sales(X)
-            pred_val = float(predicted_sales[0])
-        else:
-            pred_val = float(features["monthly_sales_velocity"])
+        # The model's forecast for the next 30 days, from the product's last 60 days of
+        # sales. Past sales stand in when no forecast can be made (see forecast_units).
+        forecast = recommender.forecast_units(features.get("forecast_features"))
+        pred_val = forecast if forecast is not None else float(features["monthly_sales_velocity"])
 
         confidence = recommender.get_prediction_confidence(
             product_id, pred_val, features["monthly_sales_velocity"]
@@ -1202,6 +1186,8 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             "risk_level": risk_level,
             "risk_color": RISK_LEVELS[risk_level]["color"],
             "predicted_monthly_sales": pred_val,
+            # Where that figure comes from: the Random Forest, or the product's past sales
+            "forecast_source": "model" if forecast is not None else "past_sales",
             "confidence": float(confidence),
             "confidence_label": _get_confidence_label(confidence),
             "potential_revenue": round(max(pred_val, velocity) * float(product["price"]), 2),
@@ -1211,6 +1197,7 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             "is_expired": bool(features.get("is_expired")),
             "history_count": history_count,
             "date_added": date_added,
+            "unit": product.get("unit") or "",  # the page writes kg / g for products sold by weight
         }
 
         # Add monitor message for MONITOR-level products

@@ -328,3 +328,296 @@ Press Ctrl+C to stop
 2026-10-07 19:45:32,062 [INFO] werkzeug: 127.0.0.1 - - [07/Oct/2026 19:45:32] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
 2026-10-07 20:03:04,753 [INFO] werkzeug: 127.0.0.1 - - [07/Oct/2026 20:03:04] "GET /health HTTP/1.1" 200 -
 2026-10-07 20:03:07,043 [INFO] werkzeug: 127.0.0.1 - - [07/Oct/2026 20:03:07] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+
+--- started 2026-10-08 23:33:48 (pid 17700) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-08 23:33:58,067 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-08 23:33:58,067 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-08 23:34:00,077 [INFO] recommendation_model: Model loaded successfully
+2026-10-08 23:34:08,219 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:34:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:34:08,432 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:34:08] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:48:11,724 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:48:11] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:48:11,744 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:48:11] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:48:14,501 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:48:14] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:48:14,511 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:48:14] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:51:17,676 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:51:17] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:51:20,363 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:51:20] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:51:20,434 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:51:20] "GET /api/model-info HTTP/1.1" 200 -
+
+--- started 2026-10-08 23:51:53 (pid 12100) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-08 23:51:55,124 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-08 23:51:55,124 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-08 23:51:55,361 [INFO] recommendation_model: Model loaded successfully
+2026-10-08 23:51:55,362 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:51:55] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:52:20,530 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:52:20] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-08 23:52:22,088 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:52:22] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:52:22,145 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:52:22] "POST /api/forecast HTTP/1.1" 200 -
+2026-10-08 23:52:22,203 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:52:22] "GET /api/recommendations?product_id=34 HTTP/1.1" 200 -
+2026-10-08 23:52:22,643 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:52:22] "GET /api/recommendations/db?limit=50 HTTP/1.1" 200 -
+
+--- started 2026-10-08 23:54:40 (pid 7352) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-08 23:54:42,918 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-08 23:54:42,918 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-08 23:54:43,238 [INFO] recommendation_model: Model loaded successfully
+2026-10-08 23:54:43,239 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:54:43] "GET /health HTTP/1.1" 200 -
+2026-10-08 23:55:06,740 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:55:06] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-08 23:55:07,967 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:55:07] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-08 23:55:08,025 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:55:08] "POST /api/forecast HTTP/1.1" 200 -
+2026-10-08 23:55:08,074 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:55:08] "GET /api/recommendations?product_id=34 HTTP/1.1" 200 -
+2026-10-08 23:55:08,572 [INFO] werkzeug: 127.0.0.1 - - [08/Oct/2026 23:55:08] "GET /api/recommendations/db?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:01:21,985 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:01:21] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:01:23,108 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:01:23] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:01:25,029 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:01:25] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:01:25,038 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:01:25] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:04:01,687 [INFO] __main__: Starting model retraining...
+2026-10-09 00:04:01,687 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:04:08,050 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:04:08,363 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:04:08] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:04:09,405 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:04:09] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:04:12,115 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:04:12] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:04:12,384 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:04:12] "GET /health HTTP/1.1" 200 -
+
+--- started 2026-10-09 00:17:40 (pid 2384) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 00:17:42,496 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 00:17:42,496 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 00:17:42,880 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 00:17:42,881 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:17:42] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:17:51,676 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:17:51] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:17:54,772 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:17:54] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:17:56,337 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:17:56] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:18:20,831 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:18:20] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:18:22,412 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:18:22] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:18:23,821 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:18:23] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:23:15,228 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:23:15] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:23:15,284 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:23:15] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:23:15,292 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:23:15] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:35:43,535 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:35:43] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:35:44,734 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:35:44] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:35:45,069 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:35:45] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:37:03,540 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:03] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:37:08,940 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:37:08,948 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:08] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:37:24,241 [INFO] __main__: Starting model retraining...
+2026-10-09 00:37:24,241 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:37:24,635 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:37:24,969 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:24] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:37:26,755 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:26] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:37:27,023 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:27] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:37:33,340 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:33] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:37:33,373 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:33] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:37:33,378 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:37:33] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:38:13,696 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:38:13] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:38:13,758 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:38:13] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:38:13,762 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:38:13] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:42:07,036 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:07] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:42:07,044 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:07] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:42:07,074 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:07] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:42:08,746 [INFO] __main__: Starting model retraining...
+2026-10-09 00:42:08,746 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:42:09,152 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:42:09,224 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:09] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:42:10,858 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:10] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:42:10,933 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:42:10] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:44:07,291 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:07] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:44:07,320 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:07] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:44:08,700 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:44:09,826 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:09] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:44:11,074 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:11] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:44:15,901 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:15] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:44:17,969 [INFO] __main__: Starting model retraining...
+2026-10-09 00:44:17,969 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:44:18,366 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:44:19,940 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:19] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:44:21,192 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:21] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:44:22,105 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:22] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:44:22,110 [INFO] __main__: Starting model retraining...
+2026-10-09 00:44:22,110 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:44:27,894 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:44:33,139 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:33] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:44:34,577 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:34] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:44:34,610 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:44:34] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:46:25,257 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:25] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:46:26,461 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:26] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:46:26,495 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:26] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:46:30,913 [INFO] __main__: Starting model retraining...
+2026-10-09 00:46:30,914 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:46:31,327 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:46:32,937 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:32] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:46:33,184 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:33] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:46:40,163 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:46:40] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:47:19,331 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:19] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:47:19,365 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:19] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:47:19,370 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:19] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:47:22,756 [INFO] __main__: Starting model retraining...
+2026-10-09 00:47:22,756 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:47:23,160 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:47:24,871 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:24] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:47:25,101 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:25] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:47:26,423 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:26] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:47:29,019 [INFO] __main__: Starting model retraining...
+2026-10-09 00:47:29,019 [INFO] recommendation_model: Starting model training...
+2026-10-09 00:47:32,675 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 00:47:33,240 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:33] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 00:47:34,854 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:34] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:47:34,890 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:47:34] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 00:48:45,897 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:48:45] "GET /health HTTP/1.1" 200 -
+2026-10-09 00:48:47,328 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:48:47] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 00:48:47,375 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 00:48:47] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 01:02:14,009 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:14] "GET /health HTTP/1.1" 200 -
+2026-10-09 01:02:15,102 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:15] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 01:02:15,143 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:15] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 01:02:16,904 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:16] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 01:02:16,913 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:16] "GET /health HTTP/1.1" 200 -
+2026-10-09 01:02:17,157 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:17] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 01:02:42,623 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:42] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 01:02:42,635 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:42] "GET /health HTTP/1.1" 200 -
+2026-10-09 01:02:42,674 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:42] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 01:02:48,891 [INFO] __main__: Strategy 'deep_discount_liquidation' applied to product #41: promotional price ₱224.0 (30.0% off, 5 days), required partner: None
+2026-10-09 01:02:48,891 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:48] "[35m[1mPOST /api/save-recommendation HTTP/1.1[0m" 201 -
+2026-10-09 01:02:50,564 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:50] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 01:02:55,139 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:55] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-10-09 01:02:57,149 [INFO] __main__: Strategy ID 25 cancelled for product #41
+2026-10-09 01:02:57,149 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:57] "POST /api/cancel-strategy HTTP/1.1" 200 -
+2026-10-09 01:02:57,161 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:02:57] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-10-09 01:03:10,583 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:03:10] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 01:03:10,603 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:03:10] "GET /health HTTP/1.1" 200 -
+2026-10-09 01:03:10,636 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 01:03:10] "GET /api/model-info HTTP/1.1" 200 -
+
+--- started 2026-10-09 14:17:32 (pid 15972) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 14:17:43,769 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 14:17:43,770 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 14:17:44,380 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 14:17:45,675 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:17:45] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:17:45,741 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:17:45] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:17:45,755 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:17:45] "GET /health HTTP/1.1" 200 -
+
+--- started 2026-10-09 14:20:55 (pid 9264) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 14:20:56,952 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 14:20:56,952 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 14:20:57,027 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 14:20:57,027 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:20:57] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:21:43,584 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:21:43] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:21:45,668 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:21:45] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:21:46,933 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:21:46] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:22:08,317 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:22:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:22:10,379 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:22:10] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:22:10,417 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:22:10] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:23:49,327 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:23:49] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:23:50,813 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:23:50] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:23:50,859 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:23:50] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:24:11,381 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:24:11] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:24:13,168 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:24:13] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:24:14,511 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:24:14] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:25:31,787 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:25:31] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:25:31,806 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:25:31] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:25:31,903 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:25:31] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:50:34,086 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:50:34] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:50:34,120 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:50:34] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:50:34,125 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:50:34] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:50:48,860 [INFO] __main__: Starting model retraining...
+2026-10-09 14:50:48,860 [INFO] recommendation_model: Starting model training...
+2026-10-09 14:50:54,245 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 14:51:00,836 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:00] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 14:51:01,980 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:01] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:02,977 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:02] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:03,415 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:03] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:05,602 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:05] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:51:08,571 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:21,079 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:21] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:51:22,251 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:22] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:22,314 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:22] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:35,900 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:35] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:51:37,055 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:37] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:37,089 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:37] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:40,767 [INFO] __main__: Starting model retraining...
+2026-10-09 14:51:40,767 [INFO] recommendation_model: Starting model training...
+2026-10-09 14:51:41,188 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 14:51:41,232 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:41] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 14:51:42,538 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:42] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:42,571 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:42] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:43,025 [INFO] __main__: Starting model retraining...
+2026-10-09 14:51:43,025 [INFO] recommendation_model: Starting model training...
+2026-10-09 14:51:43,423 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 14:51:43,466 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:43] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 14:51:43,522 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:43] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:51:44,707 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:44] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:46,116 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:46] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:51:46,125 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:46] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:51:46,155 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:51:46] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:53:17,371 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:17] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:53:17,406 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:17] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:53:17,411 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:17] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:53:17,418 [INFO] __main__: Starting model retraining...
+2026-10-09 14:53:17,418 [INFO] recommendation_model: Starting model training...
+2026-10-09 14:53:17,838 [INFO] recommendation_model: Model trained successfully on 608 examples. Held-out month 2026-03-20 to 2026-04-18: R2 = 0.5200, MAE = 11.50 units (repeating last month: R2 = 0.5152, MAE = 12.32)
+2026-10-09 14:53:20,649 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:20] "POST /api/train-model HTTP/1.1" 200 -
+2026-10-09 14:53:31,871 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:31] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:53:31,905 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:53:31] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 14:56:05,015 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:56:05] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 14:56:05,024 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:56:05] "GET /health HTTP/1.1" 200 -
+2026-10-09 14:56:05,058 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 14:56:05] "GET /api/model-info HTTP/1.1" 200 -

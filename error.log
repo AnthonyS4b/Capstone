@@ -486,3 +486,69 @@
 [08-Oct-2026 23:19:40 Asia/Manila] Transaction data: User_ID=9, Total=905, Payment=1000, Method=cash
 [08-Oct-2026 23:19:44 Asia/Manila] Transaction inserted with ID: 1560
 [08-Oct-2026 23:19:55 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 00:36:51 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Test Product
+    [description] => 
+    [price] => 100
+    [cost_price] => 50
+    [stock] => 300
+    [unit] => Per Piece
+    [sku] => CAT-71236695
+    [barcode] => 123456789
+    [image] => 
+    [expiration_date] => 2026-10-15
+    [date_added] => 2026-10-08
+)
+
+[09-Oct-2026 00:36:59 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 106
+    [data] => Array
+        (
+            [id] => 106
+            [sku] => CAT-71236695
+            [barcode] => 123456789
+            [unit] => Per Piece
+            [cost_price] => 50
+            [image] => 
+            [expiration_date] => 2026-10-15
+        )
+
+)
+
+[09-Oct-2026 00:41:40 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 00:41:40 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 00:41:40 Asia/Manila] Transaction data: User_ID=9, Total=25000, Payment=30000, Method=cash
+[09-Oct-2026 00:41:40 Asia/Manila] Transaction inserted with ID: 1561
+[09-Oct-2026 00:41:40 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 00:43:54 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 00:43:54 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 00:43:54 Asia/Manila] Transaction data: User_ID=9, Total=11550, Payment=12000, Method=cash
+[09-Oct-2026 00:43:54 Asia/Manila] Transaction inserted with ID: 1562
+[09-Oct-2026 00:43:55 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 00:46:11 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 00:46:11 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 00:46:11 Asia/Manila] Transaction data: User_ID=9, Total=3465, Payment=5000, Method=cash
+[09-Oct-2026 00:46:11 Asia/Manila] Transaction inserted with ID: 1563
+[09-Oct-2026 00:46:12 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 14:52:46 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 14:52:48 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 14:52:52 Asia/Manila] Transaction data: User_ID=9, Total=3200, Payment=4000, Method=cash
+[09-Oct-2026 14:52:54 Asia/Manila] Transaction inserted with ID: 1564
+[09-Oct-2026 14:53:05 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 15:02:40 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 15:02:40 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 15:02:40 Asia/Manila] Transaction data: User_ID=9, Total=475, Payment=500, Method=cash
+[09-Oct-2026 15:02:40 Asia/Manila] Transaction inserted with ID: 1565
+[09-Oct-2026 15:02:40 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 15:03:07 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 15:03:07 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 15:03:07 Asia/Manila] Transaction data: User_ID=9, Total=1025, Payment=1100, Method=cash
+[09-Oct-2026 15:03:07 Asia/Manila] Transaction inserted with ID: 1566
+[09-Oct-2026 15:03:07 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
