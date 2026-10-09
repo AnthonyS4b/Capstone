@@ -44,7 +44,8 @@ try {
         'create_category', 'update_category', 'delete_category', 'archive_category',
         'restore_category', 'update_category_status', 'update_product',
         'archive_product', 'restore_product',
-        'permanent_delete', 'empty_archive'
+        'permanent_delete', 'empty_archive',
+        'set_tax_rate'
     ];
     if (in_array($action, $ownerOnlyActions, true)) {
         security_require_role(['owner']);
@@ -316,6 +317,35 @@ try {
 
         case 'get_archive_stats':
             echo json_encode($productController->getArchiveStats());
+            break;
+
+        // ── VAT rate (includes/tax.php): shown on the Inventory page, changed by the owner ──
+
+        case 'get_tax_rate':
+            require_once dirname(__DIR__) . '/config/database.php';
+            require_once dirname(__DIR__) . '/includes/tax.php';
+            echo json_encode(['success' => true, 'data' => tax_rate_info(getDBConnection())]);
+            break;
+
+        case 'set_tax_rate':
+            require_once dirname(__DIR__) . '/config/database.php';
+            require_once dirname(__DIR__) . '/includes/tax.php';
+            $rate = tax_rate_parse($_POST['rate'] ?? '');
+            if ($rate === null) {
+                echo json_encode(['success' => false, 'message' => 'Enter a rate from 0 to 100, for example 12 or 12.5.']);
+                break;
+            }
+            $taxPdo = getDBConnection();
+            if (abs(tax_rate_at($taxPdo) - $rate) < 0.005) {
+                echo json_encode(['success' => false, 'message' => 'The VAT rate is already ' . tax_rate_text($rate) . '%.']);
+                break;
+            }
+            tax_rate_set($taxPdo, $rate, (int)$_SESSION['user_id']);
+            echo json_encode([
+                'success' => true,
+                'message' => 'VAT is now ' . tax_rate_text($rate) . '%. Receipts use it from this moment.',
+                'data' => tax_rate_info($taxPdo),
+            ]);
             break;
 
         default:

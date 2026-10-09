@@ -911,3 +911,6 @@ Press Ctrl+C to stop
 2026-10-09 22:16:37,010 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:37] "GET /health HTTP/1.1" 200 -
 2026-10-09 22:16:44,642 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:44] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
 2026-10-09 22:16:44,885 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:44] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 22:38:05,719 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:38:05] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 22:38:05,737 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:38:05] "GET /health HTTP/1.1" 200 -
+2026-10-09 22:38:05,782 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:38:05] "GET /api/model-info HTTP/1.1" 200 -

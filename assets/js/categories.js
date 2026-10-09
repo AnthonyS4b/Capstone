@@ -1341,6 +1341,111 @@ function saveCategory() {
     });
 }
 
+// ── A barcode scanner in a form ──────────────────────────────────────────────
+// A scanner "types" its digits a few milliseconds apart and ends with Enter, and Enter
+// in a form box saves the form: scanning a product used to save it half-filled. Now
+// Enter in the Barcode box, or at the end of a burst typed that fast, only finishes
+// the scan. A burst that landed in another box (the cursor was on the name or the
+// quantity) is taken out of it again and, in the product form, put in the Barcode box.
+// Enter pressed by a person in any other box still saves, as before.
+const FORM_SCAN_KEY_GAP_MS = 60;  // nobody types six keys in a row this fast
+const FORM_SCAN_MIN_CHARS = 6;
+
+function guardFormFromScanner(form, barcodeField) {
+    if (!form) return;
+    let scan = { field: null, valueBefore: '', chars: '', lastKey: 0 };
+
+    form.addEventListener('keydown', function (e) {
+        const field = e.target;
+        if (!field || !['INPUT', 'SELECT', 'TEXTAREA'].includes(field.tagName)) return;
+        const now = performance.now();
+        const fast = scan.field === field && now - scan.lastKey <= FORM_SCAN_KEY_GAP_MS;
+
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            // A key after a pause starts a new burst; remember what the box held before it
+            if (!fast) scan = { field: field, valueBefore: field.value, chars: '', lastKey: now };
+            scan.chars += e.key;
+            scan.lastKey = now;
+            return;
+        }
+        if (e.key !== 'Enter') return;
+
+        const scanned = fast && scan.chars.length >= FORM_SCAN_MIN_CHARS;
+        const code = scan.chars;
+        const valueBefore = scan.valueBefore;
+        scan = { field: null, valueBefore: '', chars: '', lastKey: 0 };
+        if (!scanned && field !== barcodeField) return; // a person pressing Enter
+
+        e.preventDefault();  // the scanner's Enter must not save the form
+        e.stopPropagation();
+        if (scanned && field !== barcodeField) {
+            field.value = valueBefore;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            if (barcodeField) barcodeField.value = code;
+        }
+        if (barcodeField) {
+            barcodeField.focus();
+            barcodeField.select(); // scanning again replaces the code
+        }
+    }, true); // capture: runs before any Enter handler on the box itself
+}
+
+document.querySelectorAll('#categoryForm, #stockForm, #taxRateForm').forEach(form => guardFormFromScanner(form, null));
+guardFormFromScanner(document.getElementById('productForm'), document.getElementById('productBarcode'));
+
+// ── VAT rate (owner) ─────────────────────────────────────────────────────────
+// The "VAT 12%" button in the toolbar. Prices include VAT, so the rate only changes
+// how receipts split a total; sales already made keep the rate of their day.
+function openTaxRateModal() {
+    const modalEl = document.getElementById('taxRateModal');
+    const input = document.getElementById('taxRateInput');
+    if (!modalEl || !input) return;
+    input.value = input.dataset.current || '';
+    modalEl.addEventListener('shown.bs.modal', () => { input.focus(); input.select(); }, { once: true });
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function saveTaxRate() {
+    const input = document.getElementById('taxRateInput');
+    const saveBtn = document.getElementById('taxRateSaveBtn');
+    const typed = input.value.trim().replace(/\.$/, '');
+
+    if (!/^\d{1,3}(\.\d{1,2})?$/.test(typed) || Number(typed) > 100) {
+        showToast('warning', 'Check the rate', 'Enter a rate from 0 to 100, for example 12 or 12.5.');
+        input.focus();
+        return;
+    }
+    if (Number(typed) === Number(input.dataset.current)) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('taxRateModal')).hide();
+        return;
+    }
+
+    saveBtn.disabled = true;
+    $.ajax({
+        url: 'ajax/category_ajax.php',
+        method: 'POST',
+        dataType: 'json',
+        data: { action: 'set_tax_rate', rate: typed },
+        success: function(response) {
+            if (!response.success) {
+                showToast('error', 'Not saved', response.message || 'The VAT rate could not be changed.');
+                return;
+            }
+            const info = response.data || {};
+            input.dataset.current = info.rate_text;
+            document.querySelectorAll('[data-tax-rate]').forEach(el => { el.textContent = info.rate_text; });
+            document.getElementById('taxRateChanged').textContent =
+                'Last changed just now' + (info.changed_by ? ' by ' + info.changed_by : '');
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('taxRateModal')).hide();
+            showToast('success', 'VAT rate saved', response.message);
+        },
+        error: function(xhr) {
+            showToast('error', 'Not saved', xhr.responseJSON?.message || 'Could not reach the server. Try again.');
+        },
+        complete: function() { saveBtn.disabled = false; }
+    });
+}
+
 function loadCategoryOptions() {
     $.ajax({
         url: ajaxUrl,

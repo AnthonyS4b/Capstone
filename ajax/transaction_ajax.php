@@ -22,6 +22,7 @@ header('Content-Type: application/json');
 
 require_once dirname(__DIR__) . '/includes/security.php';
 require_once dirname(__DIR__) . '/includes/promotion_pricing.php';
+require_once dirname(__DIR__) . '/includes/tax.php';
 security_require_login();
 security_require_post_csrf();
 
@@ -48,7 +49,7 @@ function sale_ref_ensure_schema(PDO $pdo): void
 /** The reply for a sale already saved under this reference, or null when there is none. */
 function sale_ref_existing_reply(PDO $pdo, string $ref): ?array
 {
-    $st = $pdo->prepare("SELECT t.id, t.items, t.total_amount, t.payment_method, s.amount_paid, s.change_amount
+    $st = $pdo->prepare("SELECT t.id, t.items, t.total_amount, t.payment_method, t.created_at, s.amount_paid, s.change_amount
                          FROM transactions t
                          LEFT JOIN sales s ON s.transaction_id = t.id
                          WHERE t.client_ref = ? LIMIT 1");
@@ -68,6 +69,7 @@ function sale_ref_existing_reply(PDO $pdo, string $ref): ?array
             'payment' => (float)($sale['amount_paid'] ?? $sale['total_amount']),
             'change' => (float)($sale['change_amount'] ?? 0),
             'payment_method' => $sale['payment_method'],
+            'vat_rate' => tax_rate_at($pdo, $sale['created_at']),
         ],
     ];
 }
@@ -492,7 +494,9 @@ try {
                         'total' => $total,
                         'payment' => $payment,
                         'change' => $change,
-                        'payment_method' => $payment_method
+                        'payment_method' => $payment_method,
+                        // For the receipt's VAT lines (includes/tax.php)
+                        'vat_rate' => tax_rate_at($pdo)
                     ]
                 ]);
                 
@@ -692,6 +696,8 @@ try {
             $transaction['amount_paid'] = isset($transaction['amount_paid']) ? (float)$transaction['amount_paid'] : 0;
             $transaction['change_amount'] = isset($transaction['change_amount']) ? (float)$transaction['change_amount'] : 0;
             $transaction['status'] = $transaction['status'] ?? 'completed';
+            // The VAT rate of the day of the sale, for the receipt (includes/tax.php)
+            $transaction['vat_rate'] = tax_rate_at($pdo, $transaction['created_at']);
             
             echo json_encode([
                 'success' => true,

@@ -108,3 +108,34 @@ $sb_groups = [
         </a>
     </div>
 </aside>
+<script>
+// Remembers on this device whether the sidebar is collapsed, so it stays that way after
+// a reload and on the next page. It runs right here, before the page is first drawn, so
+// a collapsed sidebar does not flash open. Each page's own script still does the
+// collapsing; this only restores and records it, and points the arrow the right way.
+(function () {
+    var sidebar = document.getElementById('sidebar');
+    var icon = document.getElementById('collapseIcon');
+    if (!sidebar) return;
+    var KEY = 'sidebarCollapsed';
+
+    function showArrow() {
+        if (!icon) return;
+        var collapsed = sidebar.classList.contains('collapsed');
+        icon.classList.toggle('fa-chevron-right', collapsed);
+        icon.classList.toggle('fa-chevron-left', !collapsed);
+    }
+
+    try {
+        if (localStorage.getItem(KEY) === '1') sidebar.classList.add('collapsed');
+    } catch (e) { /* storage blocked: the sidebar simply starts open */ }
+    showArrow();
+
+    new MutationObserver(function () {
+        showArrow();
+        try {
+            localStorage.setItem(KEY, sidebar.classList.contains('collapsed') ? '1' : '0');
+        } catch (e) { /* not remembered this time */ }
+    }).observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+})();
+</script>

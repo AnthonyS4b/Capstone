@@ -552,3 +552,8 @@
 [09-Oct-2026 15:03:07 Asia/Manila] Transaction data: User_ID=9, Total=1025, Payment=1100, Method=cash
 [09-Oct-2026 15:03:07 Asia/Manila] Transaction inserted with ID: 1566
 [09-Oct-2026 15:03:07 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[09-Oct-2026 23:51:37 Asia/Manila] Found user_id in session: 9
+[09-Oct-2026 23:51:37 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[09-Oct-2026 23:51:37 Asia/Manila] Transaction data: User_ID=9, Total=480, Payment=500, Method=cash
+[09-Oct-2026 23:51:37 Asia/Manila] Transaction inserted with ID: 18710
+[09-Oct-2026 23:51:37 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

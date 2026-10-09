@@ -414,6 +414,7 @@ function viewTransaction(transactionId) {
                     unit     : item.unit || ''
                 })),
                 total   : total,
+                vatRate : tx.vat_rate,
                 payment : parseFloat(tx.amount_paid || (pm === 'gcash' ? total : 0)),
                 change  : parseFloat(tx.change_amount || 0),
                 method  : pm,

@@ -231,9 +231,34 @@ $category_sales = array_map(function ($r) use ($cat_total) {
     ];
 }, $cat_rows);
 
-// Category colours, shared by the Sales by Category chart and the Category
-// Performance list. Order is fixed (validated for colour-blind separation
-// between neighbours) - append, don't reorder.
+// Highest selling products (last 30 days): the 10 products that brought in the most
+// sales, best first. Ranked by amount rather than by quantity because quantities are
+// not comparable across units (250 means 250 pieces for one product and 250 grams
+// for another). Voided sales are left out, as everywhere on this page.
+$topStmt = $pdo->query("
+    SELECT
+        COALESCE(p.name, 'Deleted product')    AS name,
+        COALESCE(c.name, 'Uncategorised')      AS category,
+        p.unit,
+        SUM(ti.quantity)                       AS qty,
+        SUM(ROUND(ti.quantity * ti.price, 2))  AS revenue
+    FROM transaction_items ti
+    LEFT JOIN products p   ON p.id = ti.product_id
+    LEFT JOIN categories c ON c.id = p.category_id
+    WHERE ti.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+      AND NOT EXISTS (
+          SELECT 1 FROM sales s
+          WHERE s.transaction_id = ti.transaction_id AND s.status = 'voided'
+      )
+    GROUP BY ti.product_id, p.name, c.name, p.unit
+    HAVING revenue > 0
+    ORDER BY revenue DESC, name
+    LIMIT 10
+");
+$top_products = $topStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Category colours for the Sales by Category chart. Order is fixed (validated for
+// colour-blind separation between neighbours) - append, don't reorder.
 $chart_palette = ['#296a37', '#c48139', '#3174a7', '#a5492b', '#7e4d8a', '#829e4b'];
 
 // Fetch users for role management (owners only)
@@ -460,42 +485,42 @@ if ($is_owner) {
             </div>
         </div>
         
-        <!-- Category performance and stock alerts -->
+        <!-- Highest selling products and stock alerts -->
         <div class="dashboard-grid">
             <div class="chart-container scrollable-panel">
                 <div class="chart-header">
-                    <div class="chart-title"><i class="fas fa-chart-simple"></i> Category Performance</div>
+                    <div class="chart-title"><i class="fas fa-ranking-star"></i> Highest Selling Products</div>
+                    <span class="chart-summary-label">Top 10 &middot; last 30 days</span>
                 </div>
                 <div class="scrollable-content">
-                    <?php 
-                    $colors = $chart_palette;
-                    if (!$category_sales): ?>
+                    <?php if (!$top_products): ?>
                         <div class="panel-empty">
-                            <i class="fa-solid fa-chart-simple"></i>
+                            <i class="fa-solid fa-ranking-star"></i>
                             <p>No sales recorded in the last 30 days.</p>
                         </div>
                     <?php endif;
-                    foreach ($category_sales as $index => $category): 
+                    foreach ($top_products as $index => $product):
+                        $rank = $index + 1;
                     ?>
-                    <div class="category-row">
+                    <div class="category-row rank-row">
                         <div class="category-item">
                             <span class="category-name">
-                                <span class="category-color" style="--swatch: <?php echo $colors[$index % count($colors)]; ?>"></span>
-                                <?php echo htmlspecialchars($category['category']); ?>
+                                <span class="rank-badge<?php echo $rank <= 3 ? ' is-top' : ''; ?>" aria-label="Rank <?php echo $rank; ?>"><?php echo $rank; ?></span>
+                                <span class="rank-text">
+                                    <span class="rank-product"><?php echo htmlspecialchars($product['name']); ?></span>
+                                    <small class="rank-category"><?php echo htmlspecialchars($product['category']); ?></small>
+                                </span>
                             </span>
                             <span class="category-figures">
-                                <strong><?php echo $category['percentage']; ?>%</strong>
-                                <small>₱<?php echo number_format($category['revenue']); ?></small>
+                                <strong>₱<?php echo number_format((float)$product['revenue']); ?></strong>
+                                <small><?php echo htmlspecialchars(format_unit_quantity($product['qty'], $product['unit'])); ?> sold</small>
                             </span>
-                        </div>
-                        <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: <?php echo $category['percentage']; ?>%; --swatch: <?php echo $colors[$index % count($colors)]; ?>"></div>
                         </div>
                     </div>
                     <?php endforeach; ?>
                 </div>
             </div>
-            
+
             <div class="chart-container scrollable-panel" id="alertsPanel">
                 <div class="chart-header" style="flex-direction:column; align-items:stretch; gap:10px;">
                     <div class="d-flex align-items-center justify-content-between">

@@ -25,6 +25,11 @@ $email = $_SESSION['email'] ?? '';
 
 $is_owner = ($role === 'owner');
 $toast_message = isset($_SESSION['toast_message']) ? $_SESSION['toast_message'] : null;
+
+// The store's VAT rate, shown in the toolbar; the owner changes it there (includes/tax.php)
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/tax.php';
+$tax = tax_rate_info(getDBConnection());
 if ($toast_message) {
     unset($_SESSION['toast_message']);
 }
@@ -113,6 +118,13 @@ if ($toast_message) {
                 <button class="inv-btn inv-btn-quiet inv-btn-danger-text" onclick="showExpiredProducts()">
                     <i class="fas fa-hourglass-end"></i>Expired products
                 </button>
+                <?php if ($is_owner): // changing the VAT rate is owner-only (the server refuses it for employees too) ?>
+                <button class="inv-btn inv-btn-quiet" onclick="openTaxRateModal()" title="Change the VAT rate shown on receipts">
+                    <span>VAT <span data-tax-rate><?= htmlspecialchars($tax['rate_text']) ?></span>%</span>
+                </button>
+                <?php else: ?>
+                <span class="inv-muted" title="The VAT rate shown on receipts. Only the owner can change it.">VAT <?= htmlspecialchars($tax['rate_text']) ?>%</span>
+                <?php endif; ?>
                 <?php if ($is_owner): // creating categories is owner-only (the server refuses it for employees too) ?>
                 <button class="inv-btn inv-btn-primary" onclick="openCategoryModal()">
                     <i class="fas fa-plus"></i>New category
@@ -504,6 +516,44 @@ if ($toast_message) {
             </div>
         </div>
     </div>
+
+    <?php if ($is_owner): ?>
+    <!-- VAT Rate Modal (owner). Field ids are read by categories.js. -->
+    <div class="modal fade inv-form-modal" id="taxRateModal" tabindex="-1" aria-labelledby="taxRateModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="inv-form-head">
+                    <div class="inv-form-head-text">
+                        <h2 class="inv-form-title" id="taxRateModalTitle">VAT rate</h2>
+                        <p class="inv-form-sub">The tax rate printed on receipts.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taxRateForm" onsubmit="event.preventDefault(); saveTaxRate();">
+                        <div class="inv-field">
+                            <label class="form-label" for="taxRateInput">VAT rate (%)</label>
+                            <input type="text" class="form-control" id="taxRateInput" inputmode="decimal" data-numeric="money" maxlength="6" autocomplete="off"
+                                   value="<?= htmlspecialchars($tax['rate_text']) ?>" data-current="<?= htmlspecialchars($tax['rate_text']) ?>">
+                            <span class="inv-hint" id="taxRateChanged"><?php
+                                echo $tax['changed_at']
+                                    ? 'Last changed ' . htmlspecialchars(date('M j, Y · g:i A', strtotime($tax['changed_at'])))
+                                        . ($tax['changed_by'] ? ' by ' . htmlspecialchars($tax['changed_by']) : '')
+                                    : 'Never changed: this is the standard 12%.';
+                            ?></span>
+                        </div>
+                        <p class="inv-hint mb-0">Prices already include VAT, so changing the rate does not change any price. It changes how a receipt splits the total into the amount before VAT and the VAT. Sales made before the change keep the rate they were sold at.</p>
+                        <button type="submit" hidden></button>
+                    </form>
+                </div>
+                <div class="inv-form-foot">
+                    <button type="button" class="inv-btn" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="inv-btn inv-btn-primary" id="taxRateSaveBtn" onclick="saveTaxRate()">Save rate</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <?php include 'includes/user_roles_modal.php'; ?>
 

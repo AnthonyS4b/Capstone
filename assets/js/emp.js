@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
                            quantity: i.quantity
                        })),
             total:     tx.total_amount,
+            vatRate:   tx.vat_rate,
             payment:   tx.amount_paid,
             change:    tx.change_amount,
             method:    tx.payment_method,

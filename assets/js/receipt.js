@@ -7,6 +7,7 @@
  *       number: 'TRX-001527', date: Date|string, cashier: 'Name',
  *       items: [{ name, price, quantity, unit }], // price = unit price charged; unit 'Per Kilo' = kg
  *       total, payment, change,
+ *       vatRate: 12,                              // percent, the rate on the day of the sale (12 when left out)
  *       method: 'cash' | 'gcash', reference: '123456',
  *       status: 'completed' | 'voided'
  *   })  → HTML string
@@ -96,8 +97,11 @@
         const isGcash = r.method === 'gcash';
         const voided = r.status === 'voided';
 
-        // Prices are VAT-inclusive (12%, Philippines)
-        const subtotal = total / 1.12;
+        // Prices are VAT-inclusive. The rate is the store's on the day of the sale (the
+        // owner can change it on the Inventory page); 12% when the caller sends none.
+        const sentRate = r.vatRate == null || r.vatRate === '' ? NaN : Number(r.vatRate);
+        const vatRate = sentRate >= 0 && sentRate <= 100 ? sentRate : 12;
+        const subtotal = total / (1 + vatRate / 100);
         const vat = total - subtotal;
         // A weighed (Per Kilo / Per Gram) line counts as one item, whatever it weighs
         const units = items.reduce((n, i) => n + (weightSuffix(i) ? 1 : Number(i.quantity || 0)), 0);
@@ -135,7 +139,7 @@
                 <div class="rc-items">${itemsHtml}</div>
                 <div class="rc-totals">
                     <div class="rc-row rc-muted"><span>Subtotal (VAT excl.)</span><span>${peso(subtotal)}</span></div>
-                    <div class="rc-row rc-muted"><span>VAT 12%</span><span>${peso(vat)}</span></div>
+                    <div class="rc-row rc-muted"><span>VAT ${Number(vatRate.toFixed(2))}%</span><span>${peso(vat)}</span></div>
                     <div class="rc-row rc-total"><span>Total</span><span>${peso(total)}</span></div>
                     ${paymentRows}
                 </div>
