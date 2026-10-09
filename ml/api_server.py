@@ -759,9 +759,7 @@ def get_forecast() -> Tuple[Any, int]:
         daily_forecast = _generate_daily_forecast(final_predicted_sales, days_ahead)
 
         confidence = (
-            recommender.get_prediction_confidence(
-                product_id, base_predicted_sales, features["monthly_sales_velocity"]
-            )
+            recommender.get_prediction_confidence(features.get("forecast_features"))
             if recommender
             else 0.65
         )
@@ -1137,9 +1135,8 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
         forecast = recommender.forecast_units(features.get("forecast_features"))
         pred_val = forecast if forecast is not None else float(features["monthly_sales_velocity"])
 
-        confidence = recommender.get_prediction_confidence(
-            product_id, pred_val, features["monthly_sales_velocity"]
-        )
+        # How closely the forest's trees agree on that forecast; lowest when there is none
+        confidence = recommender.get_prediction_confidence(features.get("forecast_features"))
         # Fetch strategy IDs already tried within the no-repeat window
         recent_strategy_ids = _get_recent_strategy_ids(product_id)
         strategies = recommender.recommend_strategy(

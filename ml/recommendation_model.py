@@ -48,6 +48,10 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Confidence of an estimate that is not the model's (past sales or a rough guess);
+# also the lowest a model forecast can score. See get_prediction_confidence().
+NO_FORECAST_CONFIDENCE = 0.5
+
 _MARGIN_REVIEW_ADVISORY = {
     "strategy_id": "price_cost_review",
     "strategy_name": "Price and Cost Review Required",
@@ -292,13 +296,17 @@ class RecommendationModel:
             no sale at all in the 60-day window. The model has only ever seen products
             that were selling, so it has nothing to go on for one that is not.
         """
-        if not forecast_features or not self.forecast_in_use():
-            return None
-        if not forecast_features.get("sale_days_60"):
+        if not self._can_forecast(forecast_features):
             return None
         X = np.array([[forecast_features[name] for name in FORECAST_FEATURE_NAMES]], dtype=float)
         prediction = self.predict_sales(X)
         return float(prediction[0]) if prediction is not None else None
+
+    def _can_forecast(self, forecast_features: Optional[Dict[str, float]]) -> bool:
+        """Whether a forecast is made for a product with these inputs (see forecast_units)."""
+        if not forecast_features or not self.forecast_in_use():
+            return False
+        return bool(forecast_features.get("sale_days_60"))
 
     def predict_sales(self, X: np.ndarray) -> Optional[np.ndarray]:
         """
@@ -325,45 +333,38 @@ class RecommendationModel:
             logger.error(f"Error during prediction: {e}")
             return None
 
-    def get_prediction_confidence(
-        self, product_id: int, predicted_sales: float, historical_sales: float
-    ) -> float:
+    def get_prediction_confidence(self, forecast_features: Optional[Dict[str, float]]) -> float:
         """
-        Calculate confidence score for prediction.
+        How far a product's sales estimate can be trusted (0-1 scale).
 
-        Based on data consistency and model certainty (0-1 scale).
+        The forest is 100 trees, each giving its own forecast; the forecast shown is
+        their average. Confidence is how closely the trees agree: 1 minus their spread
+        (standard deviation) relative to the forecast, kept between 0.50 and 0.95.
+        Trees that agree on 20 units give a high score; trees split between 5 and 40
+        give a low one. On held-out months the forecasts the trees agreed on were the
+        ones that missed least.
+
+        A product with no forecast (see forecast_units) gets the lowest score, 0.50:
+        its estimate is an average of past sales or a rough guess, not the model's.
 
         Args:
-            product_id: Product ID
-            predicted_sales: Model's predicted sales
-            historical_sales: Historical average sales
+            forecast_features: the product's inputs from DataProcessor.forecast_features()
 
         Returns:
-            float: Confidence score between 0 and 1
+            float: Confidence score between 0.50 and 0.95
         """
         try:
-            if historical_sales == 0:
-                return 0.5  # Low confidence for new products
-
-            # Calculate variance in historical data
-            sales_df = DataProcessor.get_product_sales_data(product_id, days_back=30)
-            if sales_df.empty:
-                return 0.5
-
-            daily_sales = sales_df.groupby(
-                sales_df["sale_date"].dt.date
-            )["quantity"].sum()
-            if len(daily_sales) < 3:
-                return 0.6
-
-            # Calculate coefficient of variation
-            cv = daily_sales.std() / (daily_sales.mean() + 0.1)
-
-            # Confidence inversely proportional to variance
-            confidence = min(0.95, max(0.5, 1 - (cv / 3)))
-            return float(confidence)
-        except Exception:
-            return 0.65
+            if not self._can_forecast(forecast_features):
+                return NO_FORECAST_CONFIDENCE
+            X = np.array([[forecast_features[name] for name in FORECAST_FEATURE_NAMES]], dtype=float)
+            X_scaled = self.scaler.transform(X)
+            by_tree = np.array([tree.predict(X_scaled)[0] for tree in self.model.estimators_])
+            # + 1 unit: a forecast of half a unit, give or take half a unit, is not a wild guess
+            spread = float(by_tree.std()) / (max(float(by_tree.mean()), 0.0) + 1.0)
+            return float(min(0.95, max(NO_FORECAST_CONFIDENCE, 1.0 - spread)))
+        except Exception as e:
+            logger.error(f"Error calculating confidence: {e}")
+            return NO_FORECAST_CONFIDENCE
 
     # ========================================================================
     # RISK ASSESSMENT METHODS

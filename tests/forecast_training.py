@@ -6,6 +6,7 @@ Checks, with a made-up sales history and no database:
   - a training example's answer (units sold in the next 30 days) never feeds its inputs
   - stretches where the store recorded nothing are not used for training
   - no forecast is made while recent records have a hole, or for a product with no sales
+  - confidence is how closely the forest's trees agree, and lowest when there is no forecast
 
 Run from the project folder:  python tests/forecast_training.py
 """
@@ -18,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ml import data_service
 from ml.data_service import DataProcessor
 from ml.ml_config import FEATURE_CONFIG, FORECAST_FEATURE_NAMES
-from ml.recommendation_model import RecommendationModel
+from ml.recommendation_model import NO_FORECAST_CONFIDENCE, RecommendationModel
 
 WINDOW = FEATURE_CONFIG["feature_window_days"]
 HORIZON = FEATURE_CONFIG["forecast_horizon"]
@@ -143,7 +144,38 @@ try:
     model.model, model._records_check = None, None     # not trained
     DataProcessor.recent_records_complete = staticmethod(lambda today=None: True)
     assert model.forecast_units(selling) is None and not model.forecast_in_use()
+
+    # ── How far a forecast is trusted ────────────────────────────────────────
+    # Confidence is how closely the forest's trees agree, and the lowest score
+    # when the estimate is not the model's at all
+    class Tree:
+        def __init__(self, units):
+            self.units = units
+
+        def predict(self, X):
+            return [self.units] * len(X)
+
+    class Forest:
+        def __init__(self, *units):
+            self.estimators_ = [Tree(u) for u in units]
+
+    def confidence(forest, inputs=selling):
+        model.model, model._records_check = forest, None
+        return model.get_prediction_confidence(inputs)
+
+    assert confidence(Forest(20, 20, 20, 20)) == 0.95                    # full agreement, capped
+    assert abs(confidence(Forest(18, 22, 18, 22)) - (1 - 2 / 21)) < 1e-9  # spread 2 around 20 units
+    assert confidence(Forest(5, 40, 5, 40)) < confidence(Forest(18, 22, 18, 22))
+    assert confidence(Forest(0, 90, 0, 90)) == NO_FORECAST_CONFIDENCE    # never below the lowest score
+    assert confidence(Forest(0.4, 0.6, 0.4, 0.6)) > 0.9                  # tiny forecast, tiny spread
+    assert confidence(Forest(20, 20), not_selling) == NO_FORECAST_CONFIDENCE
+    assert confidence(Forest(20, 20), None) == NO_FORECAST_CONFIDENCE
+    assert confidence(None) == NO_FORECAST_CONFIDENCE                    # not trained
+
+    DataProcessor.recent_records_complete = staticmethod(lambda today=None: False)
+    assert confidence(Forest(20, 20)) == NO_FORECAST_CONFIDENCE          # records have a hole
 finally:
     DataProcessor.recent_records_complete = original
 
 print("PASS: sales forecast is trained without its own answer and only used on unbroken records")
+print("PASS: confidence is the trees' agreement, and lowest when the estimate is not the model's")

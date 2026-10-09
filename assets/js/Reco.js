@@ -974,7 +974,7 @@ function buildDetailsTab(rec) {
         <div class="detail-card">
             <div class="detail-row"><span>Where the sales estimate comes from</span> <strong title="${rec.forecast_source === 'model'
                 ? 'Random Forest Regressor, from the last 60 days of sales'
-                : 'Not from the Random Forest: its forecast needs 60 unbroken days of sales records.'}">${estimate.source}</strong></div>
+                : 'Not from the Random Forest: it only forecasts products that were sold in the last 60 days, and only while the store has unbroken sales records for those days.'}">${estimate.source}</strong></div>
             <div class="detail-row"><span>Confidence Score</span> <strong>${confidence}%</strong></div>
             <div class="detail-row"><span>Risk Priority Score</span> <strong>${riskScore}%</strong></div>
             <div class="detail-row"><span>Days in Stock</span> <strong>${daysInStock} days</strong></div>
@@ -1063,10 +1063,22 @@ function renderModelWeights(rec) {
             return;
         }
 
+        // Why this product's estimate is not the system's own: the store's recent records
+        // have a hole (then no product gets one), or this product did not sell in the 60
+        // days before today. What stands in is worded as on the Forecast tab.
+        let standIn = '';
+        if (rec.forecast_source !== 'model') {
+            standIn = ((Number(rec.monthly_sales) || 0) > 0
+                    ? ' For now, this product\'s estimate is simply its average past sales. '
+                    : ' For now, this product\'s estimate is only a rough guess, because nothing was sold in the last 90 days. ')
+                + (info.forecast_in_use
+                    ? 'The system makes its own estimate only for products that were sold in the 60 days before today.'
+                    : 'The system starts making its own estimate once the store has recorded sales for 60 days in a row.');
+        }
+
         const note = 'To estimate how many of a product will sell next month, the system looks at the things below. '
             + 'The longer the bar and the higher the percentage, the more it matters. The list is the same for every product.'
-            + (rec.forecast_source === 'model' ? ''
-                : ' For now, this product\'s estimate is simply its average past sales. The system starts making its own estimate once the store has recorded sales for 60 days in a row.');
+            + standIn;
 
         const row = w => {
             const pct = Math.max(0, Number(w.importance) || 0) * 100;

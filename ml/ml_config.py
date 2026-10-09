@@ -29,8 +29,11 @@ ML_CONFIG: Dict[str, Any] = {
     "model_type": "RandomForestRegressor",
     "n_estimators": 100,
     "max_depth": 15,
-    "min_samples_split": 5,
-    "min_samples_leaf": 2,
+    # Each leaf averages at least 10 past examples. With 2, single odd months swayed
+    # the trees: on six held-out months the forecast missed by more (15.0 against 13.7
+    # units for products that were selling) and the trees agreed with each other less.
+    "min_samples_split": 20,
+    "min_samples_leaf": 10,
     "random_state": 42,
     "n_jobs": -1,
     "verbose": 0,

@@ -661,3 +661,231 @@ Press Ctrl+C to stop
 2026-10-09 17:43:17,866 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:43:17] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
 =======
 >>>>>>> test
+
+--- started 2026-10-09 17:49:39 (pid 14940) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 17:49:41,109 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 17:49:41,109 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 17:49:41,159 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 17:49:41,164 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:41] "GET /health HTTP/1.1" 200 -
+2026-10-09 17:49:42,490 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:42] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 17:49:42,544 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:42] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 17:49:43,945 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:43] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 17:49:43,954 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:43] "GET /health HTTP/1.1" 200 -
+2026-10-09 17:49:43,986 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 17:49:43] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 18:26:29,839 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 18:26:29] "GET /health HTTP/1.1" 200 -
+2026-10-09 18:26:31,433 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 18:26:31] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 18:26:31,476 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 18:26:31] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:09:01,140 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:01,140 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:01,140 [ERROR] data_service: Error fetching sales data for product 1: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:04,769 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:04,769 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:04,769 [ERROR] data_service: Error fetching sales data for product 2: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:05,007 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:05,007 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:05,007 [ERROR] data_service: Error fetching sales data for product 3: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:08,942 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:08,943 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:08,943 [ERROR] data_service: Error fetching sales data for product 4: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:11,359 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:11,359 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:11,359 [ERROR] data_service: Error fetching sales data for product 5: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:13,233 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:13,234 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:13,234 [ERROR] data_service: Error fetching sales data for product 6: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,387 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,387 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,387 [ERROR] data_service: Error fetching sales data for product 7: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,596 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,596 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:15,597 [ERROR] data_service: Error fetching sales data for product 8: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:19,539 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:19,539 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:19,539 [ERROR] data_service: Error fetching sales data for product 9: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:21,697 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:21,698 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:21,698 [ERROR] data_service: Error fetching sales data for product 10: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:22,012 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:22,012 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:22,012 [ERROR] data_service: Error fetching sales data for product 11: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:24,105 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:24,105 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:24,105 [ERROR] data_service: Error fetching sales data for product 12: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:26,143 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:26,143 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:26,143 [ERROR] data_service: Error fetching sales data for product 13: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,667 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,668 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,668 [ERROR] data_service: Error fetching sales data for product 14: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,890 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,891 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:28,891 [ERROR] data_service: Error fetching sales data for product 15: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:30,818 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:30,818 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:30,818 [ERROR] data_service: Error fetching sales data for product 16: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,064 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,064 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,065 [ERROR] data_service: Error fetching sales data for product 17: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,325 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,325 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,326 [ERROR] __main__: DB recommendations query failed: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:31,335 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:09:31] "GET /api/recommendations/db?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:09:31,523 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:09:31] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:09:31,542 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:09:31] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:09:37,057 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:37,057 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:37,058 [ERROR] data_service: Error fetching sales data for product 18: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:37,269 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:39,057 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:39,058 [ERROR] data_service: Error fetching sales data for product 19: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:43,230 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:43,340 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:43,340 [ERROR] data_service: Error fetching sales data for product 20: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,269 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,269 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,269 [ERROR] data_service: Error fetching sales data for product 21: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,832 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,832 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:45,832 [ERROR] data_service: Error fetching sales data for product 22: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:48,206 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:48,206 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:48,206 [ERROR] data_service: Error fetching sales data for product 23: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:50,475 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:50,475 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:50,475 [ERROR] data_service: Error fetching sales data for product 24: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:53,003 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:53,003 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:53,003 [ERROR] data_service: Error fetching sales data for product 25: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:56,047 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:58,352 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:09:58,353 [ERROR] data_service: Error fetching sales data for product 30: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:04,516 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:04,516 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:04,516 [ERROR] data_service: Error fetching sales data for product 31: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,449 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,449 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,449 [ERROR] data_service: Error fetching sales data for product 33: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,632 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,633 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,633 [ERROR] data_service: Error fetching sales data for product 34: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,677 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,677 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,677 [ERROR] data_service: Error fetching sales data for product 36: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,690 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,690 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,690 [ERROR] data_service: Error fetching sales data for product 37: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,704 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,704 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,704 [ERROR] data_service: Error fetching sales data for product 38: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,717 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,717 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,717 [ERROR] data_service: Error fetching sales data for product 39: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,731 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,731 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,731 [ERROR] data_service: Error fetching sales data for product 40: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,747 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,747 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,747 [ERROR] data_service: Error fetching sales data for product 41: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,763 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,764 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,764 [ERROR] data_service: Error fetching sales data for product 42: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,782 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,782 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,782 [ERROR] data_service: Error fetching sales data for product 44: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,814 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,814 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,814 [ERROR] data_service: Error fetching sales data for product 45: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,829 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,829 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,829 [ERROR] data_service: Error fetching sales data for product 46: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,842 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,842 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,842 [ERROR] data_service: Error fetching sales data for product 47: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,856 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,856 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,856 [ERROR] data_service: Error fetching sales data for product 48: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,871 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,871 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,871 [ERROR] data_service: Error fetching sales data for product 49: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,942 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,942 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:05,942 [ERROR] data_service: Error fetching sales data for product 50: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,035 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,036 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,036 [ERROR] data_service: Error fetching sales data for product 51: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,085 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,086 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,086 [ERROR] data_service: Error fetching sales data for product 52: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,172 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,173 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,173 [ERROR] data_service: Error fetching sales data for product 53: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,220 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,221 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,221 [ERROR] data_service: Error fetching sales data for product 54: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,268 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,269 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,269 [ERROR] data_service: Error fetching sales data for product 55: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,320 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,320 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,320 [ERROR] data_service: Error fetching sales data for product 56: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,352 [ERROR] data_service: Database connection error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,352 [ERROR] data_service: Query execution error: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,352 [ERROR] data_service: Error fetching sales data for product 57: (1146, "Table 'espenida_pos.transaction_items' doesn't exist")
+2026-10-09 19:10:06,400 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:10:06] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+
+--- started 2026-10-09 19:25:41 (pid 15168) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 19:25:52,154 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 19:25:52,155 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 19:25:53,229 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 19:25:55,220 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:55] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:25:55,255 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:55] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:25:55,262 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:55] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:25:57,379 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:57] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:25:57,416 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:57] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:25:57,447 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:25:57] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:26:09,938 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:26:09] "GET /api/pairing-products?product_id=18 HTTP/1.1" 200 -
+2026-10-09 19:28:29,825 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:28:29] "[33mGET /api/ml/model-info HTTP/1.1[0m" 404 -
+2026-10-09 19:28:34,081 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:28:34] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:28:56,747 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:28:56] "GET /api/recommendations?limit=1000 HTTP/1.1" 200 -
+2026-10-09 19:31:35,011 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:35] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:31:35,018 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:35] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:31:37,197 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:37] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:31:39,335 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:39] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:31:39,369 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:39] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:31:39,375 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:31:39] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:36:47,648 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:36:47] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:36:47,656 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:36:47] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:36:47,688 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:36:47] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:41:44,205 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:41:44] "GET /api/recommendations?limit=1000 HTTP/1.1" 200 -
+2026-10-09 19:42:24,216 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:24] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:42:27,015 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:27] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:42:27,025 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:27] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:42:43,126 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:43] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:42:43,136 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:43] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:42:43,170 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:42:43] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:43:29,991 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:43:29] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 19:43:30,018 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:43:30] "GET /health HTTP/1.1" 200 -
+2026-10-09 19:43:30,050 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:43:30] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 19:46:09,604 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:46:09] "GET /api/recommendations?limit=1000 HTTP/1.1" 200 -
