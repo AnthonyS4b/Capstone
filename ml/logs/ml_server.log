@@ -889,3 +889,25 @@ Press Ctrl+C to stop
 2026-10-09 19:43:30,018 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:43:30] "GET /health HTTP/1.1" 200 -
 2026-10-09 19:43:30,050 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:43:30] "GET /api/model-info HTTP/1.1" 200 -
 2026-10-09 19:46:09,604 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 19:46:09] "GET /api/recommendations?limit=1000 HTTP/1.1" 200 -
+
+--- started 2026-10-09 22:15:39 (pid 12000) ---
+
+==================================================
+ML Recommendation API Server
+==================================================
+[OK] Python 3.14.4
+[OK] Starting on http://127.0.0.1:5000
+Press Ctrl+C to stop
+
+ * Serving Flask app 'api_server'
+ * Debug mode: off
+2026-10-09 22:16:05,637 [INFO] werkzeug: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-10-09 22:16:05,637 [INFO] werkzeug: [33mPress CTRL+C to quit[0m
+2026-10-09 22:16:23,820 [INFO] recommendation_model: Model loaded successfully
+2026-10-09 22:16:27,834 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:27] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 22:16:27,922 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:27] "GET /health HTTP/1.1" 200 -
+2026-10-09 22:16:27,996 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:27] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-09 22:16:37,010 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:37] "GET /health HTTP/1.1" 200 -
+2026-10-09 22:16:44,642 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:44] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-09 22:16:44,885 [INFO] werkzeug: 127.0.0.1 - - [09/Oct/2026 22:16:44] "GET /api/model-info HTTP/1.1" 200 -
