@@ -203,12 +203,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const salesRangeLabelEl = document.getElementById('salesRangeLabel');
     const rangeLabels = { day: 'today', week: 'last 7 days', month: 'last 30 days', year: 'this year' };
     const salesYearSelect = document.getElementById('salesYear');
+    const salesMonthSelect = document.getElementById('salesMonth');
     const thisYear = new Date().getFullYear();
+    const thisMonth = new Date().getMonth() + 1;
 
-    // "this year" or "in 2025"
-    function salesRangeLabel(range, year) {
+    // "this year", "in 2025" or "in March 2025"
+    function salesRangeLabel(range, year, month) {
+        if (range === 'year' && month) return 'in ' + salesMonthSelect.selectedOptions[0].text + ' ' + year;
         if (range === 'year' && Number(year) !== thisYear) return 'in ' + year;
         return rangeLabels[range] || '';
+    }
+
+    // Months of this year that have not started cannot be picked
+    function syncSalesMonths() {
+        if (!salesMonthSelect) return;
+        const isThisYear = !salesYearSelect || Number(salesYearSelect.value) === thisYear;
+        Array.from(salesMonthSelect.options).forEach(option => {
+            option.disabled = isThisYear && Number(option.value) > thisMonth;
+        });
+        if (salesMonthSelect.selectedOptions[0]?.disabled) salesMonthSelect.value = '';
     }
 
     const salesChart = new Chart(ctx, {
@@ -245,15 +258,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Fetch chart data from server
     function loadSalesChart(range) {
         salesWrapper.classList.add('is-loading');
-        // "Year" shows the months of the year picked in the dropdown; Day/Week/Month
-        // are always recent, so the dropdown goes back to this year for them
-        if (salesYearSelect && range !== 'year') salesYearSelect.value = String(thisYear);
+        // "Year" shows the months of the year picked in the dropdown, or the days of the
+        // month picked with it; Day/Week/Month are always recent, so the dropdowns go
+        // back to this year and "All months" for them
+        if (range !== 'year') {
+            if (salesYearSelect) salesYearSelect.value = String(thisYear);
+            if (salesMonthSelect) salesMonthSelect.value = '';
+        }
+        syncSalesMonths();
         const year = salesYearSelect ? salesYearSelect.value : thisYear;
+        const month = salesMonthSelect ? salesMonthSelect.value : '';
         fetch('ajax/dashboard_chart_ajax.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: 'action=get_sales_chart&range=' + encodeURIComponent(range) +
-                  (range === 'year' ? '&year=' + encodeURIComponent(year) : '')
+                  (range === 'year' ? '&year=' + encodeURIComponent(year) : '') +
+                  (range === 'year' && month ? '&month=' + encodeURIComponent(month) : '')
         })
         .then(r => r.json())
         .then(response => {
@@ -263,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 salesChart.data.datasets[0].data = response.values;
                 salesChart.update();
                 salesTotalEl.textContent = pesoFull(total);
-                salesRangeLabelEl.textContent = salesRangeLabel(range, year);
+                salesRangeLabelEl.textContent = salesRangeLabel(range, year, month);
                 salesWrapper.classList.toggle('is-empty', total === 0);
             } else {
                 console.error('Chart data error:', response.message);
@@ -285,15 +305,21 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
+            if (salesMonthSelect) salesMonthSelect.value = ''; // "Year" means the whole year
             loadSalesChart(this.dataset.range);
         });
     });
 
-    // Picking a year switches to the "Year" view for that year
-    salesYearSelect?.addEventListener('change', () => {
-        document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.toggle('active', b.dataset.range === 'year'));
+    // Picking a year switches to the "Year" view for that year. Picking a month shows
+    // that month of the picked year, which none of the buttons stands for.
+    function showPickedPeriod() {
+        syncSalesMonths();
+        const wholeYear = !salesMonthSelect || !salesMonthSelect.value;
+        document.querySelectorAll('.range-btn[data-range]').forEach(b => b.classList.toggle('active', wholeYear && b.dataset.range === 'year'));
         loadSalesChart('year');
-    });
+    }
+    salesYearSelect?.addEventListener('change', showPickedPeriod);
+    salesMonthSelect?.addEventListener('change', showPickedPeriod);
 
     // ── Sales by Category Chart (vertical bar, real data from PHP) ───────────
     const ctx2 = document.getElementById('categoryChart').getContext('2d');

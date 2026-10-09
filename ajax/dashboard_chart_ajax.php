@@ -102,6 +102,37 @@ if ($action === 'get_sales_chart') {
                 // in the dashboard's year dropdown. Past years show all 12 months.
                 $thisYear = (int)date('Y');
                 $year = filter_var($_POST['year'] ?? $thisYear, FILTER_VALIDATE_INT, ['options' => ['min_range' => 2000, 'max_range' => $thisYear]]) ?: $thisYear;
+
+                // With a month picked in the month dropdown as well: that month's sales
+                // day by day. The current month stops at today.
+                $month = filter_var($_POST['month'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 12]]) ?: null;
+                if ($month !== null) {
+                    $monthStart = sprintf('%04d-%02d-01', $year, $month);
+                    $stmt = $pdo->prepare("
+                        SELECT DAY(t.created_at) AS period, COALESCE(SUM(t.total_amount), 0) AS total
+                        FROM transactions t
+                        LEFT JOIN sales s ON s.transaction_id = t.id
+                        WHERE (s.status IS NULL OR s.status != 'voided')
+                          AND t.created_at >= :month_start AND t.created_at < :next_month_start
+                        GROUP BY DAY(t.created_at)
+                        ORDER BY period
+                    ");
+                    $stmt->execute([':month_start' => $monthStart, ':next_month_start' => date('Y-m-d', strtotime("$monthStart +1 month"))]);
+                    $dayMap = [];
+                    foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $r) {
+                        $dayMap[(int)$r['period']] = (float)$r['total'];
+                    }
+                    $labels = [];
+                    $values = [];
+                    $isThisMonth = $year === $thisYear && $month === (int)date('n');
+                    $lastDay = $isThisMonth ? (int)date('j') : (int)date('t', strtotime($monthStart));
+                    for ($d = 1; $d <= $lastDay; $d++) {
+                        $labels[] = (string)$d;
+                        $values[] = $dayMap[$d] ?? 0;
+                    }
+                    break;
+                }
+
                 $stmt = $pdo->prepare("
                     SELECT MONTH(t.created_at) AS period, COALESCE(SUM(t.total_amount), 0) AS total
                     FROM transactions t

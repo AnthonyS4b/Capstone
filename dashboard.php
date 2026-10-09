@@ -416,7 +416,14 @@ if ($is_owner) {
                         </div>
                     </div>
                     <div class="chart-controls">
-                        <!-- Picking a year shows that year's sales month by month -->
+                        <!-- Picking a year shows that year's sales month by month;
+                             picking a month too shows that month day by day -->
+                        <select class="range-year" id="salesMonth" aria-label="Month to show">
+                            <option value="">All months</option>
+                            <?php for ($m = 1; $m <= 12; $m++): ?>
+                                <option value="<?= $m ?>"><?= date('F', mktime(0, 0, 0, $m, 1)) ?></option>
+                            <?php endfor; ?>
+                        </select>
                         <select class="range-year" id="salesYear" aria-label="Year to show">
                             <?php foreach ($salesYears as $y): ?>
                                 <option value="<?= (int)$y ?>"><?= (int)$y ?></option>
