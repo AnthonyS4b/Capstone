@@ -262,6 +262,52 @@ FEATURE_CONFIG: Dict[str, int] = {
     "forecast_horizon": 30,  # Predict next 30 days
     "seasonality_window": 7,  # Weekly seasonality
     "min_transactions": 3,  # Minimum transactions for feature calculation
+    # --- Sales forecast (ml/recommendation_model.py) ---
+    # The model sees a product's sales in the 60 days BEFORE a reference day and
+    # predicts the units sold in the 30 days FROM that day. Because the answer lies
+    # entirely after the inputs, nothing the model is asked to predict is fed to it.
+    "feature_window_days": 60,
+    "training_step_days": 7,     # one training example per product per week of history
+    # A stretch with no sales at all for longer than this is missing data, not zero
+    # demand (the store was not recording). Training skips windows that contain one.
+    "max_store_gap_days": 3,
+    "min_training_samples": 60,  # too few examples to learn from below this
+}
+
+# The inputs of the sales forecast, in the order the model receives them.
+# Built by DataProcessor.forecast_features(); a saved model remembers this list and
+# is retrained when it changes.
+FORECAST_FEATURE_NAMES = [
+    "units_last_7",          # units sold in the last 7 days
+    "units_last_30",         # units sold in the last 30 days
+    "units_prev_30",         # units sold in the 30 days before that
+    "sale_days_last_30",     # days with at least one sale, last 30 days
+    "sale_days_60",          # days with at least one sale, whole window
+    "days_since_last_sale",  # 0 = sold yesterday; 60 = no sale in the window
+    "sales_trend",           # (last 30 - previous 30) / (previous 30 + 1)
+    "daily_units_std",       # how uneven daily sales are
+    "unit_price",
+    "markup_percentage",
+    "product_age_days",      # how much of the window the product existed (up to 60)
+    "category_id",
+]
+
+# The same inputs in everyday words, for the "What does the system look at?" list on
+# the Recommendations page (model-info sends them with the model's weight for each).
+# Written for store staff, not programmers: no "trend", "markup" or "variance".
+FORECAST_FEATURE_LABELS: Dict[str, str] = {
+    "units_last_7": "How many were sold in the last 7 days",
+    "units_last_30": "How many were sold in the last 30 days",
+    "units_prev_30": "How many were sold the month before that",
+    "sale_days_last_30": "On how many days it sold, last 30 days",
+    "sale_days_60": "On how many days it sold, last 60 days",
+    "days_since_last_sale": "How long since it was last sold",
+    "sales_trend": "Whether its sales are going up or down",
+    "daily_units_std": "Whether it sells a little every day or all at once",
+    "unit_price": "Its selling price",
+    "markup_percentage": "How much profit is added on top of its cost",
+    "product_age_days": "How new the product is",
+    "category_id": "What kind of product it is",
 }
 
 # ============================================================================

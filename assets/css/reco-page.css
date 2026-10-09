@@ -1217,6 +1217,70 @@
     color: var(--m-ink);
 }
 
+/* Headline of Prediction Details: expected sales in the next 30 days */
+#forecastModal .estimate-box {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    border: 1px solid var(--m-line);
+    border-left: 4px solid var(--m-brand);
+    border-radius: 12px;
+    background: var(--m-brand-tint);
+}
+
+#forecastModal .estimate-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--m-muted);
+}
+
+#forecastModal .estimate-value {
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--m-ink);
+}
+
+#forecastModal .estimate-note {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--m-ink);
+}
+
+/* "What does the system look at": sentences instead of short labels */
+#forecastModal .weights-note {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--m-ink);
+}
+
+#modelWeights .feature-name {
+    width: 46%;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+#modelWeights .weights-more {
+    margin-top: 6px;
+    border-top: 1px solid var(--m-line);
+}
+
+#modelWeights .weights-more summary {
+    padding: 12px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--m-brand);
+    cursor: pointer;
+}
+
+@media (max-width: 576px) {
+    /* The sentence gets its own line; the bar and the word share the next */
+    #modelWeights .feature-row { flex-wrap: wrap; row-gap: 6px; }
+    #modelWeights .feature-name { width: 100%; }
+}
+
 /* ─── Apply modal: strategy choices ─── */
 #applyModal #applyContent > h6 {
     margin: 0 0 2px;
