@@ -15,13 +15,15 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 try:
     from .data_service import DataProcessor, DatabaseConnector
     from .ml_config import (
         CONFIDENCE_LEVELS,
+        FEATURE_CONFIG,
+        FORECAST_FEATURE_LABELS,
+        FORECAST_FEATURE_NAMES,
         ML_CONFIG,
         MODEL_PATHS,
         RISK_LEVELS,
@@ -33,6 +35,9 @@ except ImportError:
     from data_service import DataProcessor, DatabaseConnector
     from ml_config import (
         CONFIDENCE_LEVELS,
+        FEATURE_CONFIG,
+        FORECAST_FEATURE_LABELS,
+        FORECAST_FEATURE_NAMES,
         ML_CONFIG,
         MODEL_PATHS,
         RISK_LEVELS,
@@ -96,6 +101,8 @@ class RecommendationModel:
         self.scaler: Optional[StandardScaler] = None
         self.feature_names: Optional[List[str]] = None
         self.model_metrics: Dict[str, Any] = {}
+        # (checked at, answer) of forecast_in_use(), so a page of products asks the database once
+        self._records_check: Optional[tuple] = None
         self.load_model()
 
     # ========================================================================
@@ -104,9 +111,13 @@ class RecommendationModel:
 
     def load_model(self) -> None:
         """
-        Load pre-trained model and scaler from disk.
+        Load the saved model and scaler from disk.
 
-        Falls back to training new model if saved files not found.
+        A file saved before the forecast inputs changed is not used. That includes
+        the earlier model, which was given the figure it had to predict: it is
+        replaced by one trained from the sales history. When there is not enough
+        history to train on, the model stays empty and the recommendation rules
+        work from past sales instead.
         """
         try:
             if (
@@ -114,115 +125,135 @@ class RecommendationModel:
                 and os.path.exists(MODEL_PATHS["scaler"])
             ):
                 with open(MODEL_PATHS["scaler"], "rb") as f:
-                    self.scaler = pickle.load(f)
+                    scaler = pickle.load(f)
                 with open(MODEL_PATHS["model"], "rb") as f:
-                    self.model = pickle.load(f)
-                logger.info("Model loaded successfully")
+                    model = pickle.load(f)
+                if getattr(model, "forecast_feature_names_", None) == FORECAST_FEATURE_NAMES:
+                    self.model, self.scaler = model, scaler
+                    self.feature_names = list(FORECAST_FEATURE_NAMES)
+                    self.model_metrics = dict(getattr(model, "forecast_metrics_", None) or {})
+                    logger.info("Model loaded successfully")
+                    return
+                logger.warning("Saved model predates the current forecast inputs. Retraining.")
             else:
                 logger.warning("No pre-trained model found. Training new model.")
-                self.train_model()
         except Exception as e:
             logger.error(f"Error loading model: {e}")
-            self.train_model()
+
+        self.model, self.scaler = None, None
+        self.train_model()
 
     def train_model(self) -> bool:
         """
-        Train Random Forest model on all product sales data.
+        Train the sales forecast and score it on a month it has never seen.
+
+        The examples come from DataProcessor.build_forecast_training_set(): a product
+        on a reference day in the past, with its sales in the 60 days before that day
+        as inputs and the units it sold in the 30 days after it as the answer. The
+        answer always lies after the inputs, so the model is never handed the figure
+        it is asked to predict.
+
+        The score is a time-based holdout, the way a forecast is really used. The most
+        recent reference day is set aside; a model is fitted only on examples whose 30
+        answer days ended before it; its predictions for the held-out month are
+        compared with what was actually sold. The same month is also "forecast" by
+        repeating each product's previous 30 days, so the score can be read against a
+        guess that needs no model at all.
+
+        The model that is saved is then fitted on every example.
 
         Returns:
-            bool: True if training successful, False otherwise
+            bool: True if training successful, False otherwise (the model in use is
+            left as it was)
         """
         try:
             logger.info("Starting model training...")
 
-            # Prepare training data
-            products = DataProcessor.get_all_active_products()
-            if not products:
-                logger.error("No products available for training")
+            samples = DataProcessor.build_forecast_training_set()
+            if samples.empty:
+                logger.warning("No usable sales history to train the forecast on")
                 return False
 
-            X_list = []
-            y_list = []
-            feature_names = None
+            horizon = timedelta(days=FEATURE_CONFIG["forecast_horizon"])
+            test_ref = samples["ref"].max()
+            test = samples[samples["ref"] == test_ref]
+            train = samples[samples["ref"].apply(lambda ref: ref + horizon <= test_ref)]
 
-            # Extract features and target (next 30-day sales prediction)
-            for product_id, product_data in products:
-                try:
-                    features = DataProcessor.extract_features(product_id, product_data)
-                    if features and features["monthly_sales_velocity"] is not None:
-                        if feature_names is None:
-                            feature_names = [
-                                k for k in features.keys() if k not in ("product_id", "date_added")
-                            ]
-
-                        X_list.append(
-                            [features[key] for key in feature_names]
-                        )
-                        y_list.append(features["monthly_sales_velocity"])
-                except Exception as e:
-                    logger.warning(f"Error processing product {product_id}: {e}")
-                    continue
-
-            if len(X_list) < THRESHOLDS["min_training_records"]:
-                logger.warning(f"Insufficient training data: {len(X_list)} records")
+            if len(train) < FEATURE_CONFIG["min_training_samples"] or test.empty:
+                logger.warning(
+                    f"Insufficient training data: {len(train)} examples before the held-out month "
+                    f"(about four months of unbroken sales history are needed)"
+                )
                 return False
 
-            X = np.array(X_list)
-            y = np.array(y_list)
-
-            # Handle NaN and inf values
-            mask = np.isfinite(X).all(axis=1) & np.isfinite(y)
-            X = X[mask]
-            y = y[mask]
-
-            if len(X) < THRESHOLDS["min_training_records"]:
-                logger.warning("Insufficient valid training data after cleaning")
-                return False
-
-            # Scale features
-            self.scaler = StandardScaler()
-            X_scaled = self.scaler.fit_transform(X)
-
-            # Split data (80-20)
-            X_train, X_test, y_train, y_test = train_test_split(
-                X_scaled, y, test_size=0.2, random_state=42
-            )
-
-            # Train Random Forest
             rf_params = {k: v for k, v in ML_CONFIG.items() if k != "model_type"}
-            self.model = RandomForestRegressor(**rf_params)
-            self.model.fit(X_train, y_train)
 
-            # Evaluate model
-            y_pred = self.model.predict(X_test)
-            mse = mean_squared_error(y_test, y_pred)
-            rmse = np.sqrt(mse)
-            mae = mean_absolute_error(y_test, y_pred)
-            r2 = r2_score(y_test, y_pred)
+            def inputs(frame: pd.DataFrame) -> np.ndarray:
+                return frame[FORECAST_FEATURE_NAMES].to_numpy(dtype=float)
 
-            self.model_metrics = {
-                "mse": float(mse),
-                "rmse": float(rmse),
-                "mae": float(mae),
-                "r2_score": float(r2),
-                "training_samples": len(X_train),
-                "test_samples": len(X_test),
+            def fit(frame: pd.DataFrame):
+                scaler = StandardScaler()
+                model = RandomForestRegressor(**rf_params)
+                model.fit(scaler.fit_transform(inputs(frame)), frame["target"].to_numpy(dtype=float))
+                return model, scaler
+
+            def scores(actual: np.ndarray, predicted: np.ndarray) -> Dict[str, float]:
+                mse = float(mean_squared_error(actual, predicted))
+                return {
+                    "mse": mse,
+                    "rmse": float(np.sqrt(mse)),
+                    "mae": float(mean_absolute_error(actual, predicted)),
+                    # R2 is undefined when every product sold the same amount
+                    "r2": float(r2_score(actual, predicted)) if np.var(actual) > 0 else 0.0,
+                }
+
+            # 1. Score on the held-out month
+            eval_model, eval_scaler = fit(train)
+            y_test = test["target"].to_numpy(dtype=float)
+            model_scores = scores(y_test, np.maximum(eval_model.predict(eval_scaler.transform(inputs(test))), 0))
+            naive_scores = scores(y_test, test["units_last_30"].to_numpy(dtype=float))
+
+            metrics = {
+                "mse": model_scores["mse"],
+                "rmse": model_scores["rmse"],
+                "mae": model_scores["mae"],
+                "r2_score": model_scores["r2"],
+                # "Next 30 days = previous 30 days", scored on the same month
+                "baseline_mae": naive_scores["mae"],
+                "baseline_rmse": naive_scores["rmse"],
+                "baseline_r2": naive_scores["r2"],
+                "evaluation": "time_holdout",
+                "evaluation_train_samples": int(len(train)),
+                "test_samples": int(len(test)),
+                "test_period_start": str(test_ref),
+                "test_period_end": str(test_ref + horizon - timedelta(days=1)),
+                "reference_days": int(samples["ref"].nunique()),
+                "training_samples": int(len(samples)),
                 "training_date": datetime.now().isoformat(),
-                "feature_count": X.shape[1],
+                "feature_count": len(FORECAST_FEATURE_NAMES),
             }
 
-            # Store feature names
-            self.feature_names = feature_names
+            # 2. The model that is used learns from every example, the held-out month included
+            model, scaler = fit(samples)
+            # Saved with the model, so a file is recognised (and its score shown) after a restart
+            model.forecast_feature_names_ = list(FORECAST_FEATURE_NAMES)
+            model.forecast_metrics_ = dict(metrics)
 
-            # Save model
             os.makedirs(MODEL_PATHS["models_dir"], exist_ok=True)
             with open(MODEL_PATHS["scaler"], "wb") as f:
-                pickle.dump(self.scaler, f)
+                pickle.dump(scaler, f)
             with open(MODEL_PATHS["model"], "wb") as f:
-                pickle.dump(self.model, f)
+                pickle.dump(model, f)
+
+            self.model, self.scaler = model, scaler
+            self.feature_names = list(FORECAST_FEATURE_NAMES)
+            self.model_metrics = metrics
 
             logger.info(
-                f"Model trained successfully. R² = {r2:.4f}, RMSE = {rmse:.4f}"
+                f"Model trained successfully on {len(samples)} examples. Held-out month "
+                f"{metrics['test_period_start']} to {metrics['test_period_end']}: "
+                f"R2 = {metrics['r2_score']:.4f}, MAE = {metrics['mae']:.2f} units "
+                f"(repeating last month: R2 = {metrics['baseline_r2']:.4f}, MAE = {metrics['baseline_mae']:.2f})"
             )
             self._save_metrics()
             return True
@@ -235,12 +266,46 @@ class RecommendationModel:
     # PREDICTION METHODS
     # ========================================================================
 
-    def predict_sales(self, X: np.ndarray) -> Optional[np.ndarray]:
+    def forecast_in_use(self) -> bool:
         """
-        Predict next 30-day sales velocity.
+        Whether forecasts are being made right now: the model is trained and the store
+        has 60 days of unbroken sales records to forecast from (the kind of period the
+        model was trained on). The answer is kept for a minute.
+        """
+        if self.model is None or self.scaler is None:
+            return False
+        now = datetime.now()
+        if self._records_check is None or (now - self._records_check[0]).total_seconds() > 60:
+            self._records_check = (now, DataProcessor.recent_records_complete())
+        return self._records_check[1]
+
+    def forecast_units(self, forecast_features: Optional[Dict[str, float]]) -> Optional[float]:
+        """
+        Units a product is expected to sell in the next 30 days.
 
         Args:
-            X: Feature matrix (can be scaled or unscaled)
+            forecast_features: the product's inputs from DataProcessor.forecast_features()
+
+        Returns:
+            The forecast, or None when none can be made: forecasts are not in use
+            (see forecast_in_use), the product is too new to have inputs, or it had
+            no sale at all in the 60-day window. The model has only ever seen products
+            that were selling, so it has nothing to go on for one that is not.
+        """
+        if not forecast_features or not self.forecast_in_use():
+            return None
+        if not forecast_features.get("sale_days_60"):
+            return None
+        X = np.array([[forecast_features[name] for name in FORECAST_FEATURE_NAMES]], dtype=float)
+        prediction = self.predict_sales(X)
+        return float(prediction[0]) if prediction is not None else None
+
+    def predict_sales(self, X: np.ndarray) -> Optional[np.ndarray]:
+        """
+        Predict units sold in the next 30 days.
+
+        Args:
+            X: Feature matrix, columns in FORECAST_FEATURE_NAMES order (unscaled)
 
         Returns:
             Array of predictions or None on error
@@ -676,10 +741,34 @@ class RecommendationModel:
                 ("mae", str(self.model_metrics["mae"])),
                 ("r2_score", str(self.model_metrics["r2_score"])),
                 ("training_samples", str(self.model_metrics["training_samples"])),
+                ("test_samples", str(self.model_metrics["test_samples"])),
+                ("baseline_mae", str(self.model_metrics["baseline_mae"])),
+                ("baseline_r2", str(self.model_metrics["baseline_r2"])),
             ]
             DatabaseConnector.execute_batch_insert(query, metrics_data)
         except Exception as e:
             logger.warning(f"Could not save metrics to DB: {e}")
+
+    def feature_importances(self) -> List[Dict[str, Any]]:
+        """
+        How much the trained forest relies on each input, largest first.
+
+        These are the forest's own feature importances: the share of its error
+        reduction that came from splitting on each input, over all trees. They add up
+        to 1 and describe the model as a whole, not any single product's forecast.
+        Empty when the model is not trained.
+        """
+        if self.model is None:
+            return []
+        weights = [
+            {
+                "name": name,
+                "label": FORECAST_FEATURE_LABELS.get(name, name),
+                "importance": float(weight),
+            }
+            for name, weight in zip(FORECAST_FEATURE_NAMES, self.model.feature_importances_)
+        ]
+        return sorted(weights, key=lambda w: -w["importance"])
 
     def get_model_info(self) -> Dict[str, Any]:
         """
@@ -694,6 +783,10 @@ class RecommendationModel:
             "metrics": self.model_metrics,
             "parameters": ML_CONFIG,
             "feature_count": len(self.feature_names) if self.feature_names else 0,
+            "features": list(self.feature_names or []),
+            "feature_importances": self.feature_importances(),
+            # False while recent sales records have a hole: products then use past sales
+            "forecast_in_use": self.forecast_in_use(),
         }
 
 

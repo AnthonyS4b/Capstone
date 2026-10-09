@@ -26,6 +26,7 @@ $(document).ready(function () {
     loadRecommendations();
     checkApiHealth();
     wireEvents();
+    loadModelInfo(); // ready before the first "Details" window is opened
 });
 
 function wireEvents() {
@@ -156,7 +157,10 @@ function trainModel() {
         dataType: 'json',
         success(res) {
             showToast(res.success ? 'success' : 'error', res.success ? 'Done' : 'Error', res.message || '');
-            if (res.success) loadRecommendations();
+            if (res.success) {
+                loadRecommendations();
+                loadModelInfo(true); // a retrained model has new input weights
+            }
         },
         error() { showToast('error', 'Error', 'Failed to update analysis'); },
         complete() { 
@@ -448,6 +452,7 @@ function openForecastModal(rec) {
             ${buildDetailsTab(rec)}
         </div>
     `;
+    renderModelWeights(rec);
 
     // Wire tab clicks
     content.querySelectorAll('.forecast-tab').forEach(tab => {
@@ -920,7 +925,6 @@ function buildDetailsTab(rec) {
     const riskScore = Math.round((rec.risk_score || 0) * 100);
     const daysInStock = rec.days_in_stock || 0;
     const monthly = rec.monthly_sales || 0;
-    const stock = rec.current_stock || 0;
     const historyCount = rec.history_count || 0;
 
     // Format date_added
@@ -941,15 +945,6 @@ function buildDetailsTab(rec) {
     else if (daysInStock > 60) { ageStatus = 'Moderate'; ageColor = '#f59e0b'; }
     else if (daysInStock > 30) { ageStatus = 'Normal'; ageColor = '#3b82f6'; }
 
-    // Feature importance (based on actual product data)
-    const features = [
-        { name: 'Days in stock', value: Math.min(100, (daysInStock / 120) * 100), color: '#ef4444' },
-        { name: 'Monthly sales velocity', value: Math.min(100, Math.max(5, 100 - monthly * 5)), color: '#f59e0b' },
-        { name: 'Current stock level', value: Math.min(100, (stock / 50) * 100), color: '#3b82f6' },
-        { name: 'Seasonal demand factor', value: 35, color: '#8b5cf6' },
-        { name: 'Price point sensitivity', value: 25, color: '#10b981' },
-    ];
-
     // Key insight based on risk level
     let keyInsight = '';
     if (rec.risk_level === 'CRITICAL') {
@@ -966,10 +961,20 @@ function buildDetailsTab(rec) {
         keyInsight = `This product shows moderate risk indicators. The model balances stock age, sales velocity, and inventory levels to generate this recommendation.`;
     }
 
+    const estimate = salesEstimate(rec);
+
     return `
+        <div class="estimate-box">
+            <span class="estimate-label">Expected to sell in the next 30 days</span>
+            <strong class="estimate-value">${estimate.amount}</strong>
+            <span class="estimate-note">If nothing is changed. In the last 30 days it sold ${estimate.soldLast30}. ${estimate.explained}</span>
+        </div>
+
         <h6 class="section-subtitle">Model Metrics</h6>
         <div class="detail-card">
-            <div class="detail-row"><span>Model Type</span> <strong>Random Forest Regressor + Data History</strong></div>
+            <div class="detail-row"><span>Where the sales estimate comes from</span> <strong title="${rec.forecast_source === 'model'
+                ? 'Random Forest Regressor, from the last 60 days of sales'
+                : 'Not from the Random Forest: its forecast needs 60 unbroken days of sales records.'}">${estimate.source}</strong></div>
             <div class="detail-row"><span>Confidence Score</span> <strong>${confidence}%</strong></div>
             <div class="detail-row"><span>Risk Priority Score</span> <strong>${riskScore}%</strong></div>
             <div class="detail-row"><span>Days in Stock</span> <strong>${daysInStock} days</strong></div>
@@ -977,19 +982,116 @@ function buildDetailsTab(rec) {
             <div class="detail-row"><span>Historical Strategies Applied</span> <strong>${historyCount}</strong></div>
         </div>
 
-        <h6 class="section-subtitle">What Influences This Prediction?</h6>
-        <div class="detail-card">
-            ${features.map(f => `
-                <div class="feature-row">
-                    <div class="feature-name">${f.name}</div>
-                    <div class="feature-bar-wrap">
-                        <div class="feature-bar" style="width:${f.value.toFixed(0)}%; background:${f.color}"></div>
-                    </div>
-                    <div class="feature-pct">${f.value.toFixed(0)}%</div>
-                </div>
-            `).join('')}
+        <h6 class="section-subtitle">What Does the System Look At to Estimate Sales?</h6>
+        <div class="detail-card" id="modelWeights">
+            <p class="weights-note mb-0">Loading…</p>
         </div>
     `;
+}
+
+// The headline of Prediction Details: how many the product is expected to sell in the
+// next 30 days, in words ("About 12 units", "About 2.5 kg", "Less than 1 unit"), with
+// where that figure comes from. Three sources: the Random Forest; the product's own
+// monthly average; or, when nothing sold in 90 days, a rough guess from its stock age.
+function salesEstimate(rec) {
+    const unit = String(rec.unit || '').trim().toLowerCase();
+    const weight = unit === 'per kilo' ? 'kg' : (unit === 'per gram' ? 'g' : '');
+    const quantity = n => {
+        if (weight) return `${n < 10 ? Math.round(n * 10) / 10 : Math.round(n)} ${weight}`;
+        const whole = Math.round(n);
+        return `${whole} unit${whole === 1 ? '' : 's'}`;
+    };
+
+    const expected = Math.max(0, Number(rec.predicted_monthly_sales) || 0);
+    let amount;
+    if (expected <= 0) amount = 'None';
+    else if (!weight && expected < 1) amount = 'Less than 1 unit';
+    else amount = 'About ' + quantity(expected);
+
+    const sold = Math.max(0, Number(rec.total_sold_last_30d) || 0);
+    const soldLast30 = sold > 0 ? quantity(sold) : 'none';
+
+    if (rec.forecast_source === 'model') {
+        return { amount, soldLast30,
+            source: 'The system\'s own estimate, learned from your past sales',
+            explained: 'This is the system\'s own estimate, learned from your past sales.' };
+    }
+    if ((Number(rec.monthly_sales) || 0) > 0) {
+        return { amount, soldLast30,
+            source: 'This product\'s average past sales',
+            explained: 'This is simply its average sales per month over the last 90 days.' };
+    }
+    return { amount, soldLast30,
+        source: 'A rough guess (nothing sold in the last 90 days)',
+        explained: 'Nothing was sold in the last 90 days, so this is only a rough guess from how long the stock has been sitting.' };
+}
+
+// The trained model's details (score, input weights): fetched once, then reused
+let modelInfoRequest = null;
+
+function loadModelInfo(refresh = false) {
+    if (!modelInfoRequest || refresh) {
+        const request = new Promise(resolve => {
+            $.ajax({
+                url: API_URL, method: 'GET', dataType: 'json',
+                data: { action: 'model_info' },
+                success: res => resolve(res && res.success ? res.model_info : null),
+                error: () => resolve(null),
+            });
+        });
+        modelInfoRequest = request;
+        // A failed load is not kept, so the next opening tries again
+        request.then(info => { if (!info && modelInfoRequest === request) modelInfoRequest = null; });
+    }
+    return modelInfoRequest;
+}
+
+// Fills "What Does the System Look At to Estimate Sales?" with the Random Forest's
+// own input weights (its feature importances), worded for store staff. They describe
+// the model as a whole; the bars here used to be figures made up per product, two of
+// them fixed at 35% and 25%.
+function renderModelWeights(rec) {
+    loadModelInfo().then(info => {
+        const box = document.getElementById('modelWeights');
+        if (!box) return; // the details were closed or redrawn meanwhile
+
+        const weights = (info && info.feature_importances) || [];
+        if (!info || !info.is_trained || !weights.length) {
+            box.innerHTML = `<p class="weights-note mb-0">${info
+                ? 'The system has not learned from your sales yet, so there is nothing to show here. Click "Update Analysis" to let it learn.'
+                : 'This list could not be loaded. Close this window and open it again.'}</p>`;
+            return;
+        }
+
+        const note = 'To estimate how many of a product will sell next month, the system looks at the things below. '
+            + 'The longer the bar and the higher the percentage, the more it matters. The list is the same for every product.'
+            + (rec.forecast_source === 'model' ? ''
+                : ' For now, this product\'s estimate is simply its average past sales. The system starts making its own estimate once the store has recorded sales for 60 days in a row.');
+
+        const row = w => {
+            const pct = Math.max(0, Number(w.importance) || 0) * 100;
+            return `
+                <div class="feature-row">
+                    <div class="feature-name">${esc(w.label || w.name)}</div>
+                    <div class="feature-bar-wrap">
+                        <div class="feature-bar" style="width:${pct.toFixed(1)}%"></div>
+                    </div>
+                    <div class="feature-pct">${pct > 0 && pct < 1 ? '&lt;1' : pct.toFixed(0)}%</div>
+                </div>`;
+        };
+
+        // The things that barely matter (under 3%) are folded away so the list stays short
+        const isMinor = w => (Number(w.importance) || 0) * 100 < 3;
+        const main = weights.filter(w => !isMinor(w));
+        const minor = weights.filter(isMinor);
+        box.innerHTML = `<p class="weights-note">${note}</p>`
+            + main.map(row).join('')
+            + (minor.length ? `
+                <details class="weights-more">
+                    <summary>Show ${minor.length} more thing${minor.length === 1 ? '' : 's'} that matter${minor.length === 1 ? 's' : ''} very little</summary>
+                    ${minor.map(row).join('')}
+                </details>` : '');
+    });
 }
 
 // ═══════════ CHART ═══════════

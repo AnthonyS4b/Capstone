@@ -202,18 +202,32 @@ Task: python C:\xampp\htdocs\Capstone\ml\api_server.py
   - Feature importance rankings
   - No scaling required (usually)
 
-- **Input Features**:
-  1. Current stock level
-  2. Unit price
-  3. Cost price
-  4. Markup percentage
-  5. Historical sales volume
-  6. Sales trend (improving/declining)
-  7. Days until expiry
-  8. Inventory turnover rate
-  9. Revenue to cost ratio
+- **Input Features** (what was known on the day of the forecast; see `FORECAST_FEATURE_NAMES` in `ml_config.py`):
+  1. Units sold in the last 7 days
+  2. Units sold in the last 30 days
+  3. Units sold in the 30 days before that
+  4. Days with at least one sale, last 30 days
+  5. Days with at least one sale, last 60 days
+  6. Days since the last sale
+  7. Sales trend (last 30 days against the 30 before)
+  8. How uneven daily sales are
+  9. Unit price
+  10. Markup percentage
+  11. Product age (up to 60 days)
+  12. Category
 
-- **Output**: Predicted monthly sales velocity
+- **Output**: Units the product is expected to sell in the next 30 days
+
+- **Training**: each example is a product on a past day, with its sales in the 60 days
+  before that day as inputs and the units it sold in the 30 days after as the answer.
+  The answer always lies after the inputs, so the model is never given what it has to
+  predict. Stretches where the store recorded no sales for more than 3 days are skipped.
+
+- **Score**: the most recent month of history is held out and predicted by a model
+  trained only on earlier data. It is reported next to a no-model baseline ("next 30
+  days = previous 30 days") in `ml_model_metrics` and `/api/model-info`.
+  About four months of unbroken sales history are needed before the model can train;
+  until then, and for products with no sale in the last 60 days, past sales are used.
 
 ## 🎯 Recommendation Strategy Levels
 

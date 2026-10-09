@@ -8,7 +8,8 @@ cleaning, and feature engineering for ML models.
 
 import logging
 from contextlib import contextmanager
-from typing import Any, Optional, List, Dict, Tuple
+from datetime import date, datetime, timedelta
+from typing import Any, Optional, List, Dict, Set, Tuple
 
 # pyrefly: ignore [missing-import]
 import numpy as np
@@ -20,9 +21,9 @@ import pymysql
 import pymysql.cursors
 
 try:
-    from .ml_config import DB_CONFIG, FEATURE_CONFIG, THRESHOLDS
+    from .ml_config import DB_CONFIG, FEATURE_CONFIG, FORECAST_FEATURE_NAMES, THRESHOLDS
 except ImportError:
-    from ml_config import DB_CONFIG, FEATURE_CONFIG, THRESHOLDS
+    from ml_config import DB_CONFIG, FEATURE_CONFIG, FORECAST_FEATURE_NAMES, THRESHOLDS
 
 logger = logging.getLogger(__name__)
 
@@ -429,6 +430,216 @@ class DataProcessor:
             }
 
     # ========================================================================
+    # SALES FORECAST INPUTS
+    # ========================================================================
+    # The forecast answers "how many units will this product sell in the next 30
+    # days?" from what was known on a given day: its sales in the 60 days before
+    # that day, its price and margin, and how long it has existed. The same
+    # function builds the inputs for training (a day in the past, where the answer
+    # is known) and for a live forecast (today), so the two can never drift apart.
+
+    @staticmethod
+    def _as_date(value: Any) -> Optional[date]:
+        """A calendar date from a date, datetime or 'YYYY-MM-DD ...' text; None if unusable."""
+        if value is None or value == "":
+            return None
+        try:
+            stamp = pd.Timestamp(value)
+            return None if pd.isna(stamp) else stamp.date()
+        except Exception:
+            return None
+
+    @staticmethod
+    def units_by_day(sales_df: pd.DataFrame) -> Dict[date, float]:
+        """Units sold per calendar day, from the rows of get_product_sales_data()."""
+        if sales_df is None or sales_df.empty:
+            return {}
+        days = pd.to_datetime(sales_df["sale_date"]).dt.date
+        return {day: float(units) for day, units in sales_df.groupby(days)["quantity"].sum().items()}
+
+    @staticmethod
+    def forecast_features(
+        units_by_day: Dict[date, float], as_of: date, product: Dict[str, Any]
+    ) -> Optional[Dict[str, float]]:
+        """
+        The forecast inputs for one product as they were known on `as_of`.
+
+        Only sales strictly before `as_of` are used. Returns None when the product
+        did not exist yet on that day (no forecast can be made for it).
+
+        Args:
+            units_by_day: units the product sold on each calendar day
+            as_of: the day the forecast is made from
+            product: needs price, cost_price, category_id and created_at
+        """
+        window = FEATURE_CONFIG["feature_window_days"]
+        half = window // 2
+        # units[0] is the day before as_of, units[window - 1] the oldest day in the window
+        units = [float(units_by_day.get(as_of - timedelta(days=i), 0.0)) for i in range(1, window + 1)]
+        sold_days = [i for i, u in enumerate(units) if u > 0]
+
+        # The product has to exist by as_of: created before it, or already selling
+        created = DataProcessor._as_date(product.get("created_at"))
+        first_known = as_of - timedelta(days=sold_days[-1] + 1) if sold_days else None
+        if created is not None and created < as_of:
+            first_known = min(created, first_known) if first_known else created
+        if first_known is None:
+            return None
+
+        last_30 = sum(units[:half])
+        prev_30 = sum(units[half:])
+        price = float(product.get("price") or 0)
+        recorded_cost = float(product.get("cost_price") or 0)
+        # Same stand-in as extract_features() when no cost was recorded
+        cost = recorded_cost if recorded_cost > 0 else (price * 0.7 if price > 0 else 1.0)
+
+        values = {
+            "units_last_7": sum(units[:7]),
+            "units_last_30": last_30,
+            "units_prev_30": prev_30,
+            "sale_days_last_30": sum(1 for u in units[:half] if u > 0),
+            "sale_days_60": len(sold_days),
+            "days_since_last_sale": sold_days[0] if sold_days else window,
+            "sales_trend": (last_30 - prev_30) / (prev_30 + 1.0),
+            "daily_units_std": float(np.std(units)),
+            "unit_price": price,
+            "markup_percentage": ((price - cost) / cost) * 100.0,
+            "product_age_days": min(window, (as_of - first_known).days),
+            "category_id": product.get("category_id") or 0,
+        }
+        return {name: float(values[name]) for name in FORECAST_FEATURE_NAMES}
+
+    @staticmethod
+    def _store_was_recording(
+        store_days: Set[date], start: date, end: date, max_gap: int, known_until: Optional[date] = None
+    ) -> bool:
+        """
+        False when [start, end) touches a run of more than max_gap days with no sale at all.
+
+        A quiet run is measured in full even where it crosses the edge of the period:
+        records that stop two days before `end` and stay silent for weeks are a hole,
+        not a two-day closure, and would understate the sales in those last days.
+        Days from `known_until` on have not happened yet and are never counted as quiet.
+        """
+        # Quiet days leading up to the period count towards a run that continues into it
+        quiet = 0
+        while quiet <= max_gap and (start - timedelta(days=quiet + 1)) not in store_days:
+            quiet += 1
+
+        day = start
+        while day < end:
+            quiet = 0 if day in store_days else quiet + 1
+            if quiet > max_gap:
+                return False
+            day += timedelta(days=1)
+
+        # ... and a run still open at the end is followed past it
+        while quiet > 0 and day not in store_days and (known_until is None or day < known_until):
+            quiet += 1
+            if quiet > max_gap:
+                return False
+            day += timedelta(days=1)
+        return True
+
+    @staticmethod
+    def recent_records_complete(today: Optional[date] = None) -> bool:
+        """
+        Whether the store has unbroken sales records for the 60 days up to today.
+
+        The forecast is trained only on such periods. When recent records have a hole
+        (the system was not in use for a while), a product's "no sales" in that hole is
+        missing data rather than no demand, and a forecast made from it would mean
+        nothing, so none is made until 60 unbroken days have built up again.
+        """
+        window = FEATURE_CONFIG["feature_window_days"]
+        max_gap = FEATURE_CONFIG["max_store_gap_days"]
+        today = today or datetime.now().date()
+        try:
+            rows = DatabaseConnector.execute_query(
+                """SELECT DISTINCT DATE(created_at) AS day FROM sales
+                   WHERE status = 'completed' AND created_at >= %s""",
+                (today - timedelta(days=window + max_gap + 1),),
+            )
+        except Exception as e:
+            logger.error(f"Error checking recent sales records: {e}")
+            return False
+        store_days = {DataProcessor._as_date(row["day"]) for row in rows or []}
+        return DataProcessor._store_was_recording(
+            store_days, today - timedelta(days=window), today, max_gap, known_until=today
+        )
+
+    @staticmethod
+    def build_forecast_training_set(today: Optional[date] = None) -> pd.DataFrame:
+        """
+        Every usable training example in the sales history.
+
+        One example is a product on a reference day in the past: the forecast inputs
+        as they were known that day, and the answer (`target`), the units it then sold
+        in the following 30 days. Reference days are a week apart. A reference day is
+        skipped when the store has a stretch of missing sales data around it.
+
+        Returns:
+            DataFrame with the FORECAST_FEATURE_NAMES columns plus `target`, `ref`
+            (the reference day) and `product_id`; empty when there is no usable history.
+        """
+        window = FEATURE_CONFIG["feature_window_days"]
+        horizon = FEATURE_CONFIG["forecast_horizon"]
+        step = FEATURE_CONFIG["training_step_days"]
+        max_gap = FEATURE_CONFIG["max_store_gap_days"]
+        today = today or datetime.now().date()
+
+        try:
+            rows = DatabaseConnector.execute_query(
+                """SELECT ti.product_id, DATE(s.created_at) AS day, SUM(ti.quantity) AS units
+                   FROM transaction_items ti
+                   JOIN sales s ON s.transaction_id = ti.transaction_id
+                   WHERE s.status = 'completed'
+                   GROUP BY ti.product_id, DATE(s.created_at)"""
+            )
+            products = DatabaseConnector.execute_query(
+                "SELECT id, price, cost_price, category_id, created_at FROM products"
+            )
+        except Exception as e:
+            logger.error(f"Error loading sales history for training: {e}")
+            return pd.DataFrame()
+        if not rows or not products:
+            return pd.DataFrame()
+
+        units_by_product: Dict[int, Dict[date, float]] = {}
+        store_days: Set[date] = set()
+        for row in rows:
+            day = DataProcessor._as_date(row["day"])
+            if day is None:
+                continue
+            store_days.add(day)  # any sale, even of a since-deleted product, shows the store was recording
+            units_by_product.setdefault(int(row["product_id"]), {})[day] = float(row["units"] or 0)
+        if not store_days:
+            return pd.DataFrame()
+
+        samples = []
+        ref = min(store_days) + timedelta(days=window)
+        while ref + timedelta(days=horizon) <= today:  # the 30 answer days must all be in the past
+            if DataProcessor._store_was_recording(
+                store_days, ref - timedelta(days=window), ref + timedelta(days=horizon), max_gap,
+                known_until=today,
+            ):
+                for product in products:
+                    product_id = int(product["id"])
+                    day_units = units_by_product.get(product_id, {})
+                    sample = DataProcessor.forecast_features(day_units, ref, product)
+                    if sample is None:
+                        continue
+                    sample["target"] = sum(
+                        day_units.get(ref + timedelta(days=i), 0.0) for i in range(horizon)
+                    )
+                    sample["ref"] = ref
+                    sample["product_id"] = product_id
+                    samples.append(sample)
+            ref += timedelta(days=step)
+
+        return pd.DataFrame(samples)
+
+    # ========================================================================
     # FEATURE EXTRACTION METHODS
     # ========================================================================
 
@@ -497,6 +708,11 @@ class DataProcessor:
                 "revenue_to_cost_ratio": price / cost,
                 # Date added for ML tracking
                 "date_added": str(created_at) if created_at else None,
+                # Inputs of the sales forecast as known today (None for a product
+                # created today). Kept apart from the figures above, which feed the rules.
+                "forecast_features": DataProcessor.forecast_features(
+                    DataProcessor.units_by_day(sales_df), datetime.now().date(), product_data
+                ),
             }
 
             return features
@@ -525,7 +741,7 @@ class DataProcessor:
             features = DataProcessor.extract_features(product_id, product_data)
             if features:
                 if feature_names is None:
-                    feature_names = [k for k in features.keys() if k not in ("product_id", "date_added")]
+                    feature_names = [k for k in features.keys() if k not in ("product_id", "date_added", "forecast_features")]
 
                 features_list.append([features[key] for key in feature_names])
                 product_ids.append(product_id)
