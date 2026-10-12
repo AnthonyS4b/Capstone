@@ -660,6 +660,12 @@ body {
     background: #f1f5f9;
 }
 
+/* The header's screen-reader-only "Actions" label is absolutely positioned. Without a
+   positioned ancestor inside the scroll box it escapes it and widens the whole page. */
+.archive-section .table-responsive {
+    position: relative;
+}
+
 .archive-table {
     width: 100%;
     border-collapse: collapse;
@@ -808,7 +814,66 @@ body {
         -webkit-overflow-scrolling: touch;
     }
 
-    .archive-table {
-        min-width: 720px;
+    /* Phones: each archived item is a stacked card instead of a wide table row, so
+       nothing scrolls sideways. Column names come from each cell's data-label
+       (set in archive.js). Selectors outrank the shared rules in inventory-ui.css. */
+    .inv-ui .archive-section .archive-table,
+    .inv-ui .archive-section .archive-table tbody,
+    .inv-ui .archive-section .archive-table tr,
+    .inv-ui .archive-section .archive-table td {
+        display: block;
+    }
+
+    .inv-ui .archive-section .archive-table thead {
+        display: none;
+    }
+
+    .inv-ui .archive-section .archive-table tbody tr {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .inv-ui .archive-section .archive-table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .inv-ui .archive-section .archive-table td {
+        padding: 4px 0;
+        border-bottom: none;
+        overflow-wrap: anywhere;
+    }
+
+    .inv-ui .archive-section .archive-table td[data-label] {
+        position: relative;
+        padding-left: 96px;
+        text-align: right;
+        white-space: normal;
+    }
+
+    .inv-ui .archive-section .archive-table td[data-label]::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink-subtle);
+        white-space: nowrap;
+    }
+
+    /* Finger-sized row actions */
+    .inv-ui .archive-section .archive-table .inv-actions {
+        padding-top: 8px;
+    }
+
+    .inv-ui .archive-section .archive-table .inv-actions .inv-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    .inv-ui .archive-section .archive-table .inv-actions .btn-icon {
+        width: 36px;
+        height: 36px;
+        vertical-align: middle;
     }
 }

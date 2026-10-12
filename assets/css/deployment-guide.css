@@ -1,0 +1,423 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Deployment guide (deployment_guide.php)
+   Tokens and the green page header come from inventory-ui.css
+   (body.inv-ui). Cards follow the Backup & export page.
+   ═══════════════════════════════════════════════════════════════════ */
+
+body.inv-ui {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.dg-page.main-content {
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.dg-page {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ink);
+}
+
+/* Print button in the page header */
+.dg-page .dg-print {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--r-sm);
+    background: #fff;
+    color: var(--brand);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.dg-page .dg-print:hover {
+    background: var(--brand-tint);
+}
+
+.dg-page .dg-print:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+/* ─── Layout: the guide, with a list of its sections beside it ─── */
+.dg-page .dg-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 32px;
+    max-width: 1060px;
+    margin: 0 auto;
+}
+
+.dg-page .dg-main {
+    flex: 1;
+    min-width: 0;
+    max-width: 780px;
+}
+
+.dg-page .dg-toc {
+    flex: 0 0 220px;
+    position: sticky;
+    top: 24px;
+}
+
+.dg-page .dg-toc-title {
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-subtle);
+}
+
+.dg-page .dg-toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dg-page .dg-toc a {
+    display: flex;
+    gap: 8px;
+    padding: 5px 0 5px 12px;
+    border-left: 2px solid var(--line);
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-muted);
+    text-decoration: none;
+}
+
+.dg-page .dg-toc a span {
+    flex: 0 0 10px;
+    color: var(--ink-subtle);
+    font-variant-numeric: tabular-nums;
+}
+
+.dg-page .dg-toc a:hover,
+.dg-page .dg-toc a:focus-visible {
+    border-left-color: var(--brand);
+    color: var(--brand);
+    outline: none;
+}
+
+/* ─── Cards ─── */
+.dg-page .dg-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    margin-bottom: 16px;
+    overflow: hidden;
+    scroll-margin-top: 16px;
+}
+
+.dg-page .dg-card-head {
+    padding: 18px 24px 16px;
+}
+
+.dg-page .dg-card h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.dg-page .dg-card-head p {
+    margin: 6px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+}
+
+/* "Step 1" above a section title */
+.dg-page .dg-label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--brand);
+}
+
+/* Opening card: what this is and what you need */
+.dg-page .dg-intro h2 {
+    font-size: 18px;
+}
+
+.dg-page .dg-intro .dg-lead {
+    margin-top: 12px;
+    font-size: 14px;
+    color: var(--ink);
+}
+
+.dg-page .dg-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 20px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+    color: var(--ink-muted);
+}
+
+.dg-page .dg-facts strong {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+/* ─── Numbered instructions ─── */
+.dg-page .dg-steps,
+.dg-page .dg-rows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+
+.dg-page .dg-steps {
+    counter-reset: dg-step;
+}
+
+.dg-page .dg-steps > li,
+.dg-page .dg-rows > li {
+    padding: 12px 24px;
+}
+
+.dg-page .dg-steps > li {
+    counter-increment: dg-step;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    column-gap: 12px;
+}
+
+.dg-page .dg-steps > li + li,
+.dg-page .dg-rows > li + li {
+    border-top: 1px solid var(--line);
+}
+
+.dg-page .dg-steps > li::before {
+    content: counter(dg-step);
+    font-weight: 600;
+    color: var(--ink-subtle);
+    font-variant-numeric: tabular-nums;
+}
+
+.dg-page .dg-card strong {
+    font-weight: 600;
+}
+
+.dg-page .dg-ok {
+    font-weight: 600;
+    color: var(--positive);
+}
+
+/* File names, folders and addresses */
+.dg-page code {
+    padding: 1px 5px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+}
+
+/* An address or folder to type in, on a line of its own */
+.dg-page code.dg-path {
+    display: block;
+    margin: 8px 0;
+    padding: 8px 12px;
+    border-radius: var(--r-sm);
+    font-size: 13px;
+}
+
+/* ─── Notes at the foot of a card ─── */
+.dg-page .dg-note {
+    display: flex;
+    gap: 10px;
+    margin: 0;
+    padding: 12px 24px 14px;
+    border-top: 1px solid var(--line);
+    background: #fafbfa;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-muted);
+}
+
+.dg-page .dg-note > i {
+    flex-shrink: 0;
+    width: 14px;
+    margin-top: 3px;
+    font-size: 13px;
+    text-align: center;
+    color: var(--brand);
+}
+
+.dg-page .dg-note.is-caution > i {
+    color: var(--warning);
+}
+
+.dg-page .dg-note strong {
+    color: var(--ink);
+}
+
+/* ─── Troubleshooting: what you see, then what to do ─── */
+.dg-page .dg-faq {
+    margin: 0;
+    border-top: 1px solid var(--line);
+}
+
+.dg-page .dg-faq > div {
+    padding: 12px 24px;
+}
+
+.dg-page .dg-faq > div + div {
+    border-top: 1px solid var(--line);
+}
+
+.dg-page .dg-faq dt {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.dg-page .dg-faq dd {
+    margin: 2px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+}
+
+/* ─── Narrower screens: the section list moves in under the opening card ─── */
+@media (max-width: 1180px) {
+    .dg-page .dg-layout {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    /* Lets the section list sit between the opening card and step 1 */
+    .dg-page .dg-main {
+        display: contents;
+    }
+
+    .dg-page .dg-card,
+    .dg-page .dg-toc {
+        width: 100%;
+        max-width: 780px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .dg-page .dg-intro {
+        order: -2;
+    }
+
+    .dg-page .dg-toc {
+        order: -1;
+        flex: none;
+        position: static;
+        margin-bottom: 16px;
+        padding: 14px 24px 12px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+    }
+
+    .dg-page .dg-toc a {
+        padding-left: 0;
+        border-left: none;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Clears the floating menu button when a section link is followed */
+    .dg-page .dg-card {
+        scroll-margin-top: 60px;
+    }
+
+    .dg-page .dg-card-head,
+    .dg-page .dg-steps > li,
+    .dg-page .dg-rows > li,
+    .dg-page .dg-faq > div,
+    .dg-page .dg-note {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dg-page .dg-toc {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .dg-page .dg-toc a {
+        padding-top: 7px;
+        padding-bottom: 7px;
+    }
+}
+
+/* ─── Printing (the header button opens the print window, which can save a PDF).
+   A printed page is narrower than 768px, so the phone rules in responsive.css
+   apply here too and are undone below. ─── */
+@media print {
+    .sidebar,
+    .mobile-menu-btn,
+    .sidebar-overlay,
+    .dg-page .dg-print,
+    .dg-page .dg-toc {
+        display: none !important;
+    }
+
+    body.inv-ui {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: #fff;
+    }
+
+    .dg-page.main-content {
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        background: #fff;
+    }
+
+    .inv-ui .dg-page .welcome-banner {
+        padding: 0 0 10px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #999;
+        border-radius: 0;
+        background: none;
+    }
+
+    .inv-ui .dg-page .welcome-text h1,
+    .inv-ui .dg-page .welcome-text p {
+        color: #000;
+    }
+
+    .dg-page .dg-layout,
+    .dg-page .dg-main {
+        display: block;
+        max-width: none;
+    }
+
+    .dg-page .dg-card {
+        max-width: none;
+        border-color: #bbb;
+        break-inside: avoid;
+    }
+
+    .dg-page .dg-note {
+        background: none;
+    }
+}

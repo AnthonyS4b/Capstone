@@ -1000,6 +1000,25 @@ body {
     color: var(--ink-muted);
 }
 
+/* Phones: a ranked product's name wraps instead of being cut to a few letters,
+   and its two figures stack on the right to leave it room. */
+@media (max-width: 576px) {
+    .rank-row .category-name {
+        white-space: normal;
+    }
+
+    .rank-product,
+    .rank-category {
+        overflow-wrap: anywhere;
+    }
+
+    .rank-row .category-figures {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0;
+    }
+}
+
 .progress-bar-container {
     width: 100%;
     height: 6px;
@@ -1074,6 +1093,9 @@ body {
 .dashboard-grid > .chart-container {
     height: auto;
     margin: 0;
+    /* A grid item is otherwise as wide as its longest unbroken line (a long
+       product name), which pushed these panels past the screen on phones. */
+    min-width: 0;
 }
 
 .chart-wrapper {
@@ -1739,13 +1761,72 @@ body {
     cursor: default;
 }
 
+/* Phones: each row becomes two lines instead of a table that scrolls sideways.
+   Line one is the first column (receipt or product) with the last (amount) on
+   the right; the columns in between follow underneath, each named by its
+   data-label (set in dashboardJS.js). */
 @media (max-width: 576px) {
-    .stat-modal-body {
-        overflow-x: auto;
+    .stat-modal-table thead {
+        display: none;
     }
 
-    .stat-modal-table {
-        min-width: 520px;
+    .stat-modal-table,
+    .stat-modal-table tbody {
+        display: block;
+    }
+
+    .stat-modal-table tr {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 2px 12px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--line);
+    }
+
+    .stat-modal-table tbody tr:last-child {
+        border-bottom: 0;
+    }
+
+    /* Ends line one, so the in-between columns start on the next */
+    .stat-modal-table tr::after {
+        content: '';
+        order: 1;
+        flex: 0 0 100%;
+    }
+
+    .stat-modal-table td {
+        order: 2;
+        padding: 0;
+        border: 0;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--ink-muted);
+    }
+
+    .stat-modal-table td::before {
+        content: attr(data-label) ' ';
+        color: var(--ink-subtle);
+    }
+
+    .stat-modal-table td:first-child,
+    .stat-modal-table td:last-child {
+        order: 0;
+        padding: 0;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .stat-modal-table td:first-child {
+        flex: 1;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .stat-modal-table td:first-child::before,
+    .stat-modal-table td:last-child::before {
+        content: none;
     }
 }
 

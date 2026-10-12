@@ -364,11 +364,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 autoSkip: false,
                 // Wrap long category names onto two lines instead of rotating them
                 callback: function(value) {
-                    const words = String(this.getLabelForValue(value)).split(' ');
+                    // A line is as long as the room under its bar allows (about 6px a letter,
+                    // 14 letters at most), so names do not run into each other on a phone.
+                    // A single word longer than that is cut short; tapping the bar shows it in full.
+                    const perLine = Math.max(6, Math.min(14, Math.floor(this.width / Math.max(1, this.ticks.length) / 6)));
+                    const words = String(this.getLabelForValue(value)).split(' ')
+                        .map(word => (word.length > perLine ? word.slice(0, perLine - 1) + '…' : word));
                     const lines = [];
                     let line = '';
                     words.forEach(word => {
-                        if (line && (line + ' ' + word).length > 14) {
+                        if (line && (line + ' ' + word).length > perLine) {
                             lines.push(line);
                             line = word;
                         } else {
@@ -796,7 +801,7 @@ function changeOwnPin() {
             bodyEl.innerHTML = `
                 <table class="stat-modal-table">
                     <thead><tr>${columns.map((c, i) => `<th scope="col"${cls(i)}>${esc(c.label)}</th>`).join('')}</tr></thead>
-                    <tbody>${rows.map(r => `<tr>${r.map((cell, i) => `<td${cls(i)}>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+                    <tbody>${rows.map(r => `<tr>${r.map((cell, i) => `<td${cls(i)} data-label="${esc(columns[i] ? columns[i].label : '')}">${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
                 </table>`;
             bodyEl.scrollTop = 0;
         }

@@ -49,7 +49,7 @@ $ajax_url = 'ajax/category_ajax.php';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="assets/css/reco.css">
-    <link rel="stylesheet" href="assets/css/archivecss.css">
+    <link rel="stylesheet" href="assets/css/archivecss.css?v=<?= filemtime(__DIR__ . '/assets/css/archivecss.css') ?>">
     <link rel="stylesheet" href="assets/css/transitions.css">
     <link rel="stylesheet" href="assets/css/notif.css?v=<?= filemtime(__DIR__ . '/assets/css/notif.css') ?>">
     <link rel="stylesheet" href="assets/css/responsive.css">

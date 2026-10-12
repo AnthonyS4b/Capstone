@@ -557,3 +557,75 @@
 [09-Oct-2026 23:51:37 Asia/Manila] Transaction data: User_ID=9, Total=480, Payment=500, Method=cash
 [09-Oct-2026 23:51:37 Asia/Manila] Transaction inserted with ID: 18710
 [09-Oct-2026 23:51:37 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[12-Oct-2026 15:43:24 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => Morrie Erlix
+    [description] => realest KLD nigga of all time
+    [price] => 75
+    [cost_price] => 50
+    [stock] => 100
+    [unit] => Per Piece
+    [sku] => DOG-82870991
+    [barcode] => NIGGALATIONS
+    [image] => assets/uploads/products/prod_1791791003_10522491.jpg
+    [expiration_date] => 2027-03-05
+    [date_added] => 2026-10-12
+)
+
+[12-Oct-2026 15:43:31 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 143
+    [data] => Array
+        (
+            [id] => 143
+            [sku] => DOG-82870991
+            [barcode] => NIGGALATIONS
+            [unit] => Per Piece
+            [cost_price] => 50
+            [image] => assets/uploads/products/prod_1791791003_10522491.jpg
+            [expiration_date] => 2027-03-05
+        )
+
+)
+
+[12-Oct-2026 15:48:45 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => ML Player
+    [description] => AI na profile
+    [price] => 150
+    [cost_price] => 100
+    [stock] => 25
+    [unit] => Per Pack
+    [sku] => DOG-30425469
+    [barcode] => 14,000,605
+    [image] => assets/uploads/products/prod_1791791324_5d63c30f.jpg
+    [expiration_date] => 2027-06-30
+    [date_added] => 2026-10-12
+)
+
+[12-Oct-2026 15:49:03 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 144
+    [data] => Array
+        (
+            [id] => 144
+            [sku] => DOG-30425469
+            [barcode] => 14,000,605
+            [unit] => Per Pack
+            [cost_price] => 100
+            [image] => assets/uploads/products/prod_1791791324_5d63c30f.jpg
+            [expiration_date] => 2027-06-30
+        )
+
+)
+

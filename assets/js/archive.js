@@ -151,9 +151,9 @@ function displayArchivedCategories(categories) {
                         <span class="inv-name">${escHtml(cat.name)}</span>
                     </div>
                 </td>
-                <td class="inv-muted-cell">${cat.description ? escHtml(cat.description) : '—'}</td>
-                <td class="inv-num">${count}</td>
-                <td class="inv-muted-cell">${escHtml(archivedDate)}</td>
+                <td class="inv-muted-cell" data-label="Description">${cat.description ? escHtml(cat.description) : '—'}</td>
+                <td class="inv-num" data-label="Products">${count}</td>
+                <td class="inv-muted-cell" data-label="Archived">${escHtml(archivedDate)}</td>
                 <td class="inv-actions">
                     <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreCategory(${cat.id})" title="Restore the category and its eligible products">
                         <i class="fas fa-undo-alt"></i>Restore
@@ -294,12 +294,12 @@ function displayArchivedProducts(products) {
                         </div>
                     </div>
                 </td>
-                <td class="inv-muted-cell">${escHtml(product.category_name || 'Uncategorized')}</td>
-                <td class="inv-num">₱${price}</td>
-                <td class="inv-num">${String(product.unit || '').trim().toLowerCase() === 'per kilo'
+                <td class="inv-muted-cell" data-label="Category">${escHtml(product.category_name || 'Uncategorized')}</td>
+                <td class="inv-num" data-label="Price">₱${price}</td>
+                <td class="inv-num" data-label="Stock">${String(product.unit || '').trim().toLowerCase() === 'per kilo'
                     ? `${Math.round((parseFloat(product.stock) || 0) * 100) / 100} kg`
                     : (parseInt(product.stock, 10) || 0) + (String(product.unit || '').trim().toLowerCase() === 'per gram' ? ' g' : '')}</td>
-                <td class="inv-muted-cell">
+                <td class="inv-muted-cell" data-label="Archived">
                     ${escHtml(deletedDate)}
                     ${product.archive_reason ? `<br><small class="text-danger" title="Archive Reason"><i class="fas fa-info-circle"></i> ${escHtml(product.archive_reason)}</small>` : ''}
                 </td>
