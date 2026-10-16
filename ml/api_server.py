@@ -212,9 +212,18 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
         GROUP BY p.id
         HAVING
             (days_until_expiry IS NOT NULL AND days_until_expiry <= %s)
-            OR monthly_sales < %s
-            OR days_in_stock >= %s
-        ORDER BY days_until_expiry ASC, monthly_sales ASC
+            OR (days_in_stock >= %s AND (monthly_sales < %s OR days_in_stock >= %s))
+        -- Most urgent first, the same order as the final sort, so the limit keeps the
+        -- products about to expire (ASC alone put products with no expiry date first)
+        ORDER BY
+            CASE
+                WHEN days_until_expiry IS NOT NULL AND days_until_expiry <= %s THEN 5
+                WHEN days_in_stock >= %s THEN 4
+                WHEN days_in_stock >= %s THEN 3
+                ELSE 2
+            END DESC,
+            days_in_stock DESC,
+            monthly_sales ASC
         LIMIT %s
     """
     try:
@@ -222,8 +231,12 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             query,
             (
                 RECOMMENDATION_POLICY["expiry_within_days"],
+                RECOMMENDATION_POLICY["minimum_days_in_stock"],
                 RECOMMENDATION_POLICY["monthly_sales_below"],
                 RECOMMENDATION_POLICY["days_in_stock_at_least"],
+                RECOMMENDATION_POLICY["expiry_within_days"],
+                THRESHOLDS["days_in_stock_critical"],
+                THRESHOLDS["days_in_stock_warning"],
                 limit,
             ),
         )
@@ -300,6 +313,7 @@ def _build_db_recommendations(limit: int) -> List[Dict[str, Any]]:
             "category": row.get("category_name") or "General",
             "days_until_expiry": days_expiry,
             "expiration_date": str(row["expiration_date"]) if row["expiration_date"] else None,
+            "batches": _get_active_batches(int(row["id"])),
             "days_in_stock": days_in_stock,
             "monthly_sales": round(velocity, 2),
             "total_sold_last_30d": int(row.get("total_sold_30d") or 0),
@@ -1106,6 +1120,32 @@ def _get_product_data(product_id: int) -> Optional[Dict[str, Any]]:
     return DatabaseConnector.execute_query(query, (product_id,), fetch_one=True)
 
 
+def _get_active_batches(product_id: int) -> List[Dict[str, Any]]:
+    """
+    The product's batches that still have stock, earliest expiry first (no expiry last).
+
+    The forecast chart needs them to stop counting sales of a batch after it expires;
+    one product can hold batches with different expiry dates.
+    """
+    try:
+        rows = DatabaseConnector.execute_query(
+            """SELECT stock, expiration_date FROM product_batches
+               WHERE product_id = %s AND status = 'active' AND stock > 0
+               ORDER BY expiration_date IS NULL, expiration_date ASC""",
+            (product_id,),
+        )
+    except Exception as e:
+        logger.warning(f"Could not load batches for product {product_id}: {e}")
+        return []
+    return [
+        {
+            "stock": float(row["stock"]),
+            "expiration_date": str(row["expiration_date"]) if row.get("expiration_date") else None,
+        }
+        for row in rows or []
+    ]
+
+
 def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
     try:
         product = _get_product_data(product_id)
@@ -1117,7 +1157,9 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             return None
 
         is_critical = features["is_critical_expiry"]
-        is_slow = features["monthly_sales_velocity"] < RECOMMENDATION_POLICY["monthly_sales_below"]
+        # Slow-moving: fewer than 50 units sold in the last 30 days (the policy), not the
+        # 90-day monthly average, which called a product that sold 140 this month slow
+        is_slow = features.get("total_sold_last_30d", 0) < RECOMMENDATION_POLICY["monthly_sales_below"]
 
         is_aging = features.get("days_in_stock", 0) >= RECOMMENDATION_POLICY["days_in_stock_at_least"]
         if not (is_critical or is_slow or is_aging):
@@ -1175,6 +1217,7 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
             "category": product.get("category_name") or "General",
             "days_until_expiry": features["days_until_expiry"],
             "expiration_date": str(product["expiration_date"]) if product["expiration_date"] else None,
+            "batches": _get_active_batches(product_id),
             "days_in_stock": days_in_stock,
             "monthly_sales": velocity,
             "total_sold_last_30d": features.get("total_sold_last_30d", 0),
@@ -1213,22 +1256,54 @@ def _get_single_recommendation(product_id: int) -> Optional[Dict[str, Any]]:
 
 def _get_all_recommendations(limit: int) -> List[Dict[str, Any]]:
     try:
+        # Evaluating a product takes about a third of a second, too slow to check every
+        # product and keep the best `limit`. So the database picks them: only products
+        # the policy can recommend, most urgent first (the same order as the final sort
+        # below), so the limit never drops a product about to expire.
         query = """
-            SELECT id, name, price, cost_price, stock, expiration_date
-            FROM products
-            WHERE deleted_at IS NULL 
-              AND archived_at IS NULL 
-              AND stock > 0
-              AND (expiration_date IS NULL OR expiration_date >= CURDATE())
-              AND NOT EXISTS (
-                  SELECT 1 FROM strategy_history 
-                  WHERE product_id = products.id 
-                    AND status = 'applied' 
-                    AND (ended_at IS NULL OR ended_at > NOW())
-              )
+            SELECT id FROM (
+                SELECT p.id, p.expiration_date,
+                       DATEDIFF(CURDATE(), COALESCE(p.date_added, p.created_at)) AS days_in_stock,
+                       (SELECT COALESCE(SUM(ti.quantity), 0)
+                        FROM transaction_items ti
+                        JOIN sales s ON s.transaction_id = ti.transaction_id
+                        WHERE ti.product_id = p.id AND s.status = 'completed'
+                          AND s.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)) AS sold_30d
+                FROM products p
+                WHERE p.deleted_at IS NULL
+                  AND p.archived_at IS NULL
+                  AND p.stock > 0
+                  AND (p.expiration_date IS NULL OR p.expiration_date >= CURDATE())
+                  AND NOT EXISTS (
+                      SELECT 1 FROM strategy_history
+                      WHERE product_id = p.id
+                        AND status = 'applied'
+                        AND (ended_at IS NULL OR ended_at > NOW())
+                  )
+            ) candidates
+            WHERE (expiration_date IS NOT NULL AND expiration_date <= DATE_ADD(CURDATE(), INTERVAL %s DAY))
+               OR (days_in_stock >= %s AND (sold_30d < %s OR days_in_stock >= %s))
+            ORDER BY
+                CASE
+                    WHEN expiration_date IS NOT NULL AND expiration_date <= DATE_ADD(CURDATE(), INTERVAL %s DAY) THEN 5
+                    WHEN days_in_stock >= %s THEN 4
+                    WHEN days_in_stock >= %s THEN 3
+                    ELSE 2
+                END DESC,
+                days_in_stock DESC,
+                id
             LIMIT %s
         """
-        products = DatabaseConnector.execute_query(query, (limit,))
+        products = DatabaseConnector.execute_query(query, (
+            RECOMMENDATION_POLICY["expiry_within_days"],
+            RECOMMENDATION_POLICY["minimum_days_in_stock"],
+            RECOMMENDATION_POLICY["monthly_sales_below"],
+            RECOMMENDATION_POLICY["days_in_stock_at_least"],
+            RECOMMENDATION_POLICY["expiry_within_days"],
+            THRESHOLDS["days_in_stock_critical"],
+            THRESHOLDS["days_in_stock_warning"],
+            limit,
+        ))
         recommendations = []
         for product in products:
             rec = _get_single_recommendation(product["id"])

@@ -391,10 +391,11 @@ class RecommendationModel:
             days_expiry = features["days_until_expiry"]
             expiry_factor = max(0, min(1, 1 - (days_expiry / 30)))
 
-            monthly_velocity = features["monthly_sales_velocity"]
+            # Units sold in the last 30 days, the same figure the fallback path scores
+            sold_30d = features.get("total_sold_last_30d", 0)
             velocity_factor = (
-                max(0, 1 - (monthly_velocity / 100))
-                if monthly_velocity < 100
+                max(0, 1 - (sold_30d / 100))
+                if sold_30d < 100
                 else 0
             )
 
@@ -498,8 +499,9 @@ class RecommendationModel:
                 risk_level = self.determine_risk_level(risk_score)
 
             is_expiring_soon = features["is_critical_expiry"]
+            # Fewer than 50 units sold in the last 30 days (the policy)
             is_slow_moving = (
-                features["monthly_sales_velocity"]
+                features.get("total_sold_last_30d", 0)
                 < RECOMMENDATION_POLICY["monthly_sales_below"]
             )
             is_high_stock = features["current_stock"] > 20

@@ -72,4 +72,25 @@ try:
 finally:
     api_server._load_strategies_from_db = original_loader
 
+# Slow-moving means fewer than 50 units sold in the last 30 days. A product that sold
+# 140 this month and nothing before averages 46.7 a month over 90 days; it is not slow.
+weekend_promo = {
+    "id": "weekend_flash_promo",
+    "name": "Weekend Flash Promo",
+    "priority": 5,
+    "discount_range": (10, 15),
+    "duration_days": 3,
+    "conditions": ["slow_moving"],
+    "risk_levels": ["WARNING"],
+    "expected_impact": (20, 35),
+}
+model = build_model([weekend_promo])
+best_seller = {**features(210, 155), "monthly_sales_velocity": 140 / 3, "total_sold_last_30d": 140}
+result = model.recommend_strategy(4, {"unit": "piece"}, best_seller, 0.5, "WARNING")
+assert all(r["strategy_id"] != "weekend_flash_promo" for r in result), result
+
+slow_seller = {**features(210, 155), "monthly_sales_velocity": 60, "total_sold_last_30d": 12}
+result = model.recommend_strategy(5, {"unit": "piece"}, slow_seller, 0.5, "WARNING")
+assert result[0]["strategy_id"] == "weekend_flash_promo", result
+
 print("PASS: recommendation margin and expiry safety rules")

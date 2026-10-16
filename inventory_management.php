@@ -82,11 +82,9 @@ try {
             CONCAT(u.first_name, ' ', u.last_name) as action_by_name,
             u.role as action_by_role,
             u.email as action_by_email,
-            -- What happened
-            CASE 
-                WHEN p.deleted_at IS NOT NULL THEN 'deleted'
-                WHEN p.archived_at IS NOT NULL THEN 'archived'
-            END as action_type,
+            -- Archiving sets deleted_at (a soft delete): a product still in this table is
+            -- archived and can be restored. A permanently deleted product is gone from it.
+            'archived' as action_type,
             -- When it happened
             COALESCE(p.deleted_at, p.archived_at) as action_date
         FROM products p
@@ -97,6 +95,29 @@ try {
         LIMIT 100
     ");
     $deleted_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Permanently deleted products are only in the activity log now (action 'delete')
+    $stmt = $pdo->query("
+        SELECT
+            h.product_id AS id,
+            h.product_name AS name,
+            NULL AS sku,
+            NULL AS category_name,
+            CONCAT(u.first_name, ' ', u.last_name) AS action_by_name,
+            u.role AS action_by_role,
+            u.email AS action_by_email,
+            'deleted' AS action_type,
+            h.created_at AS action_date
+        FROM inventory_history h
+        LEFT JOIN users u ON u.id = h.user_id
+        WHERE h.action = 'delete'
+          AND NOT EXISTS (SELECT 1 FROM products p WHERE p.id = h.product_id)
+        ORDER BY h.created_at DESC
+        LIMIT 100
+    ");
+    $deleted_items = array_merge($deleted_items, $stmt->fetchAll(PDO::FETCH_ASSOC));
+    usort($deleted_items, fn($a, $b) => strcmp((string)$b['action_date'], (string)$a['action_date']));
+    $deleted_items = array_slice($deleted_items, 0, 100);
     
     // ===== 3. COMPLETE ACTIVITY LOG - EVERY EDIT EVER MADE =====
     $stmt = $pdo->query("
@@ -388,7 +409,7 @@ $js_data = [
                                                         <span class="inv-sub"><?php echo htmlspecialchars($item['sku']); ?></span>
                                                     <?php endif; ?>
                                                 </td>
-                                                <td class="inv-muted-cell"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></td>
+                                                <td class="inv-muted-cell"><?php echo htmlspecialchars($item['category_name'] ?? ($action_type === 'deleted' ? '—' : 'Uncategorized')); ?></td>
                                                 <td><span class="action-badge action-<?php echo $action_type; ?>"><?php echo ucfirst($action_type); ?></span></td>
                                                 <td>
                                                     <span class="inv-person"><?php echo htmlspecialchars($action_by_name); ?></span>
@@ -399,9 +420,11 @@ $js_data = [
                                                     <span class="inv-sub"><?php echo date('h:i A', strtotime($item['action_date'])); ?></span>
                                                 </td>
                                                 <td class="inv-actions">
-                                                    <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(<?php echo $item['id']; ?>)">
+                                                    <?php if ($action_type === 'archived'): ?>
+                                                    <button class="inv-btn inv-btn-quiet inv-btn-sm" onclick="restoreProduct(<?php echo (int)$item['id']; ?>)">
                                                         <i class="fas fa-undo-alt"></i>Restore
                                                     </button>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

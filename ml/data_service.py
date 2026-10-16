@@ -327,8 +327,6 @@ class DataProcessor:
         sales_df = sales_df.copy()
         sales_df["sale_date"] = pd.to_datetime(sales_df["sale_date"])
         sales_df["revenue"] = sales_df["price"] * sales_df["quantity"]
-        today = pd.Timestamp.now().normalize()
-        thirty_days_ago = today - pd.Timedelta(days=30)
 
         # Aggregate by date
         daily_sales = (
@@ -353,9 +351,10 @@ class DataProcessor:
         total_units = daily_sales["quantity"].sum()
         total_revenue = daily_sales["revenue"].sum()
         
-        # Calculate last 30 days total
-        last_30d_df = sales_df[sales_df["sale_date"] >= thirty_days_ago]
-        total_30d = int(last_30d_df["quantity"].sum())
+        # Units sold in the last 30 days, the window the fallback path's SQL uses
+        # (NOW() - 30 days); decimal kilograms are kept, not truncated
+        last_30d_df = sales_df[sales_df["sale_date"] >= pd.Timestamp.now() - pd.Timedelta(days=30)]
+        total_30d = round(float(last_30d_df["quantity"].sum()), 2)
 
         # Monthly velocity: average per month over lookback period (90 days)
         # Using 3.0 as denominator for 90 days (standardized window)

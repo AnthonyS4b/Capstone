@@ -629,3 +629,90 @@
 
 )
 
+[13-Oct-2026 19:54:48 Asia/Manila] Found user_id in session: 9
+[13-Oct-2026 19:54:48 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[13-Oct-2026 19:54:48 Asia/Manila] Transaction data: User_ID=9, Total=1755, Payment=10000, Method=cash
+[13-Oct-2026 19:54:48 Asia/Manila] Transaction inserted with ID: 18711
+[13-Oct-2026 19:54:49 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[13-Oct-2026 22:43:04 Asia/Manila] Found user_id in session: 9
+[13-Oct-2026 22:43:04 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[13-Oct-2026 22:43:06 Asia/Manila] Transaction data: User_ID=9, Total=180, Payment=180, Method=gcash
+[13-Oct-2026 22:43:07 Asia/Manila] Transaction inserted with ID: 18712
+[13-Oct-2026 22:43:07 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[13-Oct-2026 22:48:58 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 1
+    [name] => sdhsdh
+    [description] => dsgsd
+    [price] => 100
+    [cost_price] => 0
+    [stock] => 215
+    [unit] => Per Piece
+    [sku] => DOG-86027229
+    [barcode] => 2151221612612
+    [image] => 
+    [expiration_date] => 
+    [date_added] => 2026-10-13
+)
+
+[13-Oct-2026 22:49:27 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 145
+    [data] => Array
+        (
+            [id] => 145
+            [sku] => DOG-86027229
+            [barcode] => 2151221612612
+            [unit] => Per Piece
+            [cost_price] => 0
+            [image] => 
+            [expiration_date] => 
+        )
+
+)
+
+[17-Oct-2026 00:41:36 Asia/Manila] CREATE PRODUCT RECEIVED: Array
+(
+    [action] => create_product
+    [id] => 
+    [category_id] => 2
+    [name] => Per Kilo
+    [description] => 
+    [price] => 60
+    [cost_price] => 25
+    [stock] => 50
+    [unit] => Per Kilo
+    [sku] => CAT-77124693
+    [barcode] => 
+    [image] => 
+    [expiration_date] => 2222-02-22
+    [date_added] => 2026-10-16
+)
+
+[17-Oct-2026 00:41:51 Asia/Manila] CREATE PRODUCT RESULT: Array
+(
+    [success] => 1
+    [message] => Product created successfully
+    [id] => 146
+    [data] => Array
+        (
+            [id] => 146
+            [sku] => CAT-77124693
+            [barcode] => 
+            [unit] => Per Kilo
+            [cost_price] => 25
+            [image] => 
+            [expiration_date] => 2222-02-22
+        )
+
+)
+
+[17-Oct-2026 00:42:47 Asia/Manila] Found user_id in session: 9
+[17-Oct-2026 00:42:47 Asia/Manila] Validated user: Test Account (Admin) (ID: 9, Role: owner)
+[17-Oct-2026 00:42:58 Asia/Manila] Transaction data: User_ID=9, Total=210, Payment=250, Method=cash
+[17-Oct-2026 00:42:58 Asia/Manila] Transaction inserted with ID: 18713
+[17-Oct-2026 00:43:08 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===

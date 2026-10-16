@@ -391,13 +391,8 @@ function openForecastModal(rec) {
     const initialProjection = calculateStrategyProjection(rec, strategy);
     const { m1, m2, m3, m1_no, m2_no, m3_no } = initialProjection;
 
-    // Month labels
-    const now = new Date();
-    const months = [];
-    for (let i = 1; i <= 3; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        months.push(d.toLocaleString('en', { month: 'short', year: 'numeric' }));
-    }
+    // Month labels: the rest of this month, then the next two (same months as the projection)
+    const months = projectionMonthLabels();
 
     content.innerHTML = `
         <div class="forecast-header-info">
@@ -422,6 +417,7 @@ function openForecastModal(rec) {
                 <div class="legend-item"><span class="legend-line solid"></span> With Strategy</div>
                 <div class="legend-item"><span class="legend-line dashed"></span> No Action</div>
             </div>
+            <p class="forecast-expiry-note" id="forecastExpiryNote"${initialProjection.expired.length ? '' : ' hidden'}>${esc(projectionExpiryNote(initialProjection))}</p>
             <div class="month-boxes">
                 ${[0,1,2].map(i => {
                     const withS = [m1, m2, m3][i];
@@ -482,8 +478,88 @@ function openForecastModal(rec) {
     setTimeout(() => renderForecastChart(months, [m1, m2, m3], [m1_no, m2_no, m3_no]), 300);
 }
 
-function calculateStrategyProjection(rec, strategy = {}) {
-    const stock = Number(rec.current_stock) || 0;
+function parseCalendarDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value || ''));
+    return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
+}
+
+// Whole calendar days from one date to another, unaffected by the time of day
+function calendarDaysBetween(from, to) {
+    return Math.round((Date.UTC(to.getFullYear(), to.getMonth(), to.getDate())
+        - Date.UTC(from.getFullYear(), from.getMonth(), from.getDate())) / 86400000);
+}
+
+/**
+ * The stock as lots, earliest expiry first. A lot can be sold up to and including its
+ * expiry date; `lastDay` is that date in days from `windowStart` (null = no expiry).
+ * Batches come from the recommendation; stock not recorded in a batch carries the
+ * product's own expiry date.
+ */
+function projectionStockLots(rec, windowStart) {
+    const stock = Math.max(0, Number(rec.current_stock) || 0);
+    const lastSaleDay = value => {
+        const date = parseCalendarDate(value);
+        return date ? calendarDaysBetween(windowStart, date) : null;
+    };
+    const lots = (Array.isArray(rec.batches) ? rec.batches : [])
+        .map(batch => ({
+            units: Math.max(0, Number(batch.stock) || 0),
+            lastDay: lastSaleDay(batch.expiration_date),
+            expirationDate: batch.expiration_date || null,
+        }))
+        .filter(lot => lot.units > 0);
+    const tracked = lots.reduce((sum, lot) => sum + lot.units, 0);
+    if (stock - tracked > 1e-6) {
+        lots.push({ units: stock - tracked, lastDay: lastSaleDay(rec.expiration_date), expirationDate: rec.expiration_date || null });
+    }
+    lots.sort((a, b) => (a.lastDay ?? Infinity) - (b.lastDay ?? Infinity));
+
+    // The POS sells from the product's stock figure; when batch records add up to more,
+    // the units missing are taken from the latest-expiring batches
+    let excess = lots.reduce((sum, lot) => sum + lot.units, 0) - stock;
+    for (let i = lots.length - 1; i >= 0 && excess > 1e-6; i--) {
+        const cut = Math.min(lots[i].units, excess);
+        lots[i].units -= cut;
+        excess -= cut;
+    }
+    return lots.filter(lot => lot.units > 1e-6);
+}
+
+/**
+ * Sells each day's demand from the earliest-expiring lot still on sale (first expiry,
+ * first out). Units still in a lot after its expiry date are expired, not sold.
+ */
+function sellProjectedDays(lots, dailyDemand) {
+    const left = lots.map(lot => lot.units);
+    const sold = dailyDemand.map((demand, day) => {
+        let wanted = demand;
+        let units = 0;
+        for (let i = 0; i < lots.length && wanted > 1e-12; i++) {
+            if (left[i] <= 0 || (lots[i].lastDay !== null && day > lots[i].lastDay)) continue;
+            const take = Math.min(left[i], wanted);
+            left[i] -= take;
+            wanted -= take;
+            units += take;
+        }
+        return units;
+    });
+    const lastDay = dailyDemand.length - 1;
+    const expired = lots
+        .map((lot, i) => ({ units: left[i], expirationDate: lot.expirationDate, lastDay: lot.lastDay }))
+        .filter(lot => lot.lastDay !== null && lot.lastDay < lastDay && lot.units > 0.005);
+    return { sold, expired };
+}
+
+// The chart's three months: the rest of this month (from today), then the next two
+function projectionMonthLabels(now = new Date()) {
+    return [0, 1, 2].map(offset => {
+        const label = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+            .toLocaleString('en', { month: 'short', year: 'numeric' });
+        return offset === 0 && now.getDate() > 1 ? `Rest of ${label}` : label;
+    });
+}
+
+function calculateStrategyProjection(rec, strategy = {}, now = new Date()) {
     const monthly = Number(rec.monthly_sales) || 0;
     const predicted = Number(rec.predicted_monthly_sales);
     const baseSales = Number.isFinite(predicted) && predicted > 0 ? predicted : Math.max(0, monthly);
@@ -492,28 +568,44 @@ function calculateStrategyProjection(rec, strategy = {}) {
     const uplift = minImpact || maxImpact ? Math.max(0, (minImpact + maxImpact) / 200) : 0;
     const durationDays = Math.max(0, Number(strategy.duration_days) || 0);
     const monthFactors = [1, 0.95, 0.9];
-    const coverage = monthFactors.map((_, index) => {
-        const daysRemaining = durationDays - (index * 30);
-        return Math.max(0, Math.min(1, daysRemaining / 30));
+
+    // The three months the chart shows, starting today: the rest of this month, then
+    // the next two (see projectionMonthLabels). Each month's demand is spread evenly
+    // over its days, so the rest of this month gets its share, and the campaign lifts
+    // the days it runs, starting today, when stock about to expire can still sell.
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const monthLengths = [0, 1, 2].map(offset => new Date(now.getFullYear(), now.getMonth() + offset + 1, 0).getDate());
+    const daysShown = monthLengths.map((length, month) => (month === 0 ? length - today.getDate() + 1 : length));
+    const monthOfDay = [];
+    const noActionDaily = [];
+    monthFactors.forEach((factor, month) => {
+        for (let d = 0; d < daysShown[month]; d++) {
+            monthOfDay.push(month);
+            noActionDaily.push(baseSales * factor / monthLengths[month]);
+        }
     });
+    const strategyDaily = noActionDaily.map((demand, day) => (day < durationDays ? demand * (1 + uplift) : demand));
 
-    const noActionDemand = monthFactors.map(factor => baseSales * factor);
-    const strategyDemand = noActionDemand.map((demand, index) => (
-        demand * (1 + uplift * coverage[index])
+    const lots = projectionStockLots(rec, today);
+    const noAction = sellProjectedDays(lots, noActionDaily);
+    const withStrat = sellProjectedDays(lots, strategyDaily);
+
+    const byMonth = (daily, include = () => true) => [0, 1, 2].map(month => (
+        daily.reduce((sum, units, day) => sum + (monthOfDay[day] === month && include(day) ? units : 0), 0)
     ));
-    const noActionUnits = allocateProjectedStock(noActionDemand, stock);
-    const strategyUnits = allocateProjectedStock(strategyDemand, stock);
-    const withStrategy = strategyUnits.map((units, index) => {
-        const rawDemand = strategyDemand[index];
-        const promotionalDemand = noActionDemand[index] * coverage[index] * (1 + uplift);
-        const promotionalShare = rawDemand > 0 ? Math.min(1, promotionalDemand / rawDemand) : 0;
-        const promotionalUnits = units * promotionalShare;
-
+    const noActionUnits = byMonth(noAction.sold);
+    const strategyUnits = byMonth(withStrat.sold);
+    // Everything sold while the campaign runs is sold at the promotional price
+    const promotionalByMonth = byMonth(withStrat.sold, day => day < durationDays);
+    let monthOffset = 0;
+    const withStrategy = strategyUnits.map((units, month) => {
+        const coverage = Math.max(0, Math.min(1, (durationDays - monthOffset) / daysShown[month]));
+        monthOffset += daysShown[month];
         return {
             units,
-            promotionalUnits,
-            regularUnits: Math.max(0, units - promotionalUnits),
-            campaignCoverage: coverage[index],
+            promotionalUnits: promotionalByMonth[month],
+            regularUnits: Math.max(0, units - promotionalByMonth[month]),
+            campaignCoverage: coverage,
         };
     });
 
@@ -527,17 +619,20 @@ function calculateStrategyProjection(rec, strategy = {}) {
         baseSales,
         withStrategy,
         noAction: noActionUnits.map(units => ({ units })),
+        // Stock that expires before it sells, even with the strategy
+        expired: withStrat.expired,
     };
 }
 
-function allocateProjectedStock(monthlyDemand, stock) {
-    let remainingStock = Math.max(0, Number(stock) || 0);
-    return monthlyDemand.map(value => {
-        const demand = Math.max(0, Number(value) || 0);
-        const units = Math.min(demand, remainingStock);
-        remainingStock = Math.max(0, remainingStock - units);
-        return units;
-    });
+function projectionExpiryNote(projection) {
+    const expired = projection.expired || [];
+    if (!expired.length) return '';
+    const total = expired.reduce((sum, lot) => sum + lot.units, 0);
+    const date = parseCalendarDate(expired[0].expirationDate);
+    const when = date ? date.toLocaleString('en', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+    return expired.length === 1
+        ? `${formatProjectedUnits(total)} units expire on ${when} before they can be sold, so they are not counted as sales.`
+        : `${formatProjectedUnits(total)} units expire before they can be sold (the first on ${when}), so they are not counted as sales.`;
 }
 
 function formatProjectedUnits(value) {
@@ -587,6 +682,12 @@ function updateForecastProjection(content, projection, months) {
             changeLabel.classList.toggle('negative', change < 0);
         }
     });
+
+    const expiryNote = content.querySelector('#forecastExpiryNote');
+    if (expiryNote) {
+        expiryNote.textContent = projectionExpiryNote(projection);
+        expiryNote.hidden = !(projection.expired || []).length;
+    }
 
     if (forecastChart) {
         forecastChart.data.labels = months;
@@ -909,7 +1010,7 @@ function buildProfitTab(rec, strategy, projection, months) {
 
         <div class="profit-note">
             <strong>Calculation assumptions:</strong> ${costIsEstimated ? 'Unit cost is estimated at 70% of selling price because no cost is recorded. ' : ''}
-            No-action demand starts from the model forecast and uses a 5% monthly decline. Expected uplift comes from the selected strategy template and is applied only during its campaign period. Projections are limited by current stock and assume no restocking.
+            No-action demand starts from the model forecast and uses a 5% monthly decline. Expected uplift comes from the selected strategy template and is applied only during its campaign period. Projections are limited by current stock and assume no restocking; each batch is sold only until its expiry date, earliest expiry first.
             Gross profit excludes operating and campaign expenses. Holding cost is estimated at 2% per month of inventory cost basis.
             ${strategy.strategy_id === 'cross_sell_pairing' || strategy.strategy_id === 'bundle_deal' ? 'Partner-product revenue and cost are excluded until a partner product is selected.' : ''}
         </div>

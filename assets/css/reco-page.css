@@ -999,6 +999,18 @@
 #forecastModal .month-change.positive { color: var(--m-positive); }
 #forecastModal .month-change.negative { color: var(--m-negative); }
 
+/* Shown when stock expires before the projection can sell it */
+#forecastModal .forecast-expiry-note {
+    margin: 0 0 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--m-warning-tint);
+    color: var(--m-warning);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
 /* ─── Tab 2: strategy plans ─── */
 #forecastModal .ctx-pill {
     padding: 3px 10px;
