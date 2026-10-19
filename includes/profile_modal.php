@@ -55,6 +55,8 @@ $pf_access = $pf_is_owner
 ?>
 <link rel="stylesheet" href="assets/css/profile.css?v=<?php echo @filemtime(__DIR__ . '/../assets/css/profile.css'); ?>">
 <script src="assets/js/profile.js?v=<?php echo @filemtime(__DIR__ . '/../assets/js/profile.js'); ?>" defer></script>
+<link rel="stylesheet" href="assets/css/pin-reveal.css?v=<?php echo @filemtime(__DIR__ . '/../assets/css/pin-reveal.css'); ?>">
+<script src="assets/js/pin-reveal.js?v=<?php echo @filemtime(__DIR__ . '/../assets/js/pin-reveal.js'); ?>" defer></script>
 
 <div class="modal fade pf-modal" id="userProfileModal" tabindex="-1" aria-labelledby="pfTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -129,19 +131,19 @@ $pf_access = $pf_is_owner
                         <span><i class="fas fa-key" aria-hidden="true"></i>Change my PIN</span>
                         <i class="fas fa-chevron-down pf-chevron" aria-hidden="true"></i>
                     </button>
-                    <div class="collapse" id="changePinCollapse">
+                    <div class="collapse" id="changePinCollapse" data-bs-parent="#userProfileModal">
                         <div class="pf-pin-form">
                             <div class="pf-field">
                                 <label for="currentPin">Current PIN</label>
-                                <input type="password" class="pf-input pf-pin" id="currentPin" maxlength="4" inputmode="numeric" autocomplete="current-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="currentPin" maxlength="4" inputmode="numeric" autocomplete="current-password">
                             </div>
                             <div class="pf-field">
                                 <label for="newPinSelf">New PIN</label>
-                                <input type="password" class="pf-input pf-pin" id="newPinSelf" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="newPinSelf" maxlength="4" inputmode="numeric" autocomplete="new-password">
                             </div>
                             <div class="pf-field">
                                 <label for="confirmPinSelf">Confirm</label>
-                                <input type="password" class="pf-input pf-pin" id="confirmPinSelf" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="confirmPinSelf" maxlength="4" inputmode="numeric" autocomplete="new-password">
                             </div>
                             <button type="button" class="pf-btn pf-btn-primary" onclick="changeOwnPin()">Save new PIN</button>
                         </div>
@@ -157,20 +159,20 @@ $pf_access = $pf_is_owner
                         </span>
                         <i class="fas fa-chevron-down pf-chevron" aria-hidden="true"></i>
                     </button>
-                    <div class="collapse" id="recoveryPinCollapse">
+                    <div class="collapse" id="recoveryPinCollapse" data-bs-parent="#userProfileModal">
                         <p class="pf-recovery-note">If you forget your sign-in PIN, tap your name on the login screen, choose <strong>Forgot PIN?</strong> and enter this 4-digit recovery PIN to choose a new one. It must be different from your sign-in PIN; keep it somewhere safe.</p>
                         <div class="pf-pin-form">
                             <div class="pf-field">
                                 <label for="recoveryCurrentPin">Sign-in PIN</label>
-                                <input type="password" class="pf-input pf-pin" id="recoveryCurrentPin" maxlength="4" inputmode="numeric" autocomplete="current-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="recoveryCurrentPin" maxlength="4" inputmode="numeric" autocomplete="current-password">
                             </div>
                             <div class="pf-field">
                                 <label for="recoveryPinNew">Recovery PIN</label>
-                                <input type="password" class="pf-input pf-pin" id="recoveryPinNew" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="recoveryPinNew" maxlength="4" inputmode="numeric" autocomplete="new-password">
                             </div>
                             <div class="pf-field">
                                 <label for="recoveryPinConfirm">Confirm</label>
-                                <input type="password" class="pf-input pf-pin" id="recoveryPinConfirm" maxlength="4" inputmode="numeric" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="pf-input pf-pin" id="recoveryPinConfirm" maxlength="4" inputmode="numeric" autocomplete="new-password">
                             </div>
                             <button type="button" class="pf-btn pf-btn-primary" onclick="saveRecoveryPin()">Save recovery PIN</button>
                         </div>

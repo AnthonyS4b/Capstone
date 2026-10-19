@@ -275,12 +275,23 @@ function loadProducts() {
 
 function displayProducts(productsToShow) {
     if (!productsGrid) return;
-    
-    if (!productsToShow || productsToShow.length === 0) { 
-        productsGrid.innerHTML = '<div class="text-center py-5 text-muted">No products available</div>'; 
-        return; 
+
+    if (!productsToShow || productsToShow.length === 0) {
+        productsGrid.innerHTML = '<div class="text-center py-5 text-muted">No products available</div>';
+        return;
     }
-    
+
+    // Out-of-stock products cannot be sold, so they are left off the grid. The list
+    // reloads after every sale, so a product that sells out disappears straight away;
+    // scanning its barcode still says it is out of stock.
+    productsToShow = productsToShow.filter(product => (
+        isPerKiloUnit(product.unit) ? roundQty(product.stock) : (parseInt(product.stock) || 0)
+    ) > 0);
+    if (productsToShow.length === 0) {
+        productsGrid.innerHTML = '<div class="text-center py-5 text-muted">All matching products are out of stock</div>';
+        return;
+    }
+
     // Sort products so discounted items appear first
     productsToShow.sort((a, b) => {
         const aDiscount = parseFloat(a.discount_applied) || 0;

@@ -1072,3 +1072,23 @@ Press Ctrl+C to stop
 2026-10-17 00:49:32,331 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:49:32] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
 2026-10-17 00:49:32,367 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:49:32] "GET /health HTTP/1.1" 200 -
 2026-10-17 00:49:32,412 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:49:32] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-17 00:50:08,238 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:50:08] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-17 00:50:08,258 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:50:08] "GET /health HTTP/1.1" 200 -
+2026-10-17 00:50:08,348 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:50:08] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-17 00:51:40,645 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:51:40] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-17 00:51:43,721 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:51:43] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-17 00:51:43,731 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:51:43] "GET /health HTTP/1.1" 200 -
+2026-10-17 00:54:55,210 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:54:55] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-17 00:54:55,222 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:54:55] "GET /health HTTP/1.1" 200 -
+2026-10-17 00:54:55,258 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 00:54:55] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-17 01:08:23,499 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:23] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-17 01:08:23,508 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:23] "GET /health HTTP/1.1" 200 -
+2026-10-17 01:08:23,542 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:23] "GET /api/model-info HTTP/1.1" 200 -
+2026-10-17 01:08:25,080 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:25] "GET /api/pairing-products?product_id=75 HTTP/1.1" 200 -
+2026-10-17 01:08:30,503 [INFO] __main__: Strategy 'emergency_clearance' applied to product #75: promotional price ₱285.0 (25.0% off, 3 days), required partner: None
+2026-10-17 01:08:30,504 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:30] "[35m[1mPOST /api/save-recommendation HTTP/1.1[0m" 201 -
+2026-10-17 01:08:34,125 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:34] "GET /api/recommendations?limit=50 HTTP/1.1" 200 -
+2026-10-17 01:08:41,196 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:41] "GET /api/active-strategies HTTP/1.1" 200 -
+2026-10-17 01:08:43,278 [INFO] __main__: Strategy ID 26 cancelled for product #75
+2026-10-17 01:08:43,279 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:43] "POST /api/cancel-strategy HTTP/1.1" 200 -
+2026-10-17 01:08:43,312 [INFO] werkzeug: 127.0.0.1 - - [17/Oct/2026 01:08:43] "GET /api/active-strategies HTTP/1.1" 200 -

@@ -140,6 +140,25 @@
         });
     }
 
+    // Eye beside the dots: show the digits typed instead of dots
+    let pinRevealed = false;
+    function setPinRevealed(revealed) {
+        pinRevealed = revealed;
+        document.querySelector('.pin-dots-row')?.classList.toggle('is-revealed', revealed);
+        const button = document.getElementById('pinRevealBtn');
+        if (button) {
+            button.setAttribute('aria-pressed', revealed ? 'true' : 'false');
+            button.setAttribute('aria-label', revealed ? 'Hide PIN' : 'Show PIN');
+            button.title = revealed ? 'Hide PIN' : 'Show PIN';
+            const icon = button.querySelector('i');
+            if (icon) icon.className = revealed ? 'fas fa-eye-slash' : 'fas fa-eye';
+        }
+        updatePinDots();
+    }
+    document.getElementById('pinRevealBtn')?.addEventListener('click', function () {
+        setPinRevealed(!pinRevealed);
+    });
+
     // Update PIN dots
     function updatePinDots() {
         for (let i = 0; i < maxPinLength; i++) {
@@ -150,6 +169,7 @@
                 } else {
                     dot.classList.remove('active');
                 }
+                dot.textContent = pinRevealed && i < currentPin.length ? currentPin[i] : '';
             }
         }
         if (currentPin.length > 0) {
@@ -372,6 +392,7 @@
             const chosen = document.querySelector('.account-card.selected');
             accountCards.forEach(c => c.classList.remove('selected'));
             userIdInput.value = '';
+            setPinRevealed(false); // the next person should not find the PIN on show
             resetPin();
             clearLoginError();
             document.querySelector('.pin-dots-row')?.classList.remove('is-error');

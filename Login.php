@@ -176,6 +176,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/loginCSS.css?v=<?= filemtime(__DIR__ . '/assets/css/loginCSS.css') ?>">
+    <link rel="stylesheet" href="assets/css/pin-reveal.css?v=<?= filemtime(__DIR__ . '/assets/css/pin-reveal.css') ?>">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <?php if (isset($error) || $logged_out): ?>
         <style>#loading-animation { display: none !important; }</style>
@@ -311,10 +312,16 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
 
                         <p id="pinPrompt">Enter your 4-digit PIN</p>
 
-                        <div class="pin-dots-row" aria-hidden="true">
-                            <?php for ($i = 0; $i < 4; $i++): ?>
-                                <span class="pin-dot" id="pinDot<?= $i ?>"></span>
-                            <?php endfor; ?>
+                        <div class="pin-dots-wrap">
+                            <div class="pin-dots-row" aria-hidden="true">
+                                <?php for ($i = 0; $i < 4; $i++): ?>
+                                    <span class="pin-dot" id="pinDot<?= $i ?>"></span>
+                                <?php endfor; ?>
+                            </div>
+                            <!-- Shows the digits typed instead of dots -->
+                            <button type="button" class="pin-dots-reveal" id="pinRevealBtn" aria-label="Show PIN" title="Show PIN" aria-pressed="false">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
                         </div>
 
                         <!-- Stays put until the next attempt, unlike the one-second toast -->
@@ -348,16 +355,16 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
                         <p class="lg-forgot-text">Enter your <strong>recovery PIN</strong> (the 4-digit PIN you set in My profile, not your sign-in PIN), then choose a new sign-in PIN.</p>
                         <label class="lg-field">
                             <span>Recovery PIN</span>
-                            <input type="password" class="lg-input" id="lgRecoveryPin" inputmode="numeric" maxlength="4" autocomplete="off">
+                            <input type="password" data-pin-reveal class="lg-input" id="lgRecoveryPin" inputmode="numeric" maxlength="4" autocomplete="off">
                         </label>
                         <div class="lg-field-row">
                             <label class="lg-field">
                                 <span>New PIN</span>
-                                <input type="password" class="lg-input" id="lgNewPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="lg-input" id="lgNewPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
                             </label>
                             <label class="lg-field">
                                 <span>Confirm new PIN</span>
-                                <input type="password" class="lg-input" id="lgConfirmPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
+                                <input type="password" data-pin-reveal class="lg-input" id="lgConfirmPin" inputmode="numeric" maxlength="4" autocomplete="new-password">
                             </label>
                         </div>
                         <button type="submit" class="lg-primary" id="lgOwnerResetBtn">Reset PIN</button>
@@ -378,6 +385,7 @@ define('SITE_NAME', 'Espenida\'s Pet & Poultry Supply');
     </main>
 
     <script src="assets/js/LoginJS.js?v=<?= filemtime(__DIR__ . '/assets/js/LoginJS.js') ?>"></script>
+    <script src="assets/js/pin-reveal.js?v=<?= filemtime(__DIR__ . '/assets/js/pin-reveal.js') ?>"></script>
 </body>
 
 </html>

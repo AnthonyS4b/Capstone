@@ -1,0 +1,38 @@
+/* pin-reveal.css — the eye button inside PIN boxes (assets/js/pin-reveal.js) */
+.pin-reveal-field {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.pin-reveal-field > input {
+    padding-right: 42px !important;
+}
+
+.pin-reveal-btn {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    width: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0 7px 7px 0;
+    background: transparent;
+    color: #61706a;
+    font-size: 15px;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.pin-reveal-btn:hover,
+.pin-reveal-btn[aria-pressed="true"] {
+    color: #2c5530;
+}
+
+.pin-reveal-btn:focus-visible {
+    outline: 2px solid #2c5530;
+    outline-offset: -3px;
+}
