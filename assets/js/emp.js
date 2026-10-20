@@ -151,11 +151,12 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(() => showToast('error', 'Error', 'Failed to connect to server.'));
     }
 
-    // ── Receipt modal ──────────────────────────────────────────────────────────
+    // ── Receipt modal (uses Receipt.html — same renderer as admin) ─────────
+    let lastReceiptHtml = null;   // for printing
+
     function viewReceipt(rawId, trxId) {
-        // Show modal in loading state
         resetReceiptModal();
-        document.getElementById('receiptTrxId').textContent = trxId;
+        document.getElementById('empTxModalTitle').textContent = trxId;
         const modal = new bootstrap.Modal(document.getElementById('receiptModal'));
         modal.show();
 
@@ -175,84 +176,57 @@ document.addEventListener('DOMContentLoaded', function () {
         .catch(() => showReceiptError('Network error — could not load receipt.'));
     }
 
-    let lastReceipt = null;   // the sale shown in the modal, for printing
-
     function renderReceipt(tx, trxId) {
-        lastReceipt = { tx, trxId };
-        // ── Meta info ──
-        const dateStr = new Date(tx.created_at).toLocaleString('en-PH', {
-            year: 'numeric', month: 'short', day: 'numeric',
-            hour: '2-digit', minute: '2-digit'
+        const txNumber = trxId || ('TRX-' + String(tx.id).padStart(6, '0'));
+        const pm       = tx.payment_method || 'cash';
+        const status   = tx.status || 'completed';
+        const total    = parseFloat(tx.total_amount || tx.total || 0);
+
+        // GCash reference stored in notes as "GCash Ref: 123456"
+        const reference = tx.gcash_reference
+            || ((tx.notes || '').includes('GCash Ref:') ? tx.notes.replace('GCash Ref:', '').trim() : '');
+
+        // ── Header ──
+        document.getElementById('empTxModalTitle').textContent = txNumber;
+        document.getElementById('empTxModalSub').textContent =
+            (typeof Receipt !== 'undefined' && Receipt.formatDate
+                ? Receipt.formatDate(tx.created_at)
+                : new Date(tx.created_at).toLocaleString('en-PH'))
+            + ' · ' + (tx.cashier_name || 'Unknown cashier');
+
+        const statusEl = document.getElementById('empTxModalStatus');
+        statusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        statusEl.className = 'tx-status is-' + status;
+
+        // ── Body: use Receipt.html() — the same renderer the admin page uses ──
+        const receiptHtml = Receipt.html({
+            number  : txNumber,
+            date    : tx.created_at,
+            cashier : tx.cashier_name || 'Unknown',
+            items   : (tx.items || []).map(item => ({
+                name     : item.product_name || item.name || 'Product',
+                price    : parseFloat(item.price) || 0,
+                quantity : parseFloat(item.quantity) || 0,
+                unit     : item.unit || ''
+            })),
+            total   : total,
+            vatRate : tx.vat_rate,
+            payment : parseFloat(tx.amount_paid || (pm === 'gcash' ? total : 0)),
+            change  : parseFloat(tx.change_amount || 0),
+            method  : pm,
+            reference,
+            status
         });
 
-        const paymentIcon = tx.payment_method === 'gcash' ? 'fa-mobile-alt' : 'fa-money-bill-wave';
-        const paymentLabel = tx.payment_method === 'gcash' ? 'GCash' : 'Cash';
+        lastReceiptHtml = receiptHtml;
 
-        let metaHTML = `
-            <div class="receipt-meta-row"><span class="receipt-meta-label">Date &amp; Time</span><span class="receipt-meta-value">${dateStr}</span></div>
-            <div class="receipt-meta-row"><span class="receipt-meta-label">Cashier</span><span class="receipt-meta-value">${escHtml(tx.cashier_name || '—')}</span></div>
-            <div class="receipt-meta-row"><span class="receipt-meta-label">Payment</span><span class="receipt-meta-value"><i class="fas ${paymentIcon} me-1"></i>${paymentLabel}</span></div>
-            <div class="receipt-meta-row"><span class="receipt-meta-label">Status</span><span class="receipt-meta-value">${statusBadge(tx.status)}</span></div>`;
-
-        if (tx.payment_method === 'gcash' && tx.gcash_reference) {
-            metaHTML += `<div class="receipt-meta-row"><span class="receipt-meta-label">GCash Ref #</span><span class="receipt-meta-value" style="font-family:monospace;">${escHtml(tx.gcash_reference)}</span></div>`;
-        }
-
-        document.getElementById('receiptMeta').innerHTML = metaHTML;
-
-        // ── Items ──
-        let itemsHTML = '';
-        const items = Array.isArray(tx.items) ? tx.items : [];
-        if (items.length === 0) {
-            itemsHTML = '<div style="color:#94a3b8;font-size:13px;padding:8px 0;">No item details available.</div>';
-        } else {
-            items.forEach(item => {
-                const name     = escHtml(item.product_name || item.name || 'Unknown Product');
-                // Per Kilo lines are decimal kilograms (2.5 kg), Per Gram whole grams (250 g); others whole units
-                const unitName = String(item.unit || '').trim().toLowerCase();
-                const weightUnit = unitName === 'per kilo' ? 'kg' : (unitName === 'per gram' ? 'g' : '');
-                const qty      = Math.round((parseFloat(item.quantity) || 0) * 100) / 100;
-                const price    = parseFloat(item.price) || 0;
-                const subtotal = Math.round(Math.round(qty * 100) * Math.round(price * 100) / 100) / 100;
-                itemsHTML += `
-                    <div class="receipt-item-row">
-                        <span class="receipt-item-name">${name}</span>
-                        <span class="receipt-item-qty">${weightUnit ? `${qty} ${weightUnit}` : `×${qty}`}</span>
-                        <span class="receipt-item-price">₱${fmtMoney(subtotal)}</span>
-                    </div>`;
-            });
-        }
-        document.getElementById('receiptItems').innerHTML = itemsHTML;
-
-        // ── Totals ──
-        const total   = parseFloat(tx.total_amount)  || 0;
-        const paid    = parseFloat(tx.amount_paid)   || 0;
-        const change  = parseFloat(tx.change_amount) || 0;
-
-        let totalsHTML = `
-            <div class="receipt-total-row"><span>Subtotal</span><span>₱${fmtMoney(total)}</span></div>
-            <div class="receipt-total-row grand"><span>Total</span><span class="receipt-grand-value">₱${fmtMoney(total)}</span></div>`;
-
-        if (paid > 0) {
-            totalsHTML += `
-                <div class="receipt-total-row" style="margin-top:8px;padding-top:6px;border-top:1px dashed #e2e8f0;">
-                    <span>Amount Paid</span><span>₱${fmtMoney(paid)}</span>
-                </div>
-                <div class="receipt-total-row"><span>Change</span><span>₱${fmtMoney(change)}</span></div>`;
-        }
-
-        document.getElementById('receiptTotals').innerHTML = totalsHTML;
-
-        // ── Notes ──
-        if (tx.notes && tx.notes.trim()) {
-            document.getElementById('receiptNotesText').textContent = tx.notes;
-            document.getElementById('receiptNotes').style.display = 'block';
-        }
+        const contentEl = document.getElementById('receiptContent');
+        contentEl.innerHTML = receiptHtml;
 
         // Show content, hide loader, show footer
-        document.getElementById('receiptLoading').style.display  = 'none';
-        document.getElementById('receiptContent').style.display  = 'block';
-        document.getElementById('receiptFooter').style.display   = 'flex';
+        document.getElementById('receiptLoading').style.display = 'none';
+        contentEl.style.display = 'block';
+        document.getElementById('receiptFooter').style.display  = 'flex';
     }
 
     function showReceiptError(msg) {
@@ -262,60 +236,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function resetReceiptModal() {
-        document.getElementById('receiptTrxId').textContent    = '—';
-        document.getElementById('receiptLoading').style.display = 'flex';
-        document.getElementById('receiptContent').style.display = 'none';
-        document.getElementById('receiptError').style.display   = 'none';
-        document.getElementById('receiptFooter').style.display  = 'none';
-        document.getElementById('receiptMeta').innerHTML        = '';
-        document.getElementById('receiptItems').innerHTML       = '';
-        document.getElementById('receiptTotals').innerHTML      = '';
-        document.getElementById('receiptNotes').style.display   = 'none';
-        document.getElementById('receiptNotesText').textContent = '';
+        document.getElementById('empTxModalTitle').textContent   = 'Transaction';
+        document.getElementById('empTxModalSub').textContent     = '';
+        document.getElementById('empTxModalStatus').textContent  = '';
+        document.getElementById('empTxModalStatus').className    = 'tx-status';
+        document.getElementById('receiptLoading').style.display  = 'flex';
+        document.getElementById('receiptContent').style.display  = 'none';
+        document.getElementById('receiptContent').innerHTML      = '';
+        document.getElementById('receiptError').style.display    = 'none';
+        document.getElementById('receiptFooter').style.display   = 'none';
+        lastReceiptHtml = null;
     }
 
-    // Print only the receipt, in the thermal-roll layout shared with the POS
-    // (window.print() here used to print the whole dashboard page)
     function printReceipt() {
-        if (!lastReceipt || typeof Receipt === 'undefined') return;
-        const { tx, trxId } = lastReceipt;
-        const ref = tx.gcash_reference
-            || ((tx.notes || '').includes('GCash Ref:') ? tx.notes.replace('GCash Ref:', '').trim() : '');
-        Receipt.print(Receipt.html({
-            number:    String(trxId || '').replace(/^#/, ''),
-            date:      tx.created_at,
-            cashier:   tx.cashier_name,
-            items:     (Array.isArray(tx.items) ? tx.items : []).map(i => ({
-                           name: i.product_name || i.name || 'Item',
-                           price: i.price,
-                           quantity: i.quantity
-                       })),
-            total:     tx.total_amount,
-            vatRate:   tx.vat_rate,
-            payment:   tx.amount_paid,
-            change:    tx.change_amount,
-            method:    tx.payment_method,
-            reference: ref,
-            status:    tx.status
-        }));
-    }
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-    function escHtml(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function fmtMoney(n) {
-        return parseFloat(n).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    function statusBadge(status) {
-        const map = {
-            completed : '<span style="color:#16a34a;font-weight:600;"><i class="fas fa-check-circle me-1"></i>Completed</span>',
-            voided    : '<span style="color:#dc2626;font-weight:600;"><i class="fas fa-ban me-1"></i>Voided</span>',
-            pending   : '<span style="color:#d97706;font-weight:600;"><i class="fas fa-clock me-1"></i>Pending</span>',
-        };
-        return map[status] || `<span>${escHtml(status)}</span>`;
+        if (!lastReceiptHtml || typeof Receipt === 'undefined') return;
+        Receipt.print(lastReceiptHtml);
     }
 
 // -- Switch account: submit over fetch so a wrong PIN keeps the modal open ----

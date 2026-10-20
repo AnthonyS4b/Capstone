@@ -334,75 +334,37 @@ $my_transactions = $myTxStmt->fetchAll(PDO::FETCH_ASSOC);
 
     </div><!-- /.main-content -->
 
-    <!-- ═══ RECEIPT MODAL ═══ -->
-    <div class="modal fade receipt-modal" id="receiptModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-md">
+    <!-- ═══ RECEIPT MODAL (same layout as admin Sales Transactions) ═══ -->
+    <div class="modal fade tx-modal" id="receiptModal" tabindex="-1" aria-hidden="true" aria-labelledby="empTxModalTitle">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
-                <!-- Header filled by JS -->
-                <div class="receipt-header" id="receiptModalHeader">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <div class="receipt-store-name"><i class="fas fa-paw me-2"></i>Espenida's</div>
-                            <div class="receipt-sub">Pet & Poultry Supply</div>
-                        </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="tx-head">
+                    <div class="tx-head-text">
+                        <h2 class="tx-title" id="empTxModalTitle">Transaction</h2>
+                        <p class="tx-sub" id="empTxModalSub"></p>
                     </div>
-                    <div class="mt-3">
-                        <div style="font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px;">Transaction</div>
-                        <div class="receipt-trx-id" id="receiptTrxId">—</div>
-                    </div>
+                    <span class="tx-status" id="empTxModalStatus"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-
-                <!-- Body -->
-                <div class="modal-body p-0">
+                <div class="modal-body">
                     <!-- Loading state -->
                     <div class="receipt-loading" id="receiptLoading">
                         <div class="spinner-border mb-3" role="status"></div>
                         <span style="font-size:13px;">Loading receipt…</span>
                     </div>
-
-                    <!-- Populated receipt -->
-                    <div id="receiptContent" style="display:none;">
-                        <div id="receiptPrintArea">
-                            <div class="receipt-body">
-                                <!-- Meta info -->
-                                <div class="mt-3 mb-3" id="receiptMeta"></div>
-
-                                <hr class="receipt-divider">
-
-                                <!-- Items -->
-                                <div class="receipt-items-header d-flex">
-                                    <span style="flex:1;">Product</span>
-                                    <span style="width:50px;text-align:center;">Qty</span>
-                                    <span style="width:80px;text-align:right;">Subtotal</span>
-                                </div>
-                                <div id="receiptItems"></div>
-
-                                <hr class="receipt-divider">
-
-                                <!-- Totals -->
-                                <div class="receipt-total-section" id="receiptTotals"></div>
-
-                                <!-- Notes -->
-                                <div id="receiptNotes" style="display:none;margin-top:12px;font-size:12px;color:#64748b;background:#fffbeb;padding:8px 12px;border-radius:6px;border-left:3px solid #f59e0b;">
-                                    <i class="fas fa-sticky-note me-1"></i><span id="receiptNotesText"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                    <!-- Receipt content rendered by Receipt.html() -->
+                    <div id="receiptContent" style="display:none;"></div>
                     <!-- Error state -->
                     <div id="receiptError" style="display:none;" class="text-center py-4 px-3">
                         <i class="fas fa-exclamation-circle fa-2x mb-2" style="color:#ef4444;"></i>
                         <p class="mb-0 text-danger" id="receiptErrorMsg">Failed to load receipt.</p>
                     </div>
                 </div>
-
-                <!-- Footer -->
-                <div class="modal-footer py-2" id="receiptFooter" style="display:none!important;">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-sm btn-brown" onclick="printReceipt()">
-                        <i class="fas fa-print me-1"></i>Print
+                <div class="modal-footer tx-foot" id="receiptFooter" style="display:none;">
+                    <span class="tx-spacer"></span>
+                    <button type="button" class="tx-btn tx-btn-ghost" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="tx-btn tx-btn-primary" onclick="printReceipt()">
+                        <i class="fas fa-print" aria-hidden="true"></i>Print receipt
                     </button>
                 </div>
             </div>
