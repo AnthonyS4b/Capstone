@@ -716,3 +716,8 @@
 [17-Oct-2026 00:42:58 Asia/Manila] Transaction data: User_ID=9, Total=210, Payment=250, Method=cash
 [17-Oct-2026 00:42:58 Asia/Manila] Transaction inserted with ID: 18713
 [17-Oct-2026 00:43:08 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
+[20-Oct-2026 23:20:51 Asia/Manila] Found user_id in session: 1
+[20-Oct-2026 23:20:53 Asia/Manila] Validated user: John Anthony Espenida (ID: 1, Role: owner)
+[20-Oct-2026 23:20:55 Asia/Manila] Transaction data: User_ID=1, Total=45.5, Payment=100, Method=cash
+[20-Oct-2026 23:20:55 Asia/Manila] Transaction inserted with ID: 18714
+[20-Oct-2026 23:20:55 Asia/Manila] === TRANSACTION COMPLETED SUCCESSFULLY ===
